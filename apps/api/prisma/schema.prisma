@@ -1,0 +1,348 @@
+generator client {
+  provider = "prisma-client-js"
+}
+
+datasource db {
+  provider = "postgresql"
+  url      = env("DATABASE_URL")
+}
+
+// ========================= ENUMS =========================
+
+enum Role {
+  ADMIN
+  STAFF
+  GUEST
+}
+
+enum UnitStatus {
+  ACTIVE
+  INACTIVE
+  MAINTENANCE
+}
+
+enum HousekeepingStatus {
+  CLEAN
+  DIRTY
+  INSPECT
+  OUT_OF_SERVICE
+}
+
+enum MaintenanceStatus {
+  OPEN
+  IN_PROGRESS
+  RESOLVED
+}
+
+enum BookingStatus {
+  HOLD
+  PENDING
+  CONFIRMED
+  CHECKED_IN
+  CHECKED_OUT
+  CANCELED
+  NO_SHOW
+}
+
+enum PaymentStatus {
+  UNPAID
+  PARTIAL
+  PAID
+  REFUNDED
+}
+
+enum PaymentMethod {
+  CASH
+  PIX
+  CARD
+  BANK_TRANSFER
+}
+
+enum FolioType {
+  DEBIT
+  CREDIT
+}
+
+enum SeasonType {
+  LOW
+  MID
+  HIGH
+  HOLIDAY
+}
+
+enum DocumentType {
+  CPF
+  PASSPORT
+  OTHER
+}
+
+// ========================= CORE =========================
+
+// Since it is single-tenant, we use only one Lodge (global config)
+model Lodge {
+  id           String   @id @default(uuid())
+  name         String
+  slug         String   @unique
+  description  String?
+  address      String?
+  phone        String?
+  email        String?
+  checkInTime  String? // e.g. "14:00"
+  checkOutTime String? // e.g. "12:00"
+  createdAt    DateTime @default(now())
+  updatedAt    DateTime @updatedAt
+
+  units     Unit[]
+  seasons   Season[]
+  policies  Policy[]
+  ExtraItem ExtraItem[]
+}
+
+model User {
+  id           String        @id @default(uuid())
+  role         Role          @default(GUEST)
+  name         String
+  email        String?       @unique
+  phone        String?
+  documentType DocumentType? @default(CPF)
+  documentId   String? // CPF/passport
+  hash         String? // if login exists
+  createdAt    DateTime      @default(now())
+  updatedAt    DateTime      @updatedAt
+
+  bookings          Booking[]
+  payments          Payment[]
+  AuditLog          AuditLog[]
+  maintenanceTickets MaintenanceTicket[]
+
+  @@index([role])
+  @@index([documentId])
+}
+
+// ====================== INVENTORY =======================
+
+model Unit {
+  id          String             @id @default(uuid())
+  lodgeId     String
+  code        String // e.g.: A101
+  title       String
+  description String?
+  capacity    Int
+  bedrooms    Int                @default(0)
+  bathrooms   Int                @default(0)
+  amenities   Json?
+  status      UnitStatus         @default(ACTIVE)
+  basePrice   Decimal            @db.Decimal(10, 2)
+  hkStatus    HousekeepingStatus @default(CLEAN)
+  createdAt   DateTime           @default(now())
+  updatedAt   DateTime           @updatedAt
+
+  lodge        Lodge               @relation(fields: [lodgeId], references: [id])
+  photos       UnitPhoto[]
+  calendars    UnitCalendar[]
+  seasonPrices UnitSeasonPrice[]
+  bookings     Booking[]
+  maintenance  MaintenanceTicket[]
+
+  @@unique([lodgeId, code])
+  @@index([lodgeId])
+}
+
+model UnitPhoto {
+  id     String  @id @default(uuid())
+  unitId String
+  url    String
+  alt    String?
+  order  Int     @default(0)
+  unit   Unit    @relation(fields: [unitId], references: [id], onDelete: Cascade)
+
+  @@index([unitId, order])
+}
+
+model UnitCalendar {
+  id        String   @id @default(uuid())
+  unitId    String
+  date      DateTime // single day
+  isBlocked Boolean  @default(false)
+  price     Decimal? @db.Decimal(10, 2) // override unit base price for this date
+  notes     String?
+  unit      Unit     @relation(fields: [unitId], references: [id], onDelete: Cascade)
+
+  @@unique([unitId, date])
+  @@index([date])
+}
+
+model Season {
+  id         String            @id @default(uuid())
+  lodgeId    String
+  name       String
+  type       SeasonType
+  startDate  DateTime
+  endDate    DateTime
+  multiplier Decimal           @db.Decimal(5, 2) // applies on basePrice
+  minNights  Int               @default(1)
+  lodge      Lodge             @relation(fields: [lodgeId], references: [id])
+  prices     UnitSeasonPrice[]
+
+  @@index([lodgeId])
+  @@index([startDate, endDate])
+}
+
+model UnitSeasonPrice {
+  id       String  @id @default(uuid())
+  unitId   String
+  seasonId String
+  price    Decimal @db.Decimal(10, 2) // specific override
+  unit     Unit    @relation(fields: [unitId], references: [id], onDelete: Cascade)
+  season   Season  @relation(fields: [seasonId], references: [id], onDelete: Cascade)
+
+  @@unique([unitId, seasonId])
+}
+
+// =================== BOOKINGS & FOLIO ====================
+
+model Booking {
+  id            String        @id @default(uuid())
+  userId        String // main guest
+  unitId        String
+  checkIn       DateTime
+  checkOut      DateTime
+  adults        Int           @default(2)
+  children      Int           @default(0)
+  status        BookingStatus @default(PENDING)
+  totalAmount   Decimal       @db.Decimal(10, 2)
+  currency      String        @default("BRL")
+  holdExpiresAt DateTime? // optional: pending booking before confirmation
+  notes         String?
+  createdAt     DateTime      @default(now())
+  updatedAt     DateTime      @updatedAt
+
+  user       User           @relation(fields: [userId], references: [id], onDelete: Restrict)
+  unit       Unit           @relation(fields: [unitId], references: [id], onDelete: Restrict)
+  payments   Payment[]
+  guests     BookingGuest[]
+  extras     BookingExtra[]
+  folioItems FolioItem[]
+
+  @@index([userId])
+  @@index([status])
+  @@index([unitId, checkIn, checkOut])
+}
+
+model BookingGuest {
+  id           String        @id @default(uuid())
+  bookingId    String
+  name         String
+  documentId   String?
+  documentType DocumentType?
+  isMainGuest  Boolean       @default(false)
+  booking      Booking       @relation(fields: [bookingId], references: [id], onDelete: Cascade)
+
+  @@index([bookingId])
+}
+
+// Extra items (e.g.: extra breakfast, extra bed, transfer)
+model ExtraItem {
+  id           String         @id @default(uuid())
+  lodgeId      String
+  name         String
+  price        Decimal        @db.Decimal(10, 2)
+  isPerNight   Boolean        @default(false)
+  isPerGuest   Boolean        @default(false)
+  active       Boolean        @default(true)
+  lodge        Lodge          @relation(fields: [lodgeId], references: [id])
+  BookingExtra BookingExtra[]
+
+  @@index([lodgeId])
+}
+
+model BookingExtra {
+  id          String    @id @default(uuid())
+  bookingId   String
+  extraItemId String
+  quantity    Int       @default(1)
+  unitPrice   Decimal   @db.Decimal(10, 2)
+  total       Decimal   @db.Decimal(10, 2)
+  booking     Booking   @relation(fields: [bookingId], references: [id], onDelete: Cascade)
+  extraItem   ExtraItem @relation(fields: [extraItemId], references: [id], onDelete: Cascade)
+
+  @@index([bookingId])
+}
+
+// Folio (guest account): allows recording debits and credits
+model FolioItem {
+  id          String    @id @default(uuid())
+  bookingId   String
+  type        FolioType
+  description String
+  amount      Decimal   @db.Decimal(10, 2)
+  createdAt   DateTime  @default(now())
+  booking     Booking   @relation(fields: [bookingId], references: [id], onDelete: Cascade)
+
+  @@index([bookingId])
+}
+
+// On-site payments (directly at the desk)
+model Payment {
+  id          String        @id @default(uuid())
+  bookingId   String
+  userId      String? // who registered (staff) or who paid
+  method      PaymentMethod
+  status      PaymentStatus @default(UNPAID)
+  amount      Decimal       @db.Decimal(10, 2)
+  paidAt      DateTime?
+  receiptCode String? // internal receipt number
+  notes       String?
+  createdAt   DateTime      @default(now())
+  updatedAt   DateTime      @updatedAt
+
+  booking Booking @relation(fields: [bookingId], references: [id], onDelete: Cascade)
+  user    User?   @relation(fields: [userId], references: [id], onDelete: SetNull)
+
+  @@index([bookingId])
+}
+
+// =================== POLICIES & LOG =====================
+
+model Policy {
+  id        String   @id @default(uuid())
+  lodgeId   String
+  key       String // CHECKIN_RULES, CANCELLATION, PET_POLICY, etc.
+  content   String // markdown/text
+  updatedAt DateTime @updatedAt
+  lodge     Lodge    @relation(fields: [lodgeId], references: [id])
+
+  @@unique([lodgeId, key])
+}
+
+model AuditLog {
+  id        String   @id @default(uuid())
+  actorId   String?
+  action    String
+  entity    String
+  entityId  String?
+  ip        String?
+  metadata  Json?
+  createdAt DateTime @default(now())
+  actor     User?    @relation(fields: [actorId], references: [id])
+
+  @@index([entity, entityId])
+}
+
+// ============== MAINTENANCE & HOUSEKEEPING ===============
+
+model MaintenanceTicket {
+  id          String            @id @default(uuid())
+  unitId      String
+  title       String
+  description String?
+  status      MaintenanceStatus @default(OPEN)
+  assignedTo  String? // staff user responsible
+  openedAt    DateTime          @default(now())
+  closedAt    DateTime?
+  unit        Unit              @relation(fields: [unitId], references: [id])
+  assignee    User?             @relation(fields: [assignedTo], references: [id], onDelete: SetNull)
+
+  @@index([unitId, status])
+  @@index([assignedTo])
+}
