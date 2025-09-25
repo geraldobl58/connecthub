@@ -83,6 +83,16 @@ async function main() {
     },
   });
 
+  // Tenant 3: Tech Solutions - Para demonstrar diferentes cenários
+  const tenant3 = await prisma.tenant.upsert({
+    where: { slug: 'tech-solutions' },
+    update: {},
+    create: {
+      name: 'Tech Solutions Corp',
+      slug: 'tech-solutions',
+    },
+  });
+
   // Criar Users com todas as roles
   console.log('👥 Creating users...');
   const passwordHash = await hash('Demo123!', 10);
@@ -231,6 +241,116 @@ async function main() {
       password: passwordHash,
       role: 'AGENT',
       isActive: true,
+    },
+  });
+
+  // Tenant 3: Tech Solutions - Equipe completa de desenvolvimento
+  const adminTech = await prisma.user.upsert({
+    where: {
+      tenantId_email: {
+        tenantId: tenant3.id,
+        email: 'admin@tech-solutions.com',
+      },
+    },
+    update: {},
+    create: {
+      tenantId: tenant3.id,
+      name: 'Roberto CTO',
+      email: 'admin@tech-solutions.com',
+      password: passwordHash,
+      role: 'ADMIN',
+      isActive: true,
+    },
+  });
+
+  const managerTech = await prisma.user.upsert({
+    where: {
+      tenantId_email: {
+        tenantId: tenant3.id,
+        email: 'manager@tech-solutions.com',
+      },
+    },
+    update: {},
+    create: {
+      tenantId: tenant3.id,
+      name: 'Sandra Project Manager',
+      email: 'manager@tech-solutions.com',
+      password: passwordHash,
+      role: 'MANAGER',
+      isActive: true,
+    },
+  });
+
+  const devSenior = await prisma.user.upsert({
+    where: {
+      tenantId_email: {
+        tenantId: tenant3.id,
+        email: 'dev.senior@tech-solutions.com',
+      },
+    },
+    update: {},
+    create: {
+      tenantId: tenant3.id,
+      name: 'Paulo Dev Senior',
+      email: 'dev.senior@tech-solutions.com',
+      password: passwordHash,
+      role: 'AGENT',
+      isActive: true,
+    },
+  });
+
+  const devJunior = await prisma.user.upsert({
+    where: {
+      tenantId_email: {
+        tenantId: tenant3.id,
+        email: 'dev.junior@tech-solutions.com',
+      },
+    },
+    update: {},
+    create: {
+      tenantId: tenant3.id,
+      name: 'Camila Dev Junior',
+      email: 'dev.junior@tech-solutions.com',
+      password: passwordHash,
+      role: 'AGENT',
+      isActive: true,
+    },
+  });
+
+  const estagiario = await prisma.user.upsert({
+    where: {
+      tenantId_email: {
+        tenantId: tenant3.id,
+        email: 'estagiario@tech-solutions.com',
+      },
+    },
+    update: {},
+    create: {
+      tenantId: tenant3.id,
+      name: 'Felipe Estagiário',
+      email: 'estagiario@tech-solutions.com',
+      password: passwordHash,
+      role: 'VIEWER',
+      isActive: true,
+    },
+  });
+
+  // Usuário inativo para testes
+  await prisma.user.upsert({
+    where: {
+      tenantId_email: {
+        tenantId: tenant3.id,
+        email: 'inactive@tech-solutions.com',
+      },
+    },
+    update: {},
+    create: {
+      tenantId: tenant3.id,
+      name: 'Ex-Funcionário',
+      email: 'inactive@tech-solutions.com',
+      password: passwordHash,
+      role: 'VIEWER',
+      isActive: false,
     },
   });
 
