@@ -8,8 +8,10 @@ import {
   HttpStatus,
 } from '@nestjs/common';
 import { AuthService } from './auth.service';
+import { SignupService } from './signup.service';
 import { RegisterDto } from './dto/register.dto';
 import { LoginDto } from './dto/login.dto';
+import { SignupDto } from './dto/signup.dto';
 import {
   ApiTags,
   ApiOperation,
@@ -26,7 +28,10 @@ import {
 @ApiTags('Authentication')
 @Controller('auth')
 export class AuthController {
-  constructor(private service: AuthService) {}
+  constructor(
+    private service: AuthService,
+    private signupService: SignupService,
+  ) {}
 
   @Post('register')
   @HttpCode(HttpStatus.CREATED)
@@ -61,6 +66,52 @@ export class AuthController {
   })
   register(@Body() dto: RegisterDto) {
     return this.service.register(dto);
+  }
+
+  @Post('signup')
+  @HttpCode(HttpStatus.CREATED)
+  @ApiOperation({
+    summary: 'Company signup',
+    description:
+      'Creates a new tenant (company) with admin user and sends welcome email',
+  })
+  @ApiBody({ type: SignupDto })
+  @ApiResponse({
+    status: 201,
+    description: 'Company successfully created',
+    schema: {
+      example: {
+        success: true,
+        message:
+          'Cadastro realizado com sucesso! Verifique seu email para acessar a plataforma.',
+        tenant: {
+          id: 'tenant-uuid',
+          name: 'Tech Solutions Corp',
+          slug: 'tech-solutions',
+          plan: 'PROFESSIONAL',
+        },
+        user: {
+          id: 'user-uuid',
+          name: 'João Silva',
+          email: 'admin@tech-solutions.com',
+          role: 'ADMIN',
+        },
+      },
+    },
+  })
+  @ApiResponse({
+    status: 409,
+    description: 'Domain or email already exists',
+    schema: {
+      example: {
+        statusCode: 409,
+        message: 'Este subdomínio já está em uso',
+        error: 'Conflict',
+      },
+    },
+  })
+  signup(@Body() dto: SignupDto) {
+    return this.signupService.signup(dto);
   }
 
   @Post('login')
