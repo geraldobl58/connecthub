@@ -1,251 +1,171 @@
 "use client";
 
-import { useSearchParams, useRouter } from "next/navigation";
 import { useEffect, useState } from "react";
+import { useRouter, useSearchParams } from "next/navigation";
 import { Button } from "@/components/ui/button";
-import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card";
-import { Badge } from "@/components/ui/badge";
-import { CheckCircle, Building2, Mail, Globe, ArrowRight, Copy, Check } from "lucide-react";
+import {
+  Card,
+  CardContent,
+  CardDescription,
+  CardHeader,
+  CardTitle,
+} from "@/components/ui/card";
+import {
+  CheckCircle,
+  Mail,
+  ExternalLink,
+  ArrowRight,
+  Building2,
+} from "lucide-react";
 
-export default function SignupSuccessPage() {
-  const searchParams = useSearchParams();
+const SignupSuccessPage = () => {
   const router = useRouter();
-  const [copied, setCopied] = useState(false);
+  const searchParams = useSearchParams();
+  const [companyName, setCompanyName] = useState("");
+  const [domain, setDomain] = useState("");
+  const [message, setMessage] = useState("");
 
-  const companyName = searchParams.get("company") || "Sua empresa";
-  const domain = searchParams.get("domain") || "empresa";
-  const tenantUrl = `https://${domain}.connecthub.com`;
+  useEffect(() => {
+    const company = searchParams.get("company");
+    const domainParam = searchParams.get("domain");
+    const messageParam = searchParams.get("message");
 
-  // Simular credenciais temporárias (em produção viriam da API)
-  const tempCredentials = {
-    email: `admin@${domain}.com`,
-    password: "TempPass123!",
+    if (company) setCompanyName(decodeURIComponent(company));
+    if (domainParam) setDomain(domainParam);
+    if (messageParam) setMessage(decodeURIComponent(messageParam));
+  }, [searchParams]);
+
+  const handleGoToPlatform = () => {
+    if (domain) {
+      router.push(`/tenant-info?tenant=${domain}`);
+    }
   };
 
-  const copyCredentials = async () => {
-    const credentialsText = `Email: ${tempCredentials.email}\nSenha: ${tempCredentials.password}`;
-    await navigator.clipboard.writeText(credentialsText);
-    setCopied(true);
-    setTimeout(() => setCopied(false), 2000);
-  };
-
-  const goToLogin = () => {
-    // Em produção, redirecionaria para o subdomínio do tenant
-    // Por enquanto, vamos para o login com os dados preenchidos
-    router.push(`/login?email=${encodeURIComponent(tempCredentials.email)}&tenant=${domain}`);
+  const handleBackToHome = () => {
+    router.push("/");
   };
 
   return (
     <div className="container mx-auto px-4 py-8 max-w-2xl">
       <div className="text-center mb-8">
-        <div className="flex justify-center mb-4">
-          <div className="bg-green-100 rounded-full p-3">
-            <CheckCircle className="h-8 w-8 text-green-600" />
+        <div className="flex justify-center mb-6">
+          <div className="rounded-full bg-green-100 p-4">
+            <CheckCircle className="h-16 w-16 text-green-600" />
           </div>
         </div>
-        <h1 className="text-3xl font-bold text-gray-900 mb-4">
-          🎉 Assinatura realizada com sucesso!
+        <h1 className="text-4xl font-bold text-gray-900 mb-4">
+          🎉 Parabéns, {companyName}!
         </h1>
         <p className="text-xl text-gray-600">
-          Bem-vindo ao ConnectHub, <strong>{companyName}</strong>!
+          Seu cadastro foi realizado com sucesso
         </p>
       </div>
 
-      <div className="space-y-6">
-        {/* Status da conta */}
-        <Card className="border-green-200 bg-green-50">
-          <CardHeader>
-            <CardTitle className="text-green-800 flex items-center gap-2">
-              <Building2 className="h-5 w-5" />
-              Sua conta está pronta!
-            </CardTitle>
-            <CardDescription className="text-green-700">
-              Seu tenant foi criado com sucesso e está ativo
-            </CardDescription>
-          </CardHeader>
-          <CardContent>
-            <div className="space-y-3">
-              <div className="flex items-center justify-between">
-                <span className="text-sm text-green-700">Status do tenant:</span>
-                <Badge className="bg-green-100 text-green-800 border-green-200">
-                  ✅ Ativo
-                </Badge>
+      <Card className="mb-8">
+        <CardHeader>
+          <CardTitle className="flex items-center gap-2">
+            <Building2 className="h-5 w-5" />
+            Sua plataforma está sendo preparada
+          </CardTitle>
+          <CardDescription>
+            {message || "Cadastro realizado com sucesso!"}
+          </CardDescription>
+        </CardHeader>
+
+        <CardContent className="space-y-6">
+          <div className="bg-blue-50 border border-blue-200 rounded-lg p-4">
+            <h3 className="font-medium text-blue-900 mb-3">
+              📧 Próximos passos
+            </h3>
+            <div className="space-y-2 text-sm text-blue-700">
+              <div className="flex items-start gap-2">
+                <Mail className="h-4 w-4 mt-0.5 flex-shrink-0" />
+                <span>
+                  Email com suas credenciais de acesso (email e senha
+                  temporária) foi enviado
+                </span>
               </div>
-              <div className="flex items-center justify-between">
-                <span className="text-sm text-green-700">URL personalizada:</span>
-                <a
-                  href={tenantUrl}
-                  target="_blank"
-                  className="text-blue-600 hover:text-blue-800 text-sm font-medium"
+              <div className="flex items-start gap-2">
+                <CheckCircle className="h-4 w-4 mt-0.5 flex-shrink-0" />
+                <span>
+                  Nossa equipe está configurando seu tenant personalizado
+                </span>
+              </div>
+              <div className="flex items-start gap-2">
+                <Building2 className="h-4 w-4 mt-0.5 flex-shrink-0" />
+                <span>Em breve você receberá um email de onboarding</span>
+              </div>
+            </div>
+          </div>
+
+          {domain && (
+            <div className="bg-gray-50 border border-gray-200 rounded-lg p-4">
+              <h3 className="font-medium text-gray-900 mb-2">
+                🌐 Sua URL personalizada
+              </h3>
+              <div className="flex items-center gap-2 text-sm text-gray-600">
+                <span className="font-mono bg-white px-2 py-1 rounded border">
+                  http://localhost:3000/dashboard (após login)
+                </span>
+                <Button
+                  size="sm"
+                  variant="outline"
+                  onClick={handleGoToPlatform}
+                  className="flex items-center gap-1"
                 >
-                  {tenantUrl}
-                </a>
-              </div>
-              <div className="flex items-center justify-between">
-                <span className="text-sm text-green-700">Tenant ID:</span>
-                <code className="bg-green-100 px-2 py-1 rounded text-xs">{domain}</code>
+                  <ExternalLink className="h-3 w-3" />
+                  Ver Detalhes
+                </Button>
               </div>
             </div>
-          </CardContent>
-        </Card>
+          )}
 
-        {/* Credenciais de acesso */}
-        <Card>
-          <CardHeader>
-            <CardTitle className="flex items-center gap-2">
-              <Mail className="h-5 w-5" />
-              Suas credenciais de acesso
-            </CardTitle>
-            <CardDescription>
-              Use essas credenciais para fazer seu primeiro login (senha temporária)
-            </CardDescription>
-          </CardHeader>
-          <CardContent>
-            <div className="space-y-4">
-              <div>
-                <label className="text-sm font-medium text-gray-700">Email do administrador:</label>
-                <div className="mt-1 p-2 bg-gray-50 border rounded font-mono text-sm">
-                  {tempCredentials.email}
-                </div>
-              </div>
-              <div>
-                <label className="text-sm font-medium text-gray-700">Senha temporária:</label>
-                <div className="mt-1 p-2 bg-gray-50 border rounded font-mono text-sm">
-                  {tempCredentials.password}
-                </div>
-              </div>
+          <div className="bg-amber-50 border border-amber-200 rounded-lg p-4">
+            <h3 className="font-medium text-amber-900 mb-2">
+              ⏱️ Tempo de configuração
+            </h3>
+            <p className="text-sm text-amber-700">
+              A configuração completa do seu tenant pode levar até 15 minutos.
+              Durante este período, você receberá todos os detalhes por email.
+            </p>
+          </div>
+        </CardContent>
+      </Card>
 
-              <Button
-                onClick={copyCredentials}
-                variant="outline"
-                size="sm"
-                className="w-full"
-              >
-                {copied ? (
-                  <>
-                    <Check className="h-4 w-4 mr-2" />
-                    Credenciais copiadas!
-                  </>
-                ) : (
-                  <>
-                    <Copy className="h-4 w-4 mr-2" />
-                    Copiar credenciais
-                  </>
-                )}
-              </Button>
-
-              <div className="p-3 bg-amber-50 border border-amber-200 rounded-lg">
-                <p className="text-sm text-amber-700">
-                  <strong>⚠️ Importante:</strong> Você será solicitado a alterar sua senha no primeiro login
-                  para garantir a segurança da sua conta.
-                </p>
-              </div>
-            </div>
-          </CardContent>
-        </Card>
-
-        {/* Próximos passos */}
-        <Card>
-          <CardHeader>
-            <CardTitle>🚀 Próximos passos</CardTitle>
-            <CardDescription>
-              Configure sua conta e comece a usar o sistema
-            </CardDescription>
-          </CardHeader>
-          <CardContent>
-            <div className="space-y-3">
-              <div className="flex items-start gap-3">
-                <div className="bg-blue-100 text-blue-600 rounded-full w-6 h-6 flex items-center justify-center text-sm font-medium">
-                  1
-                </div>
-                <div>
-                  <p className="font-medium">Faça seu primeiro login</p>
-                  <p className="text-sm text-gray-600">
-                    Use as credenciais acima para acessar o sistema
-                  </p>
-                </div>
-              </div>
-
-              <div className="flex items-start gap-3">
-                <div className="bg-blue-100 text-blue-600 rounded-full w-6 h-6 flex items-center justify-center text-sm font-medium">
-                  2
-                </div>
-                <div>
-                  <p className="font-medium">Altere sua senha</p>
-                  <p className="text-sm text-gray-600">
-                    Defina uma senha segura para sua conta
-                  </p>
-                </div>
-              </div>
-
-              <div className="flex items-start gap-3">
-                <div className="bg-blue-100 text-blue-600 rounded-full w-6 h-6 flex items-center justify-center text-sm font-medium">
-                  3
-                </div>
-                <div>
-                  <p className="font-medium">Configure dados da empresa</p>
-                  <p className="text-sm text-gray-600">
-                    Complete as informações do seu negócio
-                  </p>
-                </div>
-              </div>
-
-              <div className="flex items-start gap-3">
-                <div className="bg-blue-100 text-blue-600 rounded-full w-6 h-6 flex items-center justify-center text-sm font-medium">
-                  4
-                </div>
-                <div>
-                  <p className="font-medium">Convide sua equipe</p>
-                  <p className="text-sm text-gray-600">
-                    Adicione usuários e defina suas permissões
-                  </p>
-                </div>
-              </div>
-
-              <div className="flex items-start gap-3">
-                <div className="bg-blue-100 text-blue-600 rounded-full w-6 h-6 flex items-center justify-center text-sm font-medium">
-                  5
-                </div>
-                <div>
-                  <p className="font-medium">Comece a usar!</p>
-                  <p className="text-sm text-gray-600">
-                    Explore todas as funcionalidades do ConnectHub
-                  </p>
-                </div>
-              </div>
-            </div>
-          </CardContent>
-        </Card>
-
-        {/* CTA para login */}
-        <div className="text-center">
+      <div className="space-y-4">
+        <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
           <Button
-            onClick={goToLogin}
-            size="lg"
-            className="bg-blue-600 hover:bg-blue-700 text-white px-8"
+            variant="outline"
+            onClick={handleBackToHome}
+            className="w-full"
           >
-            <ArrowRight className="mr-2 h-4 w-4" />
-            Fazer login agora
+            Voltar ao Início
           </Button>
+          {domain && (
+            <Button
+              onClick={handleGoToPlatform}
+              className="w-full bg-blue-600 hover:bg-blue-700"
+            >
+              Ver Informações do Tenant
+              <ArrowRight className="ml-2 h-4 w-4" />
+            </Button>
+          )}
         </div>
 
-        {/* Informações de suporte */}
-        <Card className="border-blue-200 bg-blue-50">
-          <CardContent className="pt-6">
-            <div className="text-center">
-              <p className="text-sm text-blue-700 mb-2">
-                <strong>Precisa de ajuda?</strong>
-              </p>
-              <p className="text-sm text-blue-600">
-                Nossa equipe de onboarding está pronta para ajudar você a começar.
-              </p>
-              <p className="text-sm text-blue-600 mt-1">
-                📧 suporte@connecthub.com | 📞 (11) 99999-9999
-              </p>
-            </div>
-          </CardContent>
-        </Card>
+        <div className="text-center">
+          <p className="text-sm text-gray-500">
+            Precisa de ajuda?{" "}
+            <a
+              href="mailto:suporte@connecthub.com"
+              className="text-blue-600 hover:text-blue-800"
+            >
+              Entre em contato conosco
+            </a>
+          </p>
+        </div>
       </div>
     </div>
   );
-}
+};
+
+export default SignupSuccessPage;
