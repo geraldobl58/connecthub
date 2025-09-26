@@ -7,17 +7,18 @@ import { cookieUtils } from "@/lib/cookies";
 
 import { loginAction, registerAction, getProfileAction } from "../actions/auth";
 import { LoginValues, RegisterValues } from "../schemas/auth";
+import { SignupValues } from "../schemas/signup";
+import { signupAction } from "../actions/signup";
 import { authService, User } from "@/services/auth.service";
 
 export const useAuth = () => {
   const router = useRouter();
   const queryClient = useQueryClient();
 
-  // Query para buscar o perfil do usuário
   const {
     data: user,
     isLoading: isLoadingUser,
-    error: profileError
+    error: profileError,
   } = useQuery<User>({
     queryKey: ["user"],
     queryFn: async () => {
@@ -25,7 +26,6 @@ export const useAuth = () => {
         const userData = await authService.getProfile();
         return userData;
       } catch (error) {
-        // Se erro 401, remover token
         if (authService.isAuthError(error)) {
           cookieUtils.removeToken();
         }
@@ -37,7 +37,6 @@ export const useAuth = () => {
     staleTime: 5 * 60 * 1000, // 5 minutos
   });
 
-  // Mutation para fazer login
   const loginMutation = useMutation({
     mutationFn: async (credentials: LoginValues) => {
       const result = await loginAction(credentials);
@@ -52,7 +51,6 @@ export const useAuth = () => {
     },
   });
 
-  // Mutation para fazer registro
   const registerMutation = useMutation({
     mutationFn: async (userData: RegisterValues) => {
       const result = await registerAction(userData);
@@ -62,11 +60,25 @@ export const useAuth = () => {
       return result.data!;
     },
     onSuccess: (data) => {
-      console.log("Usuário registrado:", data);
+      // Usuário registrado com sucesso
     },
   });
 
-  // Mutation para buscar perfil manualmente
+  const signupMutation = useMutation({
+    mutationFn: async (signupData: SignupValues) => {
+      const result = await signupAction(signupData);
+      if (!result.success) {
+        throw new Error(result.error || "Erro no signup");
+      }
+      return result.data!;
+    },
+    onSuccess: (data) => {
+      router.push(
+        `/signup/success?company=${encodeURIComponent(data.tenant.name)}&domain=${data.tenant.slug}&message=${encodeURIComponent(data.message)}`
+      );
+    },
+  });
+
   const profileMutation = useMutation({
     mutationFn: async () => {
       const result = await getProfileAction();
@@ -80,14 +92,12 @@ export const useAuth = () => {
     },
   });
 
-  // Função para fazer logout
   const logout = () => {
     cookieUtils.removeToken();
     queryClient.clear();
     router.push("/login");
   };
 
-  // Função para verificar se usuário tem permissão
   const hasPermission = (requiredRole: string): boolean => {
     if (!user) return false;
 
@@ -98,54 +108,47 @@ export const useAuth = () => {
       VIEWER: 1,
     };
 
-    const userRole = roleHierarchy[user.role as keyof typeof roleHierarchy] || 0;
-    const required = roleHierarchy[requiredRole as keyof typeof roleHierarchy] || 0;
+    const userRole =
+      roleHierarchy[user.role as keyof typeof roleHierarchy] || 0;
+    const required =
+      roleHierarchy[requiredRole as keyof typeof roleHierarchy] || 0;
 
     return userRole >= required;
   };
 
-  // Função para verificar se usuário pertence ao tenant
   const belongsToTenant = (tenantId: string): boolean => {
     return user?.tenantId === tenantId;
   };
 
   return {
-    // User data
     user,
     isAuthenticated: !!user,
     tenant: user?.tenant,
-
-    // Loading states
     isLoading: isLoadingUser || loginMutation.isPending,
     isLoadingLogin: loginMutation.isPending,
     isLoadingRegister: registerMutation.isPending,
     isLoadingProfile: profileMutation.isPending,
-
-    // Actions
+    isLoadingSignup: signupMutation.isPending,
     login: loginMutation.mutate,
     register: registerMutation.mutate,
+    signup: signupMutation.mutate,
     refreshProfile: profileMutation.mutate,
     logout,
-
-    // Errors
     loginError: loginMutation.error?.message,
     registerError: registerMutation.error?.message,
+    signupError: signupMutation.error?.message,
     profileError: profileError?.message || profileMutation.error?.message,
-
-    // Utilities
     hasPermission,
     belongsToTenant,
-
-    // Success states
     isLoginSuccess: loginMutation.isSuccess,
     isRegisterSuccess: registerMutation.isSuccess,
+    isSignupSuccess: signupMutation.isSuccess,
   };
 };
 
-// Hook específico para login
+// Hooks específicos para compatibilidade com componentes existentes
 export const useLogin = () => {
   const { login, isLoadingLogin, loginError, isLoginSuccess } = useAuth();
-
   return {
     login,
     isLoading: isLoadingLogin,
@@ -154,14 +157,23 @@ export const useLogin = () => {
   };
 };
 
-// Hook específico para registro
 export const useRegister = () => {
-  const { register, isLoadingRegister, registerError, isRegisterSuccess } = useAuth();
-
+  const { register, isLoadingRegister, registerError, isRegisterSuccess } =
+    useAuth();
   return {
     register,
     isLoading: isLoadingRegister,
     error: registerError,
     isSuccess: isRegisterSuccess,
+  };
+};
+
+export const useSignup = () => {
+  const { signup, isLoadingSignup, signupError, isSignupSuccess } = useAuth();
+  return {
+    signup,
+    isLoading: isLoadingSignup,
+    error: signupError,
+    isSuccess: isSignupSuccess,
   };
 };
