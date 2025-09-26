@@ -1,5 +1,6 @@
 import api from "@/lib/api";
 import { LoginValues, RegisterValues } from "../schemas/auth";
+import { SignupValues } from "../schemas/signup";
 
 // Response types matching API
 export interface LoginResponse {
@@ -23,6 +24,24 @@ export interface RegisterResponse {
   email: string;
   role: string;
   tenantId: string;
+}
+
+export interface SignupResponse {
+  success: boolean;
+  message: string;
+  tenant: {
+    id: string;
+    name: string;
+    slug: string;
+    plan: string;
+  };
+  user: {
+    id: string;
+    name: string;
+    email: string;
+    role: string;
+  };
+  temporaryPassword?: string;
 }
 
 export interface User {
@@ -68,7 +87,18 @@ export const authService = {
    * Registrar novo usuário
    */
   async register(userData: RegisterValues): Promise<RegisterResponse> {
-    const response = await api.post<RegisterResponse>("/auth/register", userData);
+    const response = await api.post<RegisterResponse>(
+      "/auth/register",
+      userData
+    );
+    return response.data;
+  },
+
+  /**
+   * Cadastrar nova empresa (signup)
+   */
+  async signup(signupData: SignupValues): Promise<SignupResponse> {
+    const response = await api.post<SignupResponse>("/auth/signup", signupData);
     return response.data;
   },
 
