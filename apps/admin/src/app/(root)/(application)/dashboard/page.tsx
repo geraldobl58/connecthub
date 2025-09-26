@@ -35,7 +35,6 @@ const DashboardPage = () => {
     setIsMounted(true);
   }, []);
 
-  // Aguardar hidratação antes de mostrar qualquer conteúdo baseado em estado
   if (!isMounted) {
     return (
       <div className="flex items-center justify-center min-h-screen">
@@ -102,7 +101,6 @@ const DashboardPage = () => {
   const confirmLogout = () => {
     setIsLoggingOut(true);
 
-    // Pequeno delay para mostrar o feedback visual
     setTimeout(() => {
       logout();
       setShowLogoutConfirm(false);
@@ -204,14 +202,12 @@ const DashboardPage = () => {
   const getAccessibleSections = () => {
     const sections = [];
 
-    // Todos podem ver dados básicos
     sections.push({
       title: "📊 Área Pessoal",
       description: "Seus dados e informações básicas",
       accessible: true,
     });
 
-    // AGENT ou superior
     if (hasPermission("AGENT")) {
       sections.push({
         title: "🎯 Área Operacional",
@@ -227,7 +223,6 @@ const DashboardPage = () => {
       });
     }
 
-    // MANAGER ou superior
     if (hasPermission("MANAGER")) {
       sections.push({
         title: "👥 Área Gerencial",
@@ -243,7 +238,6 @@ const DashboardPage = () => {
       });
     }
 
-    // Apenas ADMIN
     if (hasPermission("ADMIN")) {
       sections.push({
         title: "⚙️ Área Administrativa",
