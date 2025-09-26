@@ -150,4 +150,13 @@ export class AuthService {
       },
     };
   }
+
+  async getProfileWithPlan(tenantId: string) {
+    return this.prisma.subscription.findUnique({
+      where: { tenantId },
+      include: {
+        plan: true,
+      },
+    });
+  }
 }
