@@ -1,6 +1,7 @@
 "use server";
 
-import { authService, SignupResponse } from "@/services/auth.service";
+import { authHttpService, SignupResponse } from "@/http/auth";
+import { getErrorMessage } from "@/lib/error-utils";
 import { SignupValues, signupSchema } from "@/schemas/signup";
 import { ActionResult } from "./auth";
 
@@ -9,7 +10,7 @@ export async function signupAction(
 ): Promise<ActionResult<SignupResponse>> {
   try {
     const validatedData = signupSchema.parse(data);
-    const response = await authService.signup(validatedData);
+    const response = await authHttpService.signup(validatedData);
 
     return {
       success: true,
@@ -18,7 +19,7 @@ export async function signupAction(
   } catch (error: unknown) {
     return {
       success: false,
-      error: authService.getErrorMessage(error),
+      error: getErrorMessage(error),
     };
   }
 }
