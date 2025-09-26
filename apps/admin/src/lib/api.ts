@@ -22,9 +22,15 @@ api.interceptors.request.use(
   }
 );
 
-// Interceptor para tratar respostas de erro
+// Interceptor para tratar respostas e gerenciar tokens automaticamente
 api.interceptors.response.use(
-  (response) => response,
+  (response) => {
+    // Interceptar respostas de login/signup para salvar token automaticamente
+    if (response.data?.access_token) {
+      cookieUtils.setToken(response.data.access_token);
+    }
+    return response;
+  },
   (error) => {
     // Se receber 401, remover token inválido
     if (error.response?.status === 401) {
