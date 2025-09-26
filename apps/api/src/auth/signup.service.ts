@@ -116,6 +116,12 @@ export class SignupService {
       // Não falhar o signup se o email falhar, apenas logar o erro
     }
 
+    // Buscar a assinatura criada para obter a data de expiração
+    const subscription = await this.prisma.subscription.findUnique({
+      where: { tenantId: tenant.id },
+      include: { plan: true },
+    });
+
     return {
       success: true,
       message:
@@ -125,6 +131,11 @@ export class SignupService {
         name: tenant.name,
         slug: tenant.slug,
         plan: plan.name,
+        planExpiresAt:
+          subscription?.expiresAt?.toISOString() ||
+          new Date(Date.now() + 30 * 24 * 60 * 60 * 1000).toISOString(),
+        createdAt:
+          subscription?.startedAt?.toISOString() || new Date().toISOString(),
       },
       user: {
         id: user.id,
