@@ -24,6 +24,7 @@ import {
   TrendingUp,
 } from "lucide-react";
 import { useEffect, useState } from "react";
+import { PlanCounter } from "@/components/plan-counter";
 
 const DashboardPage = () => {
   const { user, isLoading, isAuthenticated, logout, hasPermission } = useAuth();
@@ -371,6 +372,40 @@ const DashboardPage = () => {
             </div>
           </CardContent>
         </Card>
+      </div>
+
+      {/* Plan Counter */}
+      <div className="grid grid-cols-1 lg:grid-cols-3 gap-6">
+        <div className="lg:col-span-1">
+          <PlanCounter />
+        </div>
+        <div className="lg:col-span-2">
+          {/* Placeholder para outros widgets */}
+          <Card>
+            <CardHeader>
+              <CardTitle className="text-lg flex items-center gap-2">
+                <BarChart3 className="h-5 w-5 text-blue-600" />
+                Resumo de Atividades
+              </CardTitle>
+            </CardHeader>
+            <CardContent>
+              <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
+                <div className="text-center p-4 bg-blue-50 rounded-lg">
+                  <div className="text-2xl font-bold text-blue-600">127</div>
+                  <div className="text-sm text-gray-600">Leads Este Mês</div>
+                </div>
+                <div className="text-center p-4 bg-green-50 rounded-lg">
+                  <div className="text-2xl font-bold text-green-600">32</div>
+                  <div className="text-sm text-gray-600">Conversões</div>
+                </div>
+                <div className="text-center p-4 bg-purple-50 rounded-lg">
+                  <div className="text-2xl font-bold text-purple-600">25%</div>
+                  <div className="text-sm text-gray-600">Taxa Conversão</div>
+                </div>
+              </div>
+            </CardContent>
+          </Card>
+        </div>
       </div>
 
       {/* Account Details */}
