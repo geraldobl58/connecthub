@@ -12,25 +12,23 @@ export class PrismaService
   implements OnModuleInit, OnModuleDestroy
 {
   constructor() {
-    super({ log: ['query', 'info', 'warn', 'error'] });
+    super();
   }
 
   async onModuleInit() {
     try {
       await this.$connect();
-      console.log('✅ Prisma connected');
     } catch (error) {
-      console.error('❌ Prisma connection error:', error);
-      // rethrow if you want to fail fast
+      console.error('Prisma connection error:', error);
+      throw error;
     }
   }
 
   async onModuleDestroy() {
     try {
       await this.$disconnect();
-      console.log('✅ Prisma disconnected');
     } catch (error) {
-      console.error('❌ Prisma disconnect error:', error);
+      console.error('Prisma disconnect error:', error);
     }
   }
 
