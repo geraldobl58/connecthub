@@ -205,28 +205,6 @@ const TenantInfoPage = () => {
           <ArrowRight className="h-4 w-4" />
         </Button>
       </div>
-
-      {/* Debug Info */}
-      <div className="mt-8 p-4 bg-gray-50 rounded-lg border">
-        <h3 className="font-medium text-gray-900 mb-2">
-          🔧 Informações de Debug
-        </h3>
-        <div className="text-sm text-gray-600 space-y-1">
-          <p>
-            <strong>Tenant ID:</strong> {tenant || "Não especificado"}
-          </p>
-          <p>
-            <strong>URL Atual:</strong>{" "}
-            {typeof window !== "undefined" ? window.location.href : "N/A"}
-          </p>
-          <p>
-            <strong>Email Status:</strong> Configurado para Mailtrap (sandbox)
-          </p>
-          <p>
-            <strong>Ambiente:</strong> Desenvolvimento Local
-          </p>
-        </div>
-      </div>
     </div>
   );
 };
