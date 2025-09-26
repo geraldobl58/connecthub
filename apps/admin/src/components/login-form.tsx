@@ -42,7 +42,6 @@ export const LoginForm = ({
     },
   });
 
-  // Preencher campos com parâmetros da URL
   useEffect(() => {
     const emailParam = searchParams.get("email");
     const tenantParam = searchParams.get("tenant");
@@ -60,21 +59,22 @@ export const LoginForm = ({
   };
 
   const onSubmit = async (data: LoginValues) => {
-    // Remover tenantId se estiver vazio
     const cleanedData: LoginValues = {
       email: data.email,
       password: data.password,
     };
 
-    // Só adicionar tenantId se não estiver vazio
-    if (data.tenantId && data.tenantId.trim() && data.tenantId.trim() !== "$undefined") {
+    if (
+      data.tenantId &&
+      data.tenantId.trim() &&
+      data.tenantId.trim() !== "$undefined"
+    ) {
       cleanedData.tenantId = data.tenantId.trim();
     }
 
     try {
       await login(cleanedData);
 
-      // Aguardar um pouco para o cookie ser salvo
       setTimeout(() => {
         if (onSuccess) {
           onSuccess();
@@ -82,28 +82,76 @@ export const LoginForm = ({
           router.push("/dashboard");
         }
       }, 500);
-    } catch (error) {
-      // Error é tratado pelo hook
-    }
+    } catch (error) {}
   };
 
   // Valores para demo - Organizados por tenant e role
   const demoCredentials = [
     // Empresa Demo - Usuários completos
-    { email: "admin@empresa-demo.com", tenant: "empresa-demo", role: "Admin", level: "🔴 Nível 4" },
-    { email: "manager@empresa-demo.com", tenant: "empresa-demo", role: "Manager", level: "🔵 Nível 3" },
-    { email: "agent@empresa-demo.com", tenant: "empresa-demo", role: "Agent", level: "🟢 Nível 2" },
-    { email: "viewer@empresa-demo.com", tenant: "empresa-demo", role: "Viewer", level: "🔘 Nível 1" },
+    {
+      email: "admin@empresa-demo.com",
+      tenant: "empresa-demo",
+      role: "Admin",
+      level: "🔴 Nível 4",
+    },
+    {
+      email: "manager@empresa-demo.com",
+      tenant: "empresa-demo",
+      role: "Manager",
+      level: "🔵 Nível 3",
+    },
+    {
+      email: "agent@empresa-demo.com",
+      tenant: "empresa-demo",
+      role: "Agent",
+      level: "🟢 Nível 2",
+    },
+    {
+      email: "viewer@empresa-demo.com",
+      tenant: "empresa-demo",
+      role: "Viewer",
+      level: "🔘 Nível 1",
+    },
 
     // Imobiliária ABC - Estrutura enxuta
-    { email: "admin@imobiliaria-abc.com", tenant: "imobiliaria-abc", role: "Admin", level: "🔴 Nível 4" },
-    { email: "maria@imobiliaria-abc.com", tenant: "imobiliaria-abc", role: "Agent", level: "🟢 Nível 2" },
+    {
+      email: "admin@imobiliaria-abc.com",
+      tenant: "imobiliaria-abc",
+      role: "Admin",
+      level: "🔴 Nível 4",
+    },
+    {
+      email: "maria@imobiliaria-abc.com",
+      tenant: "imobiliaria-abc",
+      role: "Agent",
+      level: "🟢 Nível 2",
+    },
 
     // Tech Solutions Corp - Equipe de desenvolvimento
-    { email: "admin@tech-solutions.com", tenant: "tech-solutions", role: "CTO", level: "🔴 Nível 4" },
-    { email: "manager@tech-solutions.com", tenant: "tech-solutions", role: "PM", level: "🔵 Nível 3" },
-    { email: "dev.senior@tech-solutions.com", tenant: "tech-solutions", role: "Dev Sr", level: "🟢 Nível 2" },
-    { email: "estagiario@tech-solutions.com", tenant: "tech-solutions", role: "Estagiário", level: "🔘 Nível 1" },
+    {
+      email: "admin@tech-solutions.com",
+      tenant: "tech-solutions",
+      role: "CTO",
+      level: "🔴 Nível 4",
+    },
+    {
+      email: "manager@tech-solutions.com",
+      tenant: "tech-solutions",
+      role: "PM",
+      level: "🔵 Nível 3",
+    },
+    {
+      email: "dev.senior@tech-solutions.com",
+      tenant: "tech-solutions",
+      role: "Dev Sr",
+      level: "🟢 Nível 2",
+    },
+    {
+      email: "estagiario@tech-solutions.com",
+      tenant: "tech-solutions",
+      role: "Estagiário",
+      level: "🔘 Nível 1",
+    },
   ];
 
   return (
@@ -210,44 +258,51 @@ export const LoginForm = ({
 
           <div className="space-y-3 max-h-64 overflow-y-auto">
             {/* Agrupar por tenant */}
-            {["empresa-demo", "imobiliaria-abc", "tech-solutions"].map((tenant) => {
-              const tenantCreds = demoCredentials.filter(cred => cred.tenant === tenant);
-              const tenantNames = {
-                "empresa-demo": "🏢 Empresa Demo",
-                "imobiliaria-abc": "🏠 Imobiliária ABC",
-                "tech-solutions": "💻 Tech Solutions"
-              };
+            {["empresa-demo", "imobiliaria-abc", "tech-solutions"].map(
+              (tenant) => {
+                const tenantCreds = demoCredentials.filter(
+                  (cred) => cred.tenant === tenant
+                );
+                const tenantNames = {
+                  "empresa-demo": "🏢 Empresa Demo",
+                  "imobiliaria-abc": "🏠 Imobiliária ABC",
+                  "tech-solutions": "💻 Tech Solutions",
+                };
 
-              return (
-                <div key={tenant} className="mb-4">
-                  <h5 className="text-xs font-medium text-gray-600 mb-2">
-                    {tenantNames[tenant as keyof typeof tenantNames]}
-                  </h5>
-                  <div className="space-y-2 pl-2">
-                    {tenantCreds.map((cred, index) => (
-                      <div key={index} className="text-xs">
-                        <div className="font-mono bg-white p-2 rounded border border-gray-200 shadow-sm">
-                          {cred.email}
+                return (
+                  <div key={tenant} className="mb-4">
+                    <h5 className="text-xs font-medium text-gray-600 mb-2">
+                      {tenantNames[tenant as keyof typeof tenantNames]}
+                    </h5>
+                    <div className="space-y-2 pl-2">
+                      {tenantCreds.map((cred, index) => (
+                        <div key={index} className="text-xs">
+                          <div className="font-mono bg-white p-2 rounded border border-gray-200 shadow-sm">
+                            {cred.email}
+                          </div>
+                          <div className="text-gray-500 mt-1 flex items-center justify-between">
+                            <span>{cred.role}</span>
+                            <span className="text-xs">{cred.level}</span>
+                          </div>
                         </div>
-                        <div className="text-gray-500 mt-1 flex items-center justify-between">
-                          <span>{cred.role}</span>
-                          <span className="text-xs">{cred.level}</span>
-                        </div>
-                      </div>
-                    ))}
+                      ))}
+                    </div>
                   </div>
-                </div>
-              );
-            })}
+                );
+              }
+            )}
           </div>
 
           <div className="mt-4 p-3 bg-white rounded border border-blue-200">
             <div className="text-xs text-blue-700 flex items-center gap-2">
               <strong>🔑 Senha para todos:</strong>{" "}
-              <code className="bg-blue-100 px-2 py-1 rounded font-mono">Demo123!</code>
+              <code className="bg-blue-100 px-2 py-1 rounded font-mono">
+                Demo123!
+              </code>
             </div>
             <div className="text-xs text-blue-600 mt-1">
-              💡 Teste diferentes roles para ver permissões distintas no dashboard
+              💡 Teste diferentes roles para ver permissões distintas no
+              dashboard
             </div>
           </div>
         </div>
