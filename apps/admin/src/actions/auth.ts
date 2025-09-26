@@ -1,12 +1,8 @@
 "use server";
 
-import {
-  authService,
-  LoginResponse,
-  RegisterResponse,
-  User,
-} from "@/services/auth.service";
-import { LoginValues, RegisterValues } from "../schemas/auth";
+import { authHttpService, LoginResponse, User } from "@/http/auth";
+import { LoginValues } from "../schemas/auth";
+import { getErrorMessage } from "@/lib/error-utils";
 
 export interface ActionResult<T = unknown> {
   success: boolean;
@@ -17,7 +13,7 @@ export async function loginAction(
   credentials: LoginValues
 ): Promise<ActionResult<LoginResponse>> {
   try {
-    const response = await authService.login(credentials);
+    const response = await authHttpService.login(credentials);
 
     return {
       success: true,
@@ -26,32 +22,14 @@ export async function loginAction(
   } catch (error: unknown) {
     return {
       success: false,
-      error: authService.getErrorMessage(error),
-    };
-  }
-}
-
-export async function registerAction(
-  userData: RegisterValues
-): Promise<ActionResult<RegisterResponse>> {
-  try {
-    const response = await authService.register(userData);
-
-    return {
-      success: true,
-      data: response,
-    };
-  } catch (error: unknown) {
-    return {
-      success: false,
-      error: authService.getErrorMessage(error),
+      error: getErrorMessage(error),
     };
   }
 }
 
 export async function getProfileAction(): Promise<ActionResult<User>> {
   try {
-    const user = await authService.getProfile();
+    const user = await authHttpService.getProfile();
 
     return {
       success: true,
@@ -60,7 +38,7 @@ export async function getProfileAction(): Promise<ActionResult<User>> {
   } catch (error: unknown) {
     return {
       success: false,
-      error: authService.getErrorMessage(error),
+      error: getErrorMessage(error),
     };
   }
 }
