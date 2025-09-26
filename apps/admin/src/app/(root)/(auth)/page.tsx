@@ -2,18 +2,22 @@
 
 import { useRouter } from "next/navigation";
 import { Button } from "@/components/ui/button";
-import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card";
+import {
+  Card,
+  CardContent,
+  CardDescription,
+  CardHeader,
+  CardTitle,
+} from "@/components/ui/card";
 import { Building2, LogIn, UserPlus, ArrowRight } from "lucide-react";
 
-export default function AuthHomePage() {
+const AuthHomePage = () => {
   const router = useRouter();
 
   return (
     <div className="container mx-auto px-4 py-8 max-w-4xl">
       <div className="text-center mb-12">
-        <h1 className="text-4xl font-bold text-gray-900 mb-4">
-          ConnectHub
-        </h1>
+        <h1 className="text-4xl font-bold text-gray-900 mb-4">ConnectHub</h1>
         <p className="text-xl text-gray-600">
           Plataforma CRM Multi-Tenant para empresas modernas
         </p>
@@ -21,7 +25,10 @@ export default function AuthHomePage() {
 
       <div className="grid grid-cols-1 md:grid-cols-2 gap-8 mb-12">
         {/* Card de Login */}
-        <Card className="hover:shadow-lg transition-shadow cursor-pointer" onClick={() => router.push("/login")}>
+        <Card
+          className="hover:shadow-lg transition-shadow cursor-pointer"
+          onClick={() => router.push("/login")}
+        >
           <CardHeader className="text-center">
             <div className="flex justify-center mb-4">
               <div className="bg-blue-100 rounded-full p-3">
@@ -29,9 +36,7 @@ export default function AuthHomePage() {
               </div>
             </div>
             <CardTitle className="text-2xl">Fazer Login</CardTitle>
-            <CardDescription>
-              Entre na sua conta existente
-            </CardDescription>
+            <CardDescription>Entre na sua conta existente</CardDescription>
           </CardHeader>
           <CardContent>
             <div className="space-y-3 text-sm text-gray-600">
@@ -53,7 +58,10 @@ export default function AuthHomePage() {
         </Card>
 
         {/* Card de Assinatura */}
-        <Card className="hover:shadow-lg transition-shadow cursor-pointer" onClick={() => router.push("/signup")}>
+        <Card
+          className="hover:shadow-lg transition-shadow cursor-pointer"
+          onClick={() => router.push("/signup")}
+        >
           <CardHeader className="text-center">
             <div className="flex justify-center mb-4">
               <div className="bg-green-100 rounded-full p-3">
@@ -61,9 +69,7 @@ export default function AuthHomePage() {
               </div>
             </div>
             <CardTitle className="text-2xl">Assinar Agora</CardTitle>
-            <CardDescription>
-              Comece sua jornada no ConnectHub
-            </CardDescription>
+            <CardDescription>Comece sua jornada no ConnectHub</CardDescription>
           </CardHeader>
           <CardContent>
             <div className="space-y-3 text-sm text-gray-600">
@@ -101,21 +107,27 @@ export default function AuthHomePage() {
               <Building2 className="h-8 w-8 text-purple-600 mx-auto mb-2" />
               <h3 className="font-medium text-purple-800">Empresa Demo</h3>
               <p className="text-sm text-purple-600 mb-3">empresa-demo</p>
-              <p className="text-xs text-purple-500">4 usuários • Todas as roles</p>
+              <p className="text-xs text-purple-500">
+                4 usuários • Todas as roles
+              </p>
             </div>
 
             <div className="text-center p-4 bg-white rounded-lg border border-purple-200">
               <Building2 className="h-8 w-8 text-purple-600 mx-auto mb-2" />
               <h3 className="font-medium text-purple-800">Imobiliária ABC</h3>
               <p className="text-sm text-purple-600 mb-3">imobiliaria-abc</p>
-              <p className="text-xs text-purple-500">3 usuários • Estrutura enxuta</p>
+              <p className="text-xs text-purple-500">
+                3 usuários • Estrutura enxuta
+              </p>
             </div>
 
             <div className="text-center p-4 bg-white rounded-lg border border-purple-200">
               <Building2 className="h-8 w-8 text-purple-600 mx-auto mb-2" />
               <h3 className="font-medium text-purple-800">Tech Solutions</h3>
               <p className="text-sm text-purple-600 mb-3">tech-solutions</p>
-              <p className="text-xs text-purple-500">5 usuários • Equipe completa</p>
+              <p className="text-xs text-purple-500">
+                5 usuários • Equipe completa
+              </p>
             </div>
           </div>
 
@@ -171,4 +183,6 @@ export default function AuthHomePage() {
       </div>
     </div>
   );
-}
+};
+
+export default AuthHomePage;
