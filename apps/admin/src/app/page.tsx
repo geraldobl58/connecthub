@@ -11,16 +11,12 @@ export default function HomePage() {
   useEffect(() => {
     if (!isLoading) {
       if (isAuthenticated) {
-        // Se estiver logado, vai para o dashboard
         router.push("/dashboard");
       } else {
-        // Se não estiver logado, vai para a página de auth
         router.push("/login");
       }
     }
   }, [isAuthenticated, isLoading, router]);
-
-  // Mostra loading enquanto verifica autenticação
   return (
     <div className="flex items-center justify-center min-h-screen">
       <div className="text-center">
