@@ -13,7 +13,6 @@ interface JwtPayload {
   };
 }
 
-
 const JWT_SECRET = new TextEncoder().encode(
   process.env.JWT_SECRET || "your-secret-key"
 );
@@ -22,8 +21,6 @@ async function verifyToken(token: string): Promise<JwtPayload | null> {
   try {
     const { payload } = await jwtVerify(token, JWT_SECRET);
 
-    // Validate that payload has required properties
-    // A API usa 'sub' para userId
     const userId = payload.sub || payload.userId;
     if (
       typeof userId === "string" &&
@@ -56,8 +53,10 @@ export async function middleware(request: NextRequest) {
   const token = request.cookies.get("auth-token")?.value;
   const user = token ? await verifyToken(token) : null;
 
-  // Allow public routes without authentication
-  if (publicRoutes.includes(pathname) || publicRoutes.some(route => pathname.startsWith(route))) {
+  if (
+    publicRoutes.includes(pathname) ||
+    publicRoutes.some((route) => pathname.startsWith(route))
+  ) {
     return NextResponse.next();
   }
 
