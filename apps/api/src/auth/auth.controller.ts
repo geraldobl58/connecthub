@@ -176,6 +176,9 @@ export class AuthController {
           id: 'tenant-uuid',
           name: 'My Company',
           slug: 'my-company',
+          plan: 'PROFESSIONAL',
+          planExpiresAt: '2024-02-15T10:30:00Z',
+          createdAt: '2024-01-15T10:30:00Z',
         },
       },
     },
@@ -184,7 +187,21 @@ export class AuthController {
     status: 401,
     description: 'Unauthorized - Invalid or missing token',
   })
-  getProfile(@GetCurrentUser() user: CurrentUser) {
-    return user;
+  async getProfile(@GetCurrentUser() user: CurrentUser) {
+    // Buscar dados do plano
+    const subscription = await this.service.getProfileWithPlan(user.tenantId);
+
+    return {
+      ...user,
+      tenant: {
+        ...user.tenant,
+        plan: subscription?.plan?.name || 'STARTER',
+        planExpiresAt:
+          subscription?.expiresAt?.toISOString() ||
+          new Date(Date.now() + 30 * 24 * 60 * 60 * 1000).toISOString(),
+        createdAt:
+          subscription?.startedAt?.toISOString() || new Date().toISOString(),
+      },
+    };
   }
 }
