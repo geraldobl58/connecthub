@@ -65,11 +65,28 @@ export class AuthService {
   }
 
   async login(email: string, password: string, tenantId?: string) {
-    const user = tenantId
+    // Primeiro, verificar se o tenant existe quando informado e obter o ID real
+    let actualTenantId = tenantId;
+    if (tenantId) {
+      const tenantExists = await this.prisma.tenant.findFirst({
+        where: {
+          OR: [{ id: tenantId }, { slug: tenantId }],
+        },
+      });
+
+      if (!tenantExists) {
+        throw new UnauthorizedException('Invalid credentials');
+      }
+
+      // Usar o ID real do tenant para a busca do usuário
+      actualTenantId = tenantExists.id;
+    }
+
+    const user = actualTenantId
       ? await this.prisma.user.findUnique({
           where: {
             tenantId_email: {
-              tenantId,
+              tenantId: actualTenantId,
               email,
             },
             deletedAt: null,
