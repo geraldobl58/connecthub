@@ -4,12 +4,13 @@ import { useMutation, useQuery, useQueryClient } from "@tanstack/react-query";
 import { useRouter } from "next/navigation";
 
 import { cookieUtils } from "@/lib/cookies";
+import { isAuthError } from "@/lib/error-utils";
 
-import { loginAction, registerAction, getProfileAction } from "../actions/auth";
-import { LoginValues, RegisterValues } from "../schemas/auth";
+import { loginAction, getProfileAction } from "../actions/auth";
+import { LoginValues } from "../schemas/auth";
 import { SignupValues } from "../schemas/signup";
 import { signupAction } from "../actions/signup";
-import { authService, User } from "@/services/auth.service";
+import { authHttpService, User } from "@/http/auth";
 
 export const useAuth = () => {
   const router = useRouter();
@@ -23,10 +24,10 @@ export const useAuth = () => {
     queryKey: ["user"],
     queryFn: async () => {
       try {
-        const userData = await authService.getProfile();
+        const userData = await authHttpService.getProfile();
         return userData;
       } catch (error) {
-        if (authService.isAuthError(error)) {
+        if (isAuthError(error)) {
           cookieUtils.removeToken();
         }
         throw error;
@@ -46,21 +47,11 @@ export const useAuth = () => {
       return result.data!;
     },
     onSuccess: (data) => {
-      cookieUtils.setToken(data.access_token);
-      queryClient.invalidateQueries({ queryKey: ["user"] });
-    },
-  });
-
-  const registerMutation = useMutation({
-    mutationFn: async (userData: RegisterValues) => {
-      const result = await registerAction(userData);
-      if (!result.success) {
-        throw new Error(result.error || "Erro no registro");
+      // Salvar token manualmente (Server Actions não passam pelo interceptor)
+      if (data.access_token) {
+        cookieUtils.setToken(data.access_token);
       }
-      return result.data!;
-    },
-    onSuccess: (data) => {
-      // Usuário registrado com sucesso
+      queryClient.invalidateQueries({ queryKey: ["user"] });
     },
   });
 
@@ -126,22 +117,18 @@ export const useAuth = () => {
     tenant: user?.tenant,
     isLoading: isLoadingUser || loginMutation.isPending,
     isLoadingLogin: loginMutation.isPending,
-    isLoadingRegister: registerMutation.isPending,
     isLoadingProfile: profileMutation.isPending,
     isLoadingSignup: signupMutation.isPending,
     login: loginMutation.mutate,
-    register: registerMutation.mutate,
     signup: signupMutation.mutate,
     refreshProfile: profileMutation.mutate,
     logout,
     loginError: loginMutation.error?.message,
-    registerError: registerMutation.error?.message,
     signupError: signupMutation.error?.message,
     profileError: profileError?.message || profileMutation.error?.message,
     hasPermission,
     belongsToTenant,
     isLoginSuccess: loginMutation.isSuccess,
-    isRegisterSuccess: registerMutation.isSuccess,
     isSignupSuccess: signupMutation.isSuccess,
   };
 };
@@ -154,17 +141,6 @@ export const useLogin = () => {
     isLoading: isLoadingLogin,
     error: loginError,
     isSuccess: isLoginSuccess,
-  };
-};
-
-export const useRegister = () => {
-  const { register, isLoadingRegister, registerError, isRegisterSuccess } =
-    useAuth();
-  return {
-    register,
-    isLoading: isLoadingRegister,
-    error: registerError,
-    isSuccess: isRegisterSuccess,
   };
 };
 
