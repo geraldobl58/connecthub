@@ -10,8 +10,8 @@ import { ArrowRight } from "lucide-react";
 import { signupSchema, SignupValues } from "@/schemas/signup";
 import { useSignup } from "@/hooks/auth";
 import { plans } from "@/data/plans";
-import { PlanCard } from "@/components/signup/PlanCard";
-import { CompanyForm } from "@/components/signup/CompanyForm";
+import { PlanCard } from "@/components/plan-card";
+import { CompanyForm } from "@/components/company-form";
 
 const SignupPage = () => {
   const [selectedPlan, setSelectedPlan] = useState("PROFESSIONAL");
