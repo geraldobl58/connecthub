@@ -33,7 +33,7 @@ export const LoginForm = ({
     handleSubmit,
     formState: { errors },
     setValue,
-  } = useForm<LoginValues>({
+  } = useForm({
     resolver: zodResolver(loginSchema),
     defaultValues: {
       email: "",
@@ -58,8 +58,12 @@ export const LoginForm = ({
     setShowPassword(!showPassword);
   };
 
-  const onSubmit = async (data: LoginValues) => {
-    const cleanedData: LoginValues = {
+  const onSubmit = async (data: {
+    email: string;
+    password: string;
+    tenantId?: string;
+  }) => {
+    const cleanedData: Partial<LoginValues> = {
       email: data.email,
       password: data.password,
     };
@@ -73,7 +77,7 @@ export const LoginForm = ({
     }
 
     try {
-      await login(cleanedData);
+      await login(cleanedData as LoginValues);
 
       setTimeout(() => {
         if (onSuccess) {
@@ -82,7 +86,9 @@ export const LoginForm = ({
           router.push("/dashboard");
         }
       }, 500);
-    } catch (error) {}
+    } catch {
+      // Erros são tratados pelo hook useLogin
+    }
   };
 
   // Valores para demo - Organizados por tenant e role
