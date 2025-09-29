@@ -22,10 +22,13 @@ import {
   CollapsibleTrigger,
 } from "@/components/ui/collapsible";
 import { Logo } from "./logo";
-import { NavItem, mainItems } from "./app-sidebar-nav-links";
+import { mainItems } from "./app-sidebar-nav-links";
+import { usePermissions } from "@/hooks/use-permissions";
+import { NavItem } from "@/types/permissions";
 
 export const AppSidebarLinks = () => {
   const pathname = usePathname();
+  const { hasPermission } = usePermissions();
 
   const isActive = (url: string): boolean => {
     // Ignora URLs que são apenas "#" (placeholders)
@@ -64,6 +67,52 @@ export const AppSidebarLinks = () => {
       // Verifica se algum subitem está ativo
       return isActive(subitem.url);
     });
+  };
+
+  // Função para verificar se o usuário tem permissão para um item
+  const hasItemPermission = (item: NavItem): boolean => {
+    // Se não há permissão definida, o item é acessível para todos
+    if (!item.permission) return true;
+
+    return hasPermission(item.permission.resource, item.permission.action);
+  };
+
+  // Função para verificar se o usuário tem permissão para um subitem
+  const hasSubitemPermission = (
+    subitem: NonNullable<NavItem["subitems"]>[0]
+  ): boolean => {
+    // Se não há permissão definida, o subitem é acessível para todos
+    if (!subitem.permission) return true;
+
+    return hasPermission(
+      subitem.permission.resource,
+      subitem.permission.action
+    );
+  };
+
+  // Função para filtrar itens baseado nas permissões
+  const filterItemsByPermissions = (items: NavItem[]): NavItem[] => {
+    return items
+      .filter(hasItemPermission)
+      .map((item) => {
+        // Se o item tem subitems, filtra os subitems também
+        if (item.subitems) {
+          const filteredSubitems = item.subitems.filter(hasSubitemPermission);
+
+          // Se não há subitems visíveis, não mostra o item principal
+          if (filteredSubitems.length === 0) {
+            return null;
+          }
+
+          return {
+            ...item,
+            subitems: filteredSubitems,
+          };
+        }
+
+        return item;
+      })
+      .filter((item): item is NavItem => item !== null);
   };
 
   const getNavItemClasses = (item: NavItem) => {
@@ -158,7 +207,7 @@ export const AppSidebarLinks = () => {
         <SidebarGroupLabel>Administração</SidebarGroupLabel>
         <SidebarGroupContent>
           <SidebarMenu>
-            {mainItems.map((item) => (
+            {filterItemsByPermissions(mainItems).map((item) => (
               <SidebarMenuItem key={item.title} className="mb-2">
                 {renderNavItem(item)}
               </SidebarMenuItem>
