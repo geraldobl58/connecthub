@@ -2,7 +2,8 @@
 
 import { ReactNode } from "react";
 import { useAuth } from "@/hooks/auth";
-import { PermissionManager, Role } from "@/lib/permissions";
+import { PermissionManager } from "@/lib/permissions";
+import { Role } from "@/types/permissions";
 
 interface PermissionGuardProps {
   children: ReactNode;
