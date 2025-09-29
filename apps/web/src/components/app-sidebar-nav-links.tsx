@@ -1,140 +1,61 @@
 import {
   Binoculars,
-  BookOpen,
-  Briefcase,
   Calendar,
-  Calendar1Icon,
-  Car,
   CarFront,
   ChartPie,
   CirclePlus,
-  DollarSign,
-  Dumbbell,
-  Gavel,
-  HandHelping,
   Headset,
   Home,
-  Hourglass,
-  ImagePlus,
   Layers,
-  Megaphone,
-  Percent,
-  SearchCheck,
+  MessageSquare,
   Settings,
+  StickyNote,
+  Tag,
   TrendingUp,
+  Users,
   WalletMinimal,
+  Workflow,
 } from "lucide-react";
 
-export interface SubItem {
-  title: string;
-  url: string;
-  icon: React.ComponentType<{ className?: string }>;
-}
+import { NavItem, PERMISSIONS } from "@/types/permissions";
 
-export interface NavItem {
-  title: string;
-  url: string;
-  icon: React.ComponentType<{ className?: string }>;
-  items?: React.ReactNode;
-  subitems?: SubItem[];
-}
-
-// Seção Plataforma
-export const platformItems: NavItem[] = [
-  {
-    title: "Parque infantil",
-    url: "/playground",
-    icon: Home,
-  },
-  {
-    title: "Modelos",
-    url: "/models",
-    icon: Briefcase,
-  },
-  {
-    title: "Documentação",
-    url: "/docs",
-    icon: BookOpen,
-  },
-  {
-    title: "Configurações",
-    url: "/settings",
-    icon: Settings,
-  },
-];
-
-// Seção Projetos
-export const projectItems: NavItem[] = [
-  {
-    title: "# Engenharia de Design",
-    url: "/projects/design-engineering",
-    icon: Home,
-  },
-  {
-    title: "Vendas e Marketing",
-    url: "/projects/sales-marketing",
-    icon: TrendingUp,
-    subitems: [
-      {
-        title: "Dashboard",
-        url: "/dashboard",
-        icon: Home,
-      },
-      {
-        title: "Veículos",
-        url: "/vehicles",
-        icon: Car,
-      },
-      {
-        title: "Gestão de Leads",
-        url: "/leads",
-        icon: Headset,
-      },
-      {
-        title: "Agenda de Test Drives",
-        url: "/test-drives",
-        icon: CarFront,
-      },
-      {
-        title: "Propostas e Vendas",
-        url: "/sales",
-        icon: WalletMinimal,
-      },
-      {
-        title: "Relatórios",
-        url: "/reports",
-        icon: ChartPie,
-      },
-    ],
-  },
-];
-
-// Manter os itens originais para compatibilidade
+// Menu baseado no schema do Prisma
 export const mainItems: NavItem[] = [
   {
     title: "Dashboard",
     url: "/dashboard",
     icon: Home,
+    // Dashboard é acessível para todos os usuários autenticados
   },
   {
-    title: "Gestão de Leads",
+    title: "Leads",
     url: "/leads",
     icon: Headset,
+    permission: PERMISSIONS.LEADS_READ,
     subitems: [
       {
-        title: "Cadastro",
+        title: "Listar Leads",
+        url: "/leads",
+        icon: Binoculars,
+        permission: PERMISSIONS.LEADS_READ,
+      },
+      {
+        title: "Novo Lead",
         url: "/leads/new",
         icon: CirclePlus,
+        permission: PERMISSIONS.LEADS_CREATE,
       },
       {
-        title: "Visualizar",
-        url: "/leads/list",
-        icon: Binoculars,
+        title: "Pipeline",
+        url: "/leads/pipeline",
+        icon: Workflow,
+        permission: PERMISSIONS.LEADS_READ,
       },
       {
-        title: "Buscar Leads",
-        url: "/leads/search",
-        icon: SearchCheck,
+        title: "Tags",
+        url: "/leads/tags",
+        icon: Tag,
+        permission: PERMISSIONS.LEADS_READ,
       },
     ],
   },
@@ -142,43 +63,99 @@ export const mainItems: NavItem[] = [
     title: "Imóveis",
     url: "/properties",
     icon: CarFront,
+    permission: PERMISSIONS.PROPERTIES_READ,
     subitems: [
       {
-        title: "Buscar Imóveis",
-        url: "/properties/list",
-        icon: Megaphone,
+        title: "Listar Imóveis",
+        url: "/properties",
+        icon: Binoculars,
+        permission: PERMISSIONS.PROPERTIES_READ,
       },
       {
-        title: "Novo",
+        title: "Novo Imóvel",
         url: "/properties/new",
-        icon: Calendar,
+        icon: CirclePlus,
+        permission: PERMISSIONS.PROPERTIES_CREATE,
       },
       {
-        title: "Visualizar",
-        url: "/properties/list",
-        icon: Calendar1Icon,
+        title: "Proprietários",
+        url: "/properties/owners",
+        icon: Users,
+        permission: PERMISSIONS.PROPERTIES_READ,
       },
     ],
   },
   {
-    title: "Propostas e Vendas",
-    url: "/sales",
+    title: "Negócios",
+    url: "/deals",
     icon: WalletMinimal,
+    permission: PERMISSIONS.DEALS_READ,
     subitems: [
       {
-        title: "Registros",
-        url: "/sales/records",
-        icon: HandHelping,
+        title: "Listar Negócios",
+        url: "/deals",
+        icon: Binoculars,
+        permission: PERMISSIONS.DEALS_READ,
       },
       {
-        title: "Propostas",
-        url: "/sales/proposals",
-        icon: TrendingUp,
+        title: "Novo Negócio",
+        url: "/deals/new",
+        icon: CirclePlus,
+        permission: PERMISSIONS.DEALS_CREATE,
+      },
+    ],
+  },
+  {
+    title: "Tarefas",
+    url: "/tasks",
+    icon: Calendar,
+    permission: PERMISSIONS.TASKS_READ,
+    subitems: [
+      {
+        title: "Listar Tarefas",
+        url: "/tasks",
+        icon: Binoculars,
+        permission: PERMISSIONS.TASKS_READ,
       },
       {
-        title: "Vendas",
-        url: "/sales/sales",
-        icon: Gavel,
+        title: "Nova Tarefa",
+        url: "/tasks/new",
+        icon: CirclePlus,
+        permission: PERMISSIONS.TASKS_CREATE,
+      },
+    ],
+  },
+  {
+    title: "WhatsApp",
+    url: "/whatsapp",
+    icon: MessageSquare,
+    permission: PERMISSIONS.LEADS_READ, // Usando permissão de leads para mensagens
+    subitems: [
+      {
+        title: "Mensagens",
+        url: "/whatsapp/messages",
+        icon: MessageSquare,
+        permission: PERMISSIONS.LEADS_READ,
+      },
+      {
+        title: "Configurações",
+        url: "/whatsapp/settings",
+        icon: Settings,
+        permission: PERMISSIONS.SETTINGS_UPDATE,
+      },
+    ],
+  },
+  {
+    title: "Notas",
+    url: "/notes",
+    icon: StickyNote,
+    permission: PERMISSIONS.LEADS_READ, // Notas podem estar relacionadas a leads, properties, etc.
+    subitems: [
+      {
+        title: "Todas as Notas",
+        url: "/notes",
+        icon: StickyNote,
+        permission: PERMISSIONS.LEADS_READ,
       },
     ],
   },
@@ -186,43 +163,63 @@ export const mainItems: NavItem[] = [
     title: "Relatórios",
     url: "/reports",
     icon: ChartPie,
+    permission: PERMISSIONS.REPORTS_READ,
     subitems: [
       {
-        title: "Vendedores",
-        url: "/reports/sellers",
-        icon: Percent,
+        title: "Vendas",
+        url: "/reports/sales",
+        icon: TrendingUp,
+        permission: PERMISSIONS.REPORTS_READ,
       },
       {
-        title: "Tempo médio",
-        url: "/reports/average-time",
-        icon: Hourglass,
+        title: "Leads",
+        url: "/reports/leads",
+        icon: Headset,
+        permission: PERMISSIONS.REPORTS_READ,
       },
       {
-        title: "Estoque por status",
-        url: "/reports/stock-status",
+        title: "Imóveis",
+        url: "/reports/properties",
+        icon: CarFront,
+        permission: PERMISSIONS.REPORTS_READ,
+      },
+      {
+        title: "Atividades",
+        url: "/reports/activities",
         icon: Layers,
+        permission: PERMISSIONS.REPORTS_READ,
       },
     ],
   },
   {
     title: "Configurações",
     url: "/settings",
-    icon: ChartPie,
+    icon: Settings,
+    permission: PERMISSIONS.SETTINGS_READ,
     subitems: [
       {
         title: "Usuários",
         url: "/settings/users",
-        icon: Percent,
+        icon: Users,
+        permission: PERMISSIONS.USERS_READ,
       },
       {
         title: "Planos",
         url: "/settings/plans",
-        icon: Hourglass,
+        icon: WalletMinimal,
+        permission: PERMISSIONS.SUBSCRIPTIONS_READ,
       },
       {
-        title: "Integrações",
-        url: "/settings/integrations",
+        title: "Empresa",
+        url: "/settings/tenant",
+        icon: Settings,
+        permission: PERMISSIONS.SETTINGS_UPDATE,
+      },
+      {
+        title: "Permissões",
+        url: "/settings/permissions",
         icon: Layers,
+        permission: PERMISSIONS.SETTINGS_UPDATE,
       },
     ],
   },
