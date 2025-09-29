@@ -20,6 +20,8 @@ import {
   ApiBody,
 } from '@nestjs/swagger';
 import { JwtAuthGuard } from '../common/guards/jwt-auth.guard';
+import { PermissionsGuard } from '../common/guards/permissions.guard';
+import { RequireUserCreation } from '../common/decorators/permissions.decorator';
 import {
   CurrentUser,
   GetCurrentUser,
@@ -34,10 +36,14 @@ export class AuthController {
   ) {}
 
   @Post('register')
+  @UseGuards(JwtAuthGuard, PermissionsGuard)
+  @RequireUserCreation()
   @HttpCode(HttpStatus.CREATED)
+  @ApiBearerAuth()
   @ApiOperation({
     summary: 'Register a new user',
-    description: 'Creates a new user account with email and password',
+    description:
+      'Creates a new user account with email and password. Only ADMIN users can create new users.',
   })
   @ApiBody({ type: RegisterDto })
   @ApiResponse({
@@ -50,6 +56,17 @@ export class AuthController {
         email: 'john@example.com',
         role: 'AGENT',
         tenantId: 'tenant-uuid',
+      },
+    },
+  })
+  @ApiResponse({
+    status: 403,
+    description: 'Forbidden - Only ADMIN users can create new users',
+    schema: {
+      example: {
+        statusCode: 403,
+        message: 'Insufficient permissions. Missing: users:create',
+        error: 'Forbidden',
       },
     },
   })
