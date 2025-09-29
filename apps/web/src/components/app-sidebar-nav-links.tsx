@@ -215,12 +215,6 @@ export const mainItems: NavItem[] = [
         icon: Settings,
         permission: PERMISSIONS.SETTINGS_UPDATE,
       },
-      {
-        title: "Permissões",
-        url: "/settings/permissions",
-        icon: Layers,
-        permission: PERMISSIONS.SETTINGS_UPDATE,
-      },
     ],
   },
 ];
