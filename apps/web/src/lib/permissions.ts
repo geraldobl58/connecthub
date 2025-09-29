@@ -3,22 +3,12 @@
  * Baseado no sistema de roles do backend
  */
 
-export enum Role {
-  ADMIN = "ADMIN",
-  MANAGER = "MANAGER",
-  AGENT = "AGENT",
-  VIEWER = "VIEWER",
-}
-
-export interface Permission {
-  resource: string;
-  actions: string[];
-}
-
-export interface RolePermissions {
-  role: Role;
-  permissions: Permission[];
-}
+import {
+  Role,
+  Permission,
+  RolePermissions,
+  ROLE_HIERARCHY,
+} from "@/types/permissions";
 
 /**
  * Mapeamento de permissões por role
@@ -78,16 +68,6 @@ export const ROLE_PERMISSIONS: RolePermissions[] = [
     ],
   },
 ];
-
-/**
- * Hierarquia de roles (maior número = maior privilégio)
- */
-export const ROLE_HIERARCHY: Record<Role, number> = {
-  [Role.ADMIN]: 4,
-  [Role.MANAGER]: 3,
-  [Role.AGENT]: 2,
-  [Role.VIEWER]: 1,
-};
 
 /**
  * Classe para gerenciar permissões do usuário
