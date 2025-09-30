@@ -14,6 +14,7 @@ import {
   SidebarMenuItem,
   SidebarMenuSub,
   SidebarMenuSubItem,
+  SidebarTrigger,
 } from "@/components/ui/sidebar";
 
 import {
@@ -198,8 +199,9 @@ export const AppSidebarLinks = () => {
   return (
     <>
       {/* Logo Section */}
-      <div className="flex items-center border-b p-2">
+      <div className="flex items-center justify-between border-b p-3">
         <Logo />
+        <SidebarTrigger />
       </div>
 
       {/* Projetos Section */}

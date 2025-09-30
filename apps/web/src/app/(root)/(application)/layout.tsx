@@ -1,5 +1,5 @@
 import { AppSidebar } from "@/components/app-sidebar";
-import { SidebarProvider, SidebarTrigger } from "@/components/ui/sidebar";
+import { SidebarProvider, SidebarInset } from "@/components/ui/sidebar";
 
 export default function ApplicationLayout({
   children,
@@ -9,8 +9,7 @@ export default function ApplicationLayout({
   return (
     <SidebarProvider>
       <AppSidebar />
-      <SidebarTrigger />
-      <main className="flex items-center justify-center">{children}</main>
+      <SidebarInset>{children}</SidebarInset>
     </SidebarProvider>
   );
 }
