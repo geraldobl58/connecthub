@@ -5,6 +5,7 @@ import { AuthModule } from './auth/auth.module';
 import { PrismaModule } from './prisma/prisma.module';
 import { PlansModule } from './plans/plans.module';
 import { PermissionsModule } from './permissions/permissions.module';
+import { UsersModule } from './users/users.module';
 
 @Module({
   imports: [
@@ -13,6 +14,7 @@ import { PermissionsModule } from './permissions/permissions.module';
     AuthModule,
     PlansModule,
     PermissionsModule,
+    UsersModule,
   ],
   controllers: [],
   providers: [],

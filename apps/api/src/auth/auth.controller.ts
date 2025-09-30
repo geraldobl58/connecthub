@@ -9,7 +9,6 @@ import {
 } from '@nestjs/common';
 import { AuthService } from './auth.service';
 import { SignupService } from './signup.service';
-import { RegisterDto } from './dto/register.dto';
 import { LoginDto } from './dto/login.dto';
 import { SignupDto } from './dto/signup.dto';
 import {
@@ -20,8 +19,7 @@ import {
   ApiBody,
 } from '@nestjs/swagger';
 import { JwtAuthGuard } from '../common/guards/jwt-auth.guard';
-import { PermissionsGuard } from '../common/guards/permissions.guard';
-import { RequireUserCreation } from '../common/decorators/permissions.decorator';
+
 import {
   CurrentUser,
   GetCurrentUser,
@@ -34,56 +32,6 @@ export class AuthController {
     private service: AuthService,
     private signupService: SignupService,
   ) {}
-
-  @Post('register')
-  @UseGuards(JwtAuthGuard, PermissionsGuard)
-  @RequireUserCreation()
-  @HttpCode(HttpStatus.CREATED)
-  @ApiBearerAuth()
-  @ApiOperation({
-    summary: 'Register a new user',
-    description:
-      'Creates a new user account with email and password. Only ADMIN users can create new users.',
-  })
-  @ApiBody({ type: RegisterDto })
-  @ApiResponse({
-    status: 201,
-    description: 'User successfully created',
-    schema: {
-      example: {
-        id: 'uuid',
-        name: 'John Doe',
-        email: 'john@example.com',
-        role: 'AGENT',
-        tenantId: 'tenant-uuid',
-      },
-    },
-  })
-  @ApiResponse({
-    status: 403,
-    description: 'Forbidden - Only ADMIN users can create new users',
-    schema: {
-      example: {
-        statusCode: 403,
-        message: 'Insufficient permissions. Missing: users:create',
-        error: 'Forbidden',
-      },
-    },
-  })
-  @ApiResponse({
-    status: 409,
-    description: 'Email already exists',
-    schema: {
-      example: {
-        statusCode: 409,
-        message: 'Email already in use',
-        error: 'Conflict',
-      },
-    },
-  })
-  register(@Body() dto: RegisterDto) {
-    return this.service.register(dto);
-  }
 
   @Post('signup')
   @HttpCode(HttpStatus.CREATED)

@@ -1,14 +1,8 @@
 import { JwtService } from '@nestjs/jwt';
-import { Role, User, Tenant } from '@prisma/client';
-import { compare, hash } from 'bcrypt';
+import { compare } from 'bcrypt';
 
-import {
-  Injectable,
-  UnauthorizedException,
-  ConflictException,
-} from '@nestjs/common';
+import { Injectable, UnauthorizedException } from '@nestjs/common';
 import { PrismaService } from '../prisma/prisma.service';
-import { RegisterDto } from './dto/register.dto';
 
 @Injectable()
 export class AuthService {
@@ -16,53 +10,6 @@ export class AuthService {
     private prisma: PrismaService,
     private jwt: JwtService,
   ) {}
-
-  async register(dto: RegisterDto) {
-    // Verificar se o tenant existe
-    const tenant: Tenant | null = await this.prisma.tenant.findUnique({
-      where: { id: dto.tenantId },
-    });
-
-    if (!tenant) {
-      throw new ConflictException('Tenant not found');
-    }
-
-    // Verificar se o email já existe dentro do tenant
-    const exists: User | null = await this.prisma.user.findUnique({
-      where: {
-        tenantId_email: {
-          tenantId: dto.tenantId,
-          email: dto.email,
-        },
-      },
-    });
-
-    if (exists) {
-      throw new ConflictException('Email already in use in this tenant');
-    }
-
-    const hashedPassword = await hash(dto.password, 10);
-
-    const user = await this.prisma.user.create({
-      data: {
-        tenantId: dto.tenantId,
-        name: dto.name,
-        email: dto.email,
-        password: hashedPassword,
-        role: dto.role ?? Role.AGENT,
-        isActive: true,
-      },
-      select: {
-        id: true,
-        name: true,
-        email: true,
-        role: true,
-        tenantId: true,
-      },
-    });
-
-    return user;
-  }
 
   async login(email: string, password: string, tenantId?: string) {
     // Primeiro, verificar se o tenant existe quando informado e obter o ID real
