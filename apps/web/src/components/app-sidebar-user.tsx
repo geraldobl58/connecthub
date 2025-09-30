@@ -13,11 +13,27 @@ import { Button } from "@/components/ui/button";
 import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar";
 
 export function AppSidebarUser() {
-  const { user, logout } = useAuth();
   const [isOpen, setIsOpen] = useState(false);
+  const { user, logout } = useAuth();
+  const [showLogoutConfirm, setShowLogoutConfirm] = useState(false);
+  const [isLoggingOut, setIsLoggingOut] = useState(false);
 
   const handleLogout = () => {
-    logout();
+    setShowLogoutConfirm(true);
+  };
+
+  const confirmLogout = () => {
+    setIsLoggingOut(true);
+
+    setTimeout(() => {
+      logout();
+      setShowLogoutConfirm(false);
+      setIsLoggingOut(false);
+    }, 500);
+  };
+
+  const cancelLogout = () => {
+    setShowLogoutConfirm(false);
   };
 
   if (!user) return null;
@@ -89,6 +105,53 @@ export function AppSidebarUser() {
           </DropdownMenuItem>
         </DropdownMenuContent>
       </DropdownMenu>
+
+      {/* Modal de Confirmação de Logout */}
+      {showLogoutConfirm && (
+        <div className="fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center z-50">
+          <div className="bg-white rounded-lg p-6 max-w-sm mx-4">
+            <div className="flex items-center gap-3 mb-4">
+              <div className="flex-shrink-0">
+                <LogOut className="h-6 w-6 text-red-600" />
+              </div>
+              <div>
+                <h3 className="text-lg font-medium text-gray-900">
+                  Confirmar Logout
+                </h3>
+                <p className="text-sm text-gray-500 mt-1">
+                  Tem certeza que deseja sair da sua conta?
+                </p>
+              </div>
+            </div>
+
+            <div className="flex gap-3 justify-end">
+              <Button
+                variant="outline"
+                size="sm"
+                onClick={cancelLogout}
+                className="text-gray-600"
+              >
+                Cancelar
+              </Button>
+              <Button
+                size="sm"
+                onClick={confirmLogout}
+                disabled={isLoggingOut}
+                className="bg-red-600 hover:bg-red-700 text-white disabled:opacity-50"
+              >
+                {isLoggingOut ? (
+                  <div className="flex items-center gap-2">
+                    <div className="animate-spin rounded-full h-3 w-3 border border-white border-t-transparent"></div>
+                    Saindo...
+                  </div>
+                ) : (
+                  "Sair"
+                )}
+              </Button>
+            </div>
+          </div>
+        </div>
+      )}
     </div>
   );
 }
