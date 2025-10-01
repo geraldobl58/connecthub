@@ -61,16 +61,3 @@ export interface User {
     createdAt: string;
   };
 }
-
-// Error types for better error handling
-export interface ApiError {
-  response?: {
-    status?: number;
-    data?: {
-      message?: string;
-      error?: string;
-      statusCode?: number;
-    };
-  };
-  message?: string;
-}
