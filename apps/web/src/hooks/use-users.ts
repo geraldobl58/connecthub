@@ -17,6 +17,7 @@ export const useUsers = (params?: UserListParams) => {
     data: usersData,
     isLoading: isLoadingUsers,
     error: usersError,
+    refetch,
   } = useQuery<UserPaginatedResponse>({
     queryKey: ["users", params],
     queryFn: async () => {
@@ -40,6 +41,7 @@ export const useUsers = (params?: UserListParams) => {
     meta: usersData?.meta,
     isLoading: isLoadingUsers,
     error: usersError,
+    refetch,
   };
 };
 
