@@ -1,6 +1,7 @@
 import { z } from "zod";
 
-export const userSchema = z.object({
+// Schema para criação de usuário
+export const createUserSchema = z.object({
   tenantId: z.string().min(1, {
     message: "ID do tenant é obrigatório.",
   }),
@@ -25,4 +26,46 @@ export const userSchema = z.object({
   role: z.enum(["ADMIN", "MANAGER", "AGENT", "VIEWER"]).optional(),
 });
 
-export type UserValues = z.infer<typeof userSchema>;
+// Schema para atualização de usuário
+export const updateUserSchema = z.object({
+  name: z
+    .string()
+    .min(1, {
+      message: "Nome é obrigatório.",
+    })
+    .optional(),
+  email: z
+    .string()
+    .email({
+      message: "O e-mail deve ser válido.",
+    })
+    .optional(),
+  role: z.enum(["ADMIN", "MANAGER", "AGENT", "VIEWER"]).optional(),
+  isActive: z.boolean().optional(),
+});
+
+// Schema para parâmetros de listagem
+export const userListParamsSchema = z.object({
+  page: z.number().min(1).optional(),
+  limit: z.number().min(1).max(100).optional(),
+  search: z.string().optional(),
+  role: z.enum(["ADMIN", "MANAGER", "AGENT", "VIEWER"]).optional(),
+  isActive: z.boolean().optional(),
+});
+
+// Schema para ID de usuário
+export const userIdSchema = z.object({
+  id: z.string().min(1, {
+    message: "ID do usuário é obrigatório.",
+  }),
+});
+
+// Types
+export type CreateUserValues = z.infer<typeof createUserSchema>;
+export type UpdateUserValues = z.infer<typeof updateUserSchema>;
+export type UserListParamsValues = z.infer<typeof userListParamsSchema>;
+export type UserIdValues = z.infer<typeof userIdSchema>;
+
+// Backward compatibility
+export const userSchema = createUserSchema;
+export type UserValues = CreateUserValues;
