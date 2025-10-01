@@ -133,7 +133,7 @@ export class UsersService {
 
     return {
       data: users,
-      pagination: {
+      meta: {
         page,
         limit,
         total,
