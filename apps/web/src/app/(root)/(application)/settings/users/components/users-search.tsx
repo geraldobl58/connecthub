@@ -1,10 +1,11 @@
 "use client";
 
-import { useState, useCallback } from "react";
+import { useState, useCallback, useEffect } from "react";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { SearchIcon, X } from "lucide-react";
 import { useRouter } from "next/navigation";
+import { useUrlFilters } from "@/hooks/use-url-filters";
 import {
   Select,
   SelectContent,
@@ -19,10 +20,18 @@ interface UsersSearchProps {
 
 export const UsersSearch = ({ onSearchSuccess }: UsersSearchProps) => {
   const router = useRouter();
+  const urlFilters = useUrlFilters();
 
   const [search, setSearch] = useState("");
   const [role, setRole] = useState("");
   const [isActive, setIsActive] = useState("");
+
+  // Sincronizar com os filtros da URL
+  useEffect(() => {
+    setSearch(urlFilters.search || "");
+    setRole(urlFilters.role || "");
+    setIsActive(urlFilters.isActive !== undefined ? String(urlFilters.isActive) : "");
+  }, [urlFilters]);
 
   const handleSearch = useCallback(() => {
     const params = new URLSearchParams();
