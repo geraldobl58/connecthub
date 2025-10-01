@@ -1,5 +1,6 @@
 import { Role } from "./permissions";
 
+// Response types matching API
 export interface UserResponse {
   id: string;
   name: string;
@@ -23,15 +24,49 @@ export interface UserPaginatedResponse {
   meta: UserMeta;
 }
 
-// Error types for better error handling
-export interface ApiError {
-  response?: {
-    status?: number;
-    data?: {
-      message?: string;
-      error?: string;
-      statusCode?: number;
-    };
-  };
-  message?: string;
+// Request types for API calls
+export interface CreateUserRequest {
+  tenantId: string;
+  name: string;
+  email: string;
+  password: string;
+  role?: Role;
+}
+
+export interface UpdateUserRequest {
+  name?: string;
+  email?: string;
+  role?: Role;
+  isActive?: boolean;
+}
+
+export interface UserListParams {
+  page?: number;
+  limit?: number;
+  search?: string;
+  role?: Role;
+  isActive?: boolean;
+}
+
+// Response types for individual operations
+export interface CreateUserResponse {
+  id: string;
+  name: string;
+  email: string;
+  role: Role;
+  isActive: boolean;
+  tenantId: string;
+  createdAt: string;
+  updatedAt: string;
+}
+
+export interface UpdateUserResponse {
+  id: string;
+  name: string;
+  email: string;
+  role: Role;
+  isActive: boolean;
+  tenantId: string;
+  createdAt: string;
+  updatedAt: string;
 }
