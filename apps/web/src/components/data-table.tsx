@@ -1,6 +1,6 @@
 "use client";
 
-import { useState } from "react";
+import { useState, useEffect } from "react";
 
 import {
   ColumnDef,
@@ -35,6 +35,7 @@ interface DataTableProps<TData, TValue> {
   meta?: {
     onDeleteSuccess?: () => void;
   };
+  onSelectionChange?: (selectedRows: TData[]) => void;
 }
 
 export function DataTable<TData, TValue>({
@@ -42,6 +43,7 @@ export function DataTable<TData, TValue>({
   data,
   emptyMessage = "Nenhum resultado encontrado.",
   meta,
+  onSelectionChange,
 }: DataTableProps<TData, TValue>) {
   const [sorting, setSorting] = useState<SortingState>([]);
   const [columnFilters, setColumnFilters] = useState<ColumnFiltersState>([]);
@@ -66,6 +68,17 @@ export function DataTable<TData, TValue>({
     },
     meta,
   });
+
+  // Notificar mudanças na seleção
+  useEffect(() => {
+    if (onSelectionChange) {
+      const selectedRows = table
+        .getFilteredSelectedRowModel()
+        .rows.map((row) => row.original);
+      onSelectionChange(selectedRows);
+    }
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [rowSelection, onSelectionChange]);
 
   return (
     <div className="w-full">
