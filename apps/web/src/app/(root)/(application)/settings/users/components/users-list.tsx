@@ -1,6 +1,6 @@
 "use client";
 
-import { useEffect, useState, useCallback } from "react";
+import { useEffect, useState, useCallback, useRef } from "react";
 import { DataTable } from "@/components/data-table";
 import { Pagination } from "@/components/pagination";
 import { columns } from "./columns";
@@ -15,15 +15,19 @@ export const UsersList = () => {
   const [selectedUsers, setSelectedUsers] = useState<UserResponse[]>([]);
   const filters = useUrlFilters();
   const { users, meta, isLoading, error, refetch } = useUsers(filters);
+  const usersLengthRef = useRef(users?.length || 0);
 
   useEffect(() => {
     setIsMounted(true);
   }, []);
 
-  // Limpar seleção quando a lista de usuários mudar
+  // Limpar seleção quando a lista de usuários mudar (baseado no comprimento)
   useEffect(() => {
-    setSelectedUsers([]);
-  }, [users]);
+    if (users && users.length !== usersLengthRef.current) {
+      setSelectedUsers([]);
+      usersLengthRef.current = users.length;
+    }
+  }, [users?.length]);
 
   const handleSelectionChange = useCallback((selectedRows: UserResponse[]) => {
     setSelectedUsers(selectedRows);
