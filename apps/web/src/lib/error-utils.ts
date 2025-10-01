@@ -1,15 +1,4 @@
-// Error types for better error handling
-export interface ApiError {
-  response?: {
-    status?: number;
-    data?: {
-      message?: string;
-      error?: string;
-      statusCode?: number;
-    };
-  };
-  message?: string;
-}
+import { ApiError } from "@/types/common";
 
 /**
  * Verificar se o erro é de autenticação
