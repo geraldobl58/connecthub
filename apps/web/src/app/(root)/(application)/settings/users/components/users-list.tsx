@@ -11,11 +11,15 @@ import { UsersSearch } from "./users-search";
 export const UsersList = () => {
   const [isMounted, setIsMounted] = useState(false);
   const filters = useUrlFilters();
-  const { users, meta, isLoading, error } = useUsers(filters);
+  const { users, meta, isLoading, error, refetch } = useUsers(filters);
 
   useEffect(() => {
     setIsMounted(true);
   }, []);
+
+  const handleDeleteSuccess = () => {
+    refetch();
+  };
 
   // Sempre renderizar a estrutura base para evitar hydration mismatch
   return (
@@ -59,6 +63,7 @@ export const UsersList = () => {
             columns={columns}
             data={users}
             emptyMessage="Nenhum usuário encontrado."
+            meta={{ onDeleteSuccess: handleDeleteSuccess }}
           />
           {meta && (
             <Pagination
