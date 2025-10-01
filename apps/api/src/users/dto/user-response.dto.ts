@@ -68,7 +68,7 @@ export class PaginatedUsersResponseDto {
       totalPages: 3,
     },
   })
-  pagination: {
+  meta: {
     page: number;
     limit: number;
     total: number;
