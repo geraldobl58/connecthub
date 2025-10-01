@@ -4,10 +4,11 @@ import {
   IsOptional,
   IsString,
   IsNumber,
+  IsBoolean,
   Min,
   Max,
 } from 'class-validator';
-import { Type } from 'class-transformer';
+import { Type, Transform } from 'class-transformer';
 import { Role } from '@prisma/client';
 
 export class UserQueryDto {
@@ -61,7 +62,12 @@ export class UserQueryDto {
     required: false,
   })
   @IsOptional()
-  @Type(() => Boolean)
+  @IsBoolean()
+  @Transform(({ value }) => {
+    if (value === 'true') return true;
+    if (value === 'false') return false;
+    return value;
+  })
   isActive?: boolean;
 
   @ApiProperty({
