@@ -106,7 +106,7 @@ export const useUpdateUser = () => {
     }) => {
       return await userHttpService.updateUser(id, userData);
     },
-    onSuccess: (data, variables) => {
+    onSuccess: (_, variables) => {
       queryClient.invalidateQueries({ queryKey: ["users"] });
       queryClient.invalidateQueries({ queryKey: ["user", variables.id] });
     },
@@ -143,7 +143,7 @@ export const useToggleUserStatus = () => {
     mutationFn: async ({ id, isActive }: { id: string; isActive: boolean }) => {
       return await userHttpService.toggleUserStatus(id, isActive);
     },
-    onSuccess: (data, variables) => {
+    onSuccess: (_, variables) => {
       queryClient.invalidateQueries({ queryKey: ["users"] });
       queryClient.invalidateQueries({ queryKey: ["user", variables.id] });
     },
