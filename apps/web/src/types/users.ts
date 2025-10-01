@@ -30,14 +30,16 @@ export interface CreateUserRequest {
   name: string;
   email: string;
   password: string;
-  role?: Role;
+  isActive: boolean;
 }
 
 export interface UpdateUserRequest {
-  name?: string;
-  email?: string;
-  role?: Role;
-  isActive?: boolean;
+  id: string;
+  tenantId: string;
+  name: string;
+  email: string;
+  role: Role;
+  isActive: boolean;
 }
 
 export interface UserListParams {

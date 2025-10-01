@@ -1,5 +1,4 @@
 import { Plus } from "lucide-react";
-import Link from "next/link";
 
 import { Header } from "@/components/header";
 import { Button } from "@/components/ui/button";
@@ -12,11 +11,9 @@ const UsersPage = () => {
         title="Usuários"
         description="Gerencie os usuários do sistema"
         content={
-          <Button asChild>
-            <Link href="/settings/users/create">
-              <Plus className="h-4 w-4" />
-              <span>Criar Usuário</span>
-            </Link>
+          <Button>
+            <Plus className="h-4 w-4" />
+            <span>Criar Usuário</span>
           </Button>
         }
       />
