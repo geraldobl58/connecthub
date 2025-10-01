@@ -7,12 +7,7 @@ import {
   PlanRenewalRequest,
 } from "@/http/plan";
 import { getErrorMessage } from "@/lib/error-utils";
-
-export interface ActionResult<T = unknown> {
-  success: boolean;
-  data?: T;
-  error?: string;
-}
+import { ActionResult } from "@/types/common";
 
 /**
  * Server action para buscar plano atual
