@@ -10,7 +10,8 @@ import { loginAction, getProfileAction } from "../actions/auth";
 import { LoginValues } from "../schemas/auth";
 import { SignupValues } from "../schemas/signup";
 import { signupAction } from "../actions/signup";
-import { authHttpService, User } from "@/http/auth";
+import { authHttpService } from "@/http/auth";
+import { User } from "@/types/auth";
 
 export const useAuth = () => {
   const router = useRouter();
