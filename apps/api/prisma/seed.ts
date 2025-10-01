@@ -373,9 +373,151 @@ async function main() {
     },
   });
 
-  console.log(`✅ Created users for both tenants:
-  - Tenant 1 (${tenant1.name}): 5 users (4 active, 1 inactive)
-  - Tenant 2 (${tenant2.name}): 4 users (all active)
+  // Criar 50 usuários adicionais para teste de paginação
+  console.log('👥 Creating 50 additional users for pagination testing...');
+
+  const roles: Array<'ADMIN' | 'MANAGER' | 'AGENT' | 'VIEWER'> = [
+    'ADMIN',
+    'MANAGER',
+    'AGENT',
+    'VIEWER',
+  ];
+  const tenants = [tenant1, tenant2, tenant3];
+  const firstNames = [
+    'Ana',
+    'Bruno',
+    'Carlos',
+    'Diana',
+    'Eduardo',
+    'Fernanda',
+    'Gabriel',
+    'Helena',
+    'Igor',
+    'Julia',
+    'Kleber',
+    'Larissa',
+    'Marcos',
+    'Natalia',
+    'Otavio',
+    'Patricia',
+    'Rafael',
+    'Sandra',
+    'Thiago',
+    'Ursula',
+    'Vitor',
+    'Wanda',
+    'Xavier',
+    'Yara',
+    'Zeca',
+    'Alice',
+    'Bernardo',
+    'Camila',
+    'Diego',
+    'Elisa',
+    'Felipe',
+    'Gabriela',
+    'Henrique',
+    'Isabela',
+    'João',
+    'Karina',
+    'Leonardo',
+    'Mariana',
+    'Nicolas',
+    'Olivia',
+    'Paulo',
+    'Quiteria',
+    'Ricardo',
+    'Silvia',
+    'Tomas',
+    'Vanessa',
+    'Wesley',
+    'Ximena',
+    'Yuri',
+  ];
+  const lastNames = [
+    'Silva',
+    'Santos',
+    'Oliveira',
+    'Souza',
+    'Rodrigues',
+    'Ferreira',
+    'Alves',
+    'Pereira',
+    'Lima',
+    'Gomes',
+    'Costa',
+    'Ribeiro',
+    'Martins',
+    'Carvalho',
+    'Almeida',
+    'Lopes',
+    'Soares',
+    'Fernandes',
+    'Vieira',
+    'Barbosa',
+    'Rocha',
+    'Dias',
+    'Monteiro',
+    'Cardoso',
+    'Reis',
+    'Moreira',
+    'Nascimento',
+    'Araújo',
+    'Mendes',
+    'Freitas',
+    'Cavalcanti',
+    'Ramos',
+    'Nunes',
+    'Moura',
+    'Teixeira',
+    'Correia',
+    'Castro',
+    'Campos',
+    'Melo',
+    'Azevedo',
+    'Machado',
+    'Andrade',
+    'Farias',
+    'Cunha',
+    'Vasconcelos',
+    'Pinto',
+    'Siqueira',
+    'Coelho',
+  ];
+
+  for (let i = 0; i < 50; i++) {
+    const firstName = firstNames[i % firstNames.length];
+    const lastName = lastNames[i % lastNames.length];
+    const role = roles[i % roles.length];
+    const tenant = tenants[i % tenants.length];
+    const isActive = i % 10 !== 0; // 10% dos usuários inativos
+
+    const email = `${firstName.toLowerCase()}.${lastName.toLowerCase()}${i + 1}@${tenant.slug}.com`;
+
+    await prisma.user.upsert({
+      where: {
+        tenantId_email: {
+          tenantId: tenant.id,
+          email: email,
+        },
+      },
+      update: {},
+      create: {
+        tenantId: tenant.id,
+        name: `${firstName} ${lastName}`,
+        email: email,
+        password: passwordHash,
+        role: role,
+        isActive: isActive,
+      },
+    });
+  }
+
+  console.log(`✅ Created users for all tenants:
+  - Tenant 1 (${tenant1.name}): 5 users (4 active, 1 inactive) + 17 additional users
+  - Tenant 2 (${tenant2.name}): 4 users (all active) + 17 additional users  
+  - Tenant 3 (${tenant3.name}): 7 users (6 active, 1 inactive) + 16 additional users
+  - Total: 59 users across all tenants
   - Multi-tenant test: same email in different tenants`);
 
   // Criar Usage records
@@ -882,9 +1024,11 @@ async function main() {
 
   console.log('🎉 Database seeding completed successfully!');
   console.log('\n📋 Summary:');
-  console.log('- 2 Tenants created');
+  console.log('- 3 Tenants created');
   console.log('- 2 Plans created');
-  console.log('- 9 Users created (all roles covered + inactive + multi-tenant test)');
+  console.log(
+    '- 59 Users created (all roles covered + inactive + multi-tenant test)',
+  );
   console.log('- 3 Properties created');
   console.log('- 7 Stages created for each tenant');
   console.log('- 3 Leads created');
@@ -894,13 +1038,21 @@ async function main() {
   console.log('- 2 Activity logs created');
   console.log('\n🔐 Default password for all users: Demo123!');
   console.log('\n🏢 Tenants:');
-  console.log(`- ${tenant1.name} (${tenant1.slug}) - 5 users (4 active, 1 inactive)`);
-  console.log(`- ${tenant2.name} (${tenant2.slug}) - 4 users (all active)`);
+  console.log(
+    `- ${tenant1.name} (${tenant1.slug}) - 22 users (20 active, 2 inactive)`,
+  );
+  console.log(
+    `- ${tenant2.name} (${tenant2.slug}) - 21 users (19 active, 2 inactive)`,
+  );
+  console.log(
+    `- ${tenant3.name} (${tenant3.slug}) - 23 users (21 active, 2 inactive)`,
+  );
   console.log('\n✨ Multi-tenant features tested:');
   console.log('- Same email in different tenants');
-  console.log('- Inactive user (login should fail)');
+  console.log('- Inactive users (login should fail)');
   console.log('- All user roles represented');
   console.log('- Cross-tenant data isolation');
+  console.log('- Pagination testing with 50+ users');
 }
 
 main()
