@@ -1,8 +1,9 @@
 "use server";
 
-import { authHttpService, LoginResponse, User } from "@/http/auth";
+import { authHttpService } from "@/http/auth";
 import { LoginValues } from "../schemas/auth";
 import { getErrorMessage } from "@/lib/error-utils";
+import { LoginResponse, User } from "@/types/auth";
 
 export interface ActionResult<T = unknown> {
   success: boolean;
