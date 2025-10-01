@@ -1,8 +1,10 @@
 "use client";
 
-import { useEffect, useState } from "react";
+import { useState, useCallback } from "react";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
+import { SearchIcon, X } from "lucide-react";
+import { useRouter } from "next/navigation";
 import {
   Select,
   SelectContent,
@@ -10,55 +12,44 @@ import {
   SelectTrigger,
   SelectValue,
 } from "@/components/ui/select";
-import { SearchIcon, X } from "lucide-react";
-import { UserListParams } from "@/types/users";
-import { Role } from "@/types/permissions";
-import { useUrlFilters } from "@/hooks/use-url-filters";
-import { useUrlManager } from "@/hooks/use-url-manager";
 
-export const UsersSearch = () => {
-  const urlFilters = useUrlFilters();
-  const { updateURL } = useUrlManager();
+interface UsersSearchProps {
+  onSearchSuccess?: () => void;
+}
 
-  const [filters, setFilters] = useState<UserListParams>({
-    search: urlFilters.search || "",
-    role: urlFilters.role,
-    isActive: urlFilters.isActive,
-    page: urlFilters.page,
-    limit: urlFilters.limit,
-  });
+export const UsersSearch = ({ onSearchSuccess }: UsersSearchProps) => {
+  const router = useRouter();
 
-  // Atualizar filtros quando a URL mudar
-  useEffect(() => {
-    setFilters({
-      search: urlFilters.search || "",
-      role: urlFilters.role,
-      isActive: urlFilters.isActive,
-      page: urlFilters.page,
-      limit: urlFilters.limit,
-    });
-  }, [urlFilters]);
+  const [search, setSearch] = useState("");
+  const [role, setRole] = useState("");
+  const [isActive, setIsActive] = useState("");
 
-  const handleSearch = () => {
-    // Resetar para página 1 ao aplicar filtros
-    const searchFilters = {
-      ...filters,
-      page: 1,
-    };
-    updateURL(searchFilters);
-  };
+  const handleSearch = useCallback(() => {
+    const params = new URLSearchParams();
 
-  const handleClear = () => {
-    const clearedFilters: UserListParams = {
-      search: "",
-      role: undefined,
-      isActive: undefined,
-      page: 1, // Resetar para página 1 ao limpar filtros
-      limit: undefined,
-    };
-    setFilters(clearedFilters);
-    updateURL(clearedFilters);
-  };
+    if (search) {
+      params.set("search", search);
+    }
+    if (role && role !== "all") {
+      params.set("role", role);
+    }
+    if (isActive && isActive !== "all") {
+      params.set("isActive", isActive);
+    }
+
+    const queryString = params.toString();
+    const newURL = queryString ? `?${queryString}` : "";
+    router.push(`/settings/users${newURL}`, { scroll: false });
+    onSearchSuccess?.();
+  }, [search, role, isActive, router, onSearchSuccess]);
+
+  const handleClear = useCallback(() => {
+    setSearch("");
+    setRole("");
+    setIsActive("");
+    router.push("/settings/users", { scroll: false });
+    onSearchSuccess?.();
+  }, [router, onSearchSuccess]);
 
   const handleKeyPress = (e: React.KeyboardEvent) => {
     if (e.key === "Enter") {
@@ -72,27 +63,16 @@ export const UsersSearch = () => {
         <SearchIcon className="absolute left-3 top-1/2 transform -translate-y-1/2 h-4 w-4 text-gray-400" />
         <Input
           placeholder="Buscar por nome ou email..."
-          value={filters.search || ""}
-          onChange={(e) =>
-            setFilters((prev) => ({ ...prev, search: e.target.value }))
-          }
+          value={search}
+          onChange={(e) => setSearch(e.target.value)}
           onKeyPress={handleKeyPress}
           className="pl-10 w-full"
         />
       </div>
 
-      <Select
-        value={filters.role || "all"}
-        onValueChange={(value) => {
-          const newRole = value === "all" ? undefined : (value as Role);
-          setFilters((prev) => ({
-            ...prev,
-            role: newRole,
-          }));
-        }}
-      >
+      <Select value={role} onValueChange={(value) => setRole(value)}>
         <SelectTrigger className="w-full">
-          <SelectValue placeholder="Todos os cargos" />
+          <SelectValue placeholder="Cargo" />
         </SelectTrigger>
         <SelectContent>
           <SelectItem value="all">Todos os cargos</SelectItem>
@@ -103,20 +83,9 @@ export const UsersSearch = () => {
         </SelectContent>
       </Select>
 
-      <Select
-        value={
-          filters.isActive === undefined ? "all" : filters.isActive.toString()
-        }
-        onValueChange={(value) => {
-          const newIsActive = value === "all" ? undefined : value === "true";
-          setFilters((prev) => ({
-            ...prev,
-            isActive: newIsActive,
-          }));
-        }}
-      >
+      <Select value={isActive} onValueChange={(value) => setIsActive(value)}>
         <SelectTrigger className="w-full">
-          <SelectValue placeholder="Todos os status" />
+          <SelectValue placeholder="Status" />
         </SelectTrigger>
         <SelectContent>
           <SelectItem value="all">Todos os status</SelectItem>
