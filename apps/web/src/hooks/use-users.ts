@@ -33,7 +33,7 @@ export const useUsers = (params?: UserListParams) => {
     },
     enabled: cookieUtils.hasToken(),
     retry: false,
-    staleTime: 5 * 60 * 1000, // 5 minutos
+    staleTime: 5 * 60 * 1000, // Cache válido por 5 minutos
   });
 
   return {
@@ -65,7 +65,7 @@ export const useUser = (id: string) => {
     },
     enabled: !!id && cookieUtils.hasToken(),
     retry: false,
-    staleTime: 5 * 60 * 1000, // 5 minutos
+    staleTime: 5 * 60 * 1000, // Cache válido por 5 minutos
   });
 
   return {
@@ -84,6 +84,7 @@ export const useCreateUser = () => {
     },
     onSuccess: () => {
       queryClient.invalidateQueries({ queryKey: ["users"] });
+      queryClient.invalidateQueries({ queryKey: ["user"] });
     },
     onError: (error) => {
       if (isAuthError(error)) {
@@ -127,6 +128,7 @@ export const useDeleteUser = () => {
     },
     onSuccess: () => {
       queryClient.invalidateQueries({ queryKey: ["users"] });
+      queryClient.invalidateQueries({ queryKey: ["user"] });
     },
     onError: (error) => {
       if (isAuthError(error)) {
