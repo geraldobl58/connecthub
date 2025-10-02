@@ -34,8 +34,8 @@ export const UsersActions = ({ user, onSuccess }: UsersActionsProps) => {
       await deleteUserMutation.mutateAsync(user.id);
       setIsDeleteDialogOpen(false);
       onSuccess?.();
-    } catch (error) {
-      console.error("Erro ao excluir usuário:", error);
+    } catch {
+      // Erro tratado silenciosamente
     } finally {
       setIsDeleting(false);
     }
@@ -48,8 +48,8 @@ export const UsersActions = ({ user, onSuccess }: UsersActionsProps) => {
         isActive: !user.isActive,
       });
       onSuccess?.();
-    } catch (error) {
-      console.error("Erro ao alterar status do usuário:", error);
+    } catch {
+      // Erro tratado silenciosamente
     }
   };
 
