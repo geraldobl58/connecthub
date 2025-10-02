@@ -60,7 +60,19 @@ export const columns: ColumnDef<UserResponse>[] = [
   {
     accessorKey: "role",
     header: "Cargo",
-    cell: ({ row }) => <div className="capitalize">{row.getValue("role")}</div>,
+    cell: ({ row }) => (
+      <div className="capitalize">
+        {row.getValue("role") === "ADMIN" ? (
+          <div className="text-red-500">Administrador</div>
+        ) : row.getValue("role") === "MANAGER" ? (
+          <div className="text-blue-500">Gerente</div>
+        ) : row.getValue("role") === "AGENT" ? (
+          <div className="text-green-500">Agente</div>
+        ) : (
+          <div className="text-gray-500">Visualizador</div>
+        )}
+      </div>
+    ),
   },
   {
     accessorKey: "isActive",

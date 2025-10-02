@@ -6,7 +6,7 @@ import { Header } from "@/components/header";
 import { Button } from "@/components/ui/button";
 import { UsersList } from "./components/users-list";
 import { useState } from "react";
-import { UsersFormDialog } from "@/app/(root)/(application)/settings/users/components/users-from-dialog";
+import { UsersFormDialog } from "@/app/(root)/(application)/settings/users/components/users-form-dialog";
 
 const UsersPage = () => {
   const [isCreateAndUpdateUserDialogOpen, setIsCreateAndUpdateUserDialogOpen] =

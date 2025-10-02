@@ -14,7 +14,8 @@ import { UserResponse } from "@/types/users";
 import { MoreHorizontal } from "lucide-react";
 import { AlertDialogGeneric } from "@/components/alert-dialog-generic";
 import { useDeleteUser } from "@/hooks/use-users";
-import { UsersFormDialog } from "./users-from-dialog";
+import { UsersFormDialog } from "./users-form-dialog";
+import { useAuth } from "@/hooks/auth";
 
 interface UsersActionsProps {
   user: UserResponse;
@@ -26,6 +27,8 @@ export const UsersActions = ({ user, onSuccess }: UsersActionsProps) => {
   const [isEditDialogOpen, setIsEditDialogOpen] = useState(false);
   const [isDeleting, setIsDeleting] = useState(false);
   const deleteUserMutation = useDeleteUser();
+  const { user: currentUser } = useAuth();
+  const isCurrentUser = user.id === currentUser?.id;
 
   const handleDelete = async () => {
     setIsDeleting(true);
@@ -51,17 +54,17 @@ export const UsersActions = ({ user, onSuccess }: UsersActionsProps) => {
         </DropdownMenuTrigger>
         <DropdownMenuContent align="end">
           <DropdownMenuLabel>Ações</DropdownMenuLabel>
-          <DropdownMenuSeparator />
           <DropdownMenuItem onClick={() => setIsEditDialogOpen(true)}>
             Editar
           </DropdownMenuItem>
-          <DropdownMenuSeparator />
-          <DropdownMenuItem
-            className="text-red-600"
-            onClick={() => setIsDeleteDialogOpen(true)}
-          >
-            Excluir
-          </DropdownMenuItem>
+          {!isCurrentUser && (
+            <DropdownMenuItem
+              className="text-red-600"
+              onClick={() => setIsDeleteDialogOpen(true)}
+            >
+              Excluir
+            </DropdownMenuItem>
+          )}
         </DropdownMenuContent>
       </DropdownMenu>
 

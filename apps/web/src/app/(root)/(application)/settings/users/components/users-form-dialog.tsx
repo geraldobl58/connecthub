@@ -64,6 +64,8 @@ export function UsersFormDialog({
   const createUserMutation = useCreateUser();
   const updateUserMutation = useUpdateUser();
   const isEditMode = mode === "edit" && user;
+  const isCurrentUser =
+    isEditMode && user && currentUser && user.id === currentUser.id;
 
   const form = useForm<CreateUserFormValues | UpdateUserValues>({
     resolver: zodResolver(isEditMode ? updateUserSchema : createUserFormSchema),
@@ -204,6 +206,7 @@ export function UsersFormDialog({
                     <Input
                       type="email"
                       placeholder="Digite o email"
+                      disabled={isCurrentUser}
                       {...field}
                     />
                   </FormControl>
@@ -246,9 +249,10 @@ export function UsersFormDialog({
                   <Select
                     onValueChange={field.onChange}
                     defaultValue={field.value}
+                    disabled={isCurrentUser}
                   >
                     <FormControl>
-                      <SelectTrigger>
+                      <SelectTrigger className="w-full">
                         <SelectValue placeholder="Selecione um cargo" />
                       </SelectTrigger>
                     </FormControl>
@@ -273,13 +277,16 @@ export function UsersFormDialog({
                   <div className="space-y-0.5">
                     <FormLabel className="text-base">Status</FormLabel>
                     <FormDescription>
-                      Determine se o usuário está ativo no sistema
+                      {isCurrentUser
+                        ? "Você não pode inativar sua própria conta"
+                        : "Determine se o usuário está ativo no sistema"}
                     </FormDescription>
                   </div>
                   <FormControl>
                     <Switch
                       checked={field.value}
                       onCheckedChange={field.onChange}
+                      disabled={isCurrentUser}
                     />
                   </FormControl>
                 </FormItem>
