@@ -8,6 +8,7 @@ import {
   AlertDialogHeader,
   AlertDialogTitle,
 } from "@/components/ui/alert-dialog";
+import { LoadingSpinner } from "./common/loading-spinner";
 
 interface AlertDialogGenericProps {
   open: boolean;
@@ -55,9 +56,13 @@ export const AlertDialogGeneric = ({
           <AlertDialogAction
             onClick={handleConfirm}
             disabled={isLoading}
-            className="bg-red-600 hover:bg-red-700"
+            className="bg-red-600 hover:bg-red-700 flex items-center justify-center"
           >
-            {isLoading ? "Excluindo..." : confirmText}
+            {isLoading ? (
+              <LoadingSpinner size={14} text="Excluindo..." />
+            ) : (
+              confirmText
+            )}
           </AlertDialogAction>
         </AlertDialogFooter>
       </AlertDialogContent>
