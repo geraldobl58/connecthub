@@ -4,7 +4,6 @@ import { useMutation, useQueryClient } from "@tanstack/react-query";
 import { useRouter } from "next/navigation";
 
 import { cookieUtils } from "@/lib/cookies";
-import { isAuthError } from "@/lib/error-utils";
 import { useApiQuery } from "./use-api-query";
 import { queryKeys } from "@/lib/query-keys";
 
