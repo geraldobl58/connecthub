@@ -25,6 +25,7 @@ import {
 } from "lucide-react";
 import { useEffect, useState } from "react";
 import { PlanCounter } from "@/components/plan-counter";
+import { LoadingSpinner } from "@/components/common/loading-spinner";
 
 export const Information = () => {
   const { user, isLoading, isAuthenticated, logout, hasPermission } = useAuth();
@@ -36,18 +37,10 @@ export const Information = () => {
     setIsMounted(true);
   }, []);
 
-  if (!isMounted) {
+  if (!isMounted || isLoading) {
     return (
       <div className="flex items-center justify-center min-h-screen">
-        <div className="animate-spin rounded-full h-8 w-8 border-b-2 border-blue-600"></div>
-      </div>
-    );
-  }
-
-  if (isLoading) {
-    return (
-      <div className="flex items-center justify-center min-h-screen">
-        <div className="animate-spin rounded-full h-8 w-8 border-b-2 border-blue-600"></div>
+        <LoadingSpinner size={32} text="Carregando..." />
       </div>
     );
   }
@@ -749,10 +742,7 @@ export const Information = () => {
                 className="bg-red-600 hover:bg-red-700 text-white disabled:opacity-50"
               >
                 {isLoggingOut ? (
-                  <div className="flex items-center gap-2">
-                    <div className="animate-spin rounded-full h-3 w-3 border border-white border-t-transparent"></div>
-                    Saindo...
-                  </div>
+                  <LoadingSpinner size={12} text="Saindo..." />
                 ) : (
                   "Sair"
                 )}
