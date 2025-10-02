@@ -1,9 +1,10 @@
 "use server";
 
-import { authHttpService, SignupResponse } from "@/http/auth";
+import { authHttpService } from "@/http/auth";
+import { SignupResponse } from "@/types/auth";
 import { getErrorMessage } from "@/lib/error-utils";
 import { SignupValues, signupSchema } from "@/schemas/signup";
-import { ActionResult } from "./auth";
+import { ActionResult } from "@/types/common";
 
 export async function signupAction(
   data: SignupValues
