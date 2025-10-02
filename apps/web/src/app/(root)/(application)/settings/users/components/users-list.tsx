@@ -28,7 +28,7 @@ export const UsersList = () => {
       setSelectedUsers([]);
       usersLengthRef.current = users.length;
     }
-  }, [users?.length]);
+  }, [users]);
 
   const handleSelectionChange = useCallback((selectedRows: UserResponse[]) => {
     setSelectedUsers(selectedRows);
@@ -58,8 +58,17 @@ export const UsersList = () => {
         </div>
       ) : isLoading ? (
         // Estado de loading após hidratação
-        <div className="flex items-center justify-center h-64">
-          <LoadingSpinner size={32} text="Carregando usuários..." />
+        <div className="space-y-4">
+          <UsersSearch onSearchSuccess={handleSearchSuccess} />
+          <UsersBulkActions
+            selectedUsers={selectedUsers}
+            onSuccess={handleDeleteSuccess}
+          />
+          <div className="border rounded-lg p-6">
+            <div className="flex items-center justify-center h-64">
+              <LoadingSpinner size={24} text="Carregando usuários..." />
+            </div>
+          </div>
         </div>
       ) : error ? (
         // Estado de erro
