@@ -10,6 +10,12 @@ export const queryKeys = {
   usersList: (params?: unknown) => ["users", params],
   userById: (id: string) => ["user", id],
 
+  // Properties
+  properties: ["properties"],
+  propertiesList: (params?: unknown) => ["properties", params],
+  property: ["property"],
+  propertyById: (id: string) => ["property", id],
+
   // Plans
   currentPlan: ["currentPlan"],
   planHistory: ["planHistory"],
