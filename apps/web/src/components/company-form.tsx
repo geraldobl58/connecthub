@@ -10,6 +10,7 @@ import {
   CardTitle,
 } from "@/components/ui/card";
 import { Building2, CreditCard } from "lucide-react";
+import { LoadingSpinner } from "./common/loading-spinner";
 import { SignupValues } from "@/schemas/signup";
 import { Plan } from "@/data/plans";
 
@@ -176,10 +177,7 @@ export const CompanyForm = ({
                 className="flex-1 bg-blue-600 hover:bg-blue-700 text-white"
               >
                 {isLoading ? (
-                  <div className="flex items-center gap-2">
-                    <div className="animate-spin rounded-full h-4 w-4 border-2 border-white border-t-transparent"></div>
-                    Processando...
-                  </div>
+                  <LoadingSpinner size={16} text="Processando..." />
                 ) : (
                   <div className="flex items-center gap-2">
                     <CreditCard className="h-4 w-4" />
