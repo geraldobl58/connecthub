@@ -6,6 +6,8 @@ import {
   User,
 } from "@/types/auth";
 
+export type { SignupResponse };
+
 import { LoginValues, RegisterValues } from "../schemas/auth";
 import { SignupValues } from "../schemas/signup";
 
