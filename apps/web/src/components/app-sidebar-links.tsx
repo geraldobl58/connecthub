@@ -26,10 +26,12 @@ import { Logo } from "./logo";
 import { mainItems } from "./app-sidebar-nav-links";
 import { usePermissions } from "@/hooks/use-permissions";
 import { NavItem } from "@/types/permissions";
+import { useAuth } from "@/hooks/auth";
 
 export const AppSidebarLinks = () => {
   const pathname = usePathname();
   const { hasPermission } = usePermissions();
+  const { isLoading, user } = useAuth();
 
   const isActive = (url: string): boolean => {
     // Ignora URLs que são apenas "#" (placeholders)
@@ -209,11 +211,13 @@ export const AppSidebarLinks = () => {
         <SidebarGroupLabel>Administração</SidebarGroupLabel>
         <SidebarGroupContent>
           <SidebarMenu>
-            {filterItemsByPermissions(mainItems).map((item) => (
-              <SidebarMenuItem key={item.title} className="mb-2">
-                {renderNavItem(item)}
-              </SidebarMenuItem>
-            ))}
+            {!isLoading &&
+              user &&
+              filterItemsByPermissions(mainItems).map((item) => (
+                <SidebarMenuItem key={item.title} className="mb-2">
+                  {renderNavItem(item)}
+                </SidebarMenuItem>
+              ))}
           </SidebarMenu>
         </SidebarGroupContent>
       </SidebarGroup>
