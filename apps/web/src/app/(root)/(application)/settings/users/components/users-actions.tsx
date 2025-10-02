@@ -7,7 +7,6 @@ import {
   DropdownMenuContent,
   DropdownMenuItem,
   DropdownMenuLabel,
-  DropdownMenuSeparator,
   DropdownMenuTrigger,
 } from "@/components/ui/dropdown-menu";
 import { UserResponse } from "@/types/users";
@@ -29,6 +28,7 @@ export const UsersActions = ({ user, onSuccess }: UsersActionsProps) => {
   const deleteUserMutation = useDeleteUser();
   const { user: currentUser } = useAuth();
   const isCurrentUser = user.id === currentUser?.id;
+  const isAdmin = currentUser?.role === "ADMIN";
 
   const handleDelete = async () => {
     setIsDeleting(true);
@@ -54,15 +54,22 @@ export const UsersActions = ({ user, onSuccess }: UsersActionsProps) => {
         </DropdownMenuTrigger>
         <DropdownMenuContent align="end">
           <DropdownMenuLabel>Ações</DropdownMenuLabel>
-          <DropdownMenuItem onClick={() => setIsEditDialogOpen(true)}>
-            Editar
-          </DropdownMenuItem>
-          {!isCurrentUser && (
+          {isAdmin && (
+            <DropdownMenuItem onClick={() => setIsEditDialogOpen(true)}>
+              Editar
+            </DropdownMenuItem>
+          )}
+          {isAdmin && !isCurrentUser && (
             <DropdownMenuItem
               className="text-red-600"
               onClick={() => setIsDeleteDialogOpen(true)}
             >
               Excluir
+            </DropdownMenuItem>
+          )}
+          {!isAdmin && (
+            <DropdownMenuItem disabled>
+              Apenas administradores podem editar/excluir
             </DropdownMenuItem>
           )}
         </DropdownMenuContent>

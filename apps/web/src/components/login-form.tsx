@@ -21,7 +21,7 @@ interface LoginFormProps {
 }
 
 export const LoginForm = ({
-  showTenantField = false,
+  showTenantField = true,
   onSuccess,
 }: LoginFormProps) => {
   const [showPassword, setShowPassword] = useState(false);
@@ -62,23 +62,16 @@ export const LoginForm = ({
   const onSubmit = async (data: {
     email: string;
     password: string;
-    tenantId?: string;
+    tenantId: string | undefined;
   }) => {
-    const cleanedData: Partial<LoginValues> = {
+    const cleanedData: LoginValues = {
       email: data.email,
       password: data.password,
+      tenantId: data.tenantId?.trim() || "",
     };
 
-    if (
-      data.tenantId &&
-      data.tenantId.trim() &&
-      data.tenantId.trim() !== "$undefined"
-    ) {
-      cleanedData.tenantId = data.tenantId.trim();
-    }
-
     try {
-      await login(cleanedData as LoginValues);
+      await login(cleanedData);
 
       setTimeout(() => {
         if (onSuccess) {
@@ -171,7 +164,7 @@ export const LoginForm = ({
               className="block text-xs font-medium mb-1"
             >
               <Building2 className="inline w-3 h-3 mr-1" />
-              Tenant (opcional)
+              Tenant *
             </Label>
             <Input
               id="tenantId"
@@ -187,7 +180,7 @@ export const LoginForm = ({
               </p>
             )}
             <p className="text-xs text-gray-500 mt-1">
-              Deixe vazio para busca automática
+              Digite o identificador da sua empresa
             </p>
           </div>
         )}

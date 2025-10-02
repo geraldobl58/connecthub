@@ -66,6 +66,7 @@ export function UsersFormDialog({
   const isEditMode = mode === "edit" && user;
   const isCurrentUser =
     isEditMode && user && currentUser && user.id === currentUser.id;
+  const isAdmin = currentUser?.role === "ADMIN";
 
   const form = useForm<CreateUserFormValues | UpdateUserValues>({
     resolver: zodResolver(isEditMode ? updateUserSchema : createUserFormSchema),
@@ -92,6 +93,14 @@ export function UsersFormDialog({
   }, [isOpen, user, form]);
 
   const onSubmit = async (data: CreateUserFormValues | UpdateUserValues) => {
+    // Verificar permissões para edição
+    if (isEditMode && !isAdmin) {
+      toast.error("Acesso Negado", {
+        description: "Apenas administradores podem editar usuários.",
+      });
+      return;
+    }
+
     const toastId = toast.loading(
       isEditMode ? "Atualizando usuário..." : "Criando usuário..."
     );
@@ -165,6 +174,11 @@ export function UsersFormDialog({
 
   const isLoading =
     createUserMutation.isPending || updateUserMutation.isPending;
+
+  // Verificar se deve mostrar o diálogo
+  if (isEditMode && !isAdmin) {
+    return null;
+  }
 
   return (
     <Dialog open={isOpen} onOpenChange={onClose}>

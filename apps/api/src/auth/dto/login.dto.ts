@@ -5,7 +5,7 @@ import {
   IsStrongPassword,
   MaxLength,
   MinLength,
-  IsOptional,
+  IsNotEmpty,
 } from 'class-validator';
 
 export class LoginDto {
@@ -32,12 +32,14 @@ export class LoginDto {
   })
   password: string;
 
-  @IsOptional()
+  @IsNotEmpty({
+    message: 'Tenant ID is required',
+  })
   @IsString()
   @ApiProperty({
     example: 'tenant-id-or-slug',
-    description: 'Optional tenant ID or slug for multi-tenant login',
-    required: false,
+    description: 'Tenant ID or slug for multi-tenant login',
+    required: true,
   })
-  tenantId?: string;
+  tenantId: string;
 }

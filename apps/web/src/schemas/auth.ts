@@ -14,12 +14,18 @@ export const loginSchema = z.object({
       message:
         "A senha deve conter ao menos: 1 maiúscula, 1 minúscula, 1 número e 1 símbolo.",
     }),
-  tenantId: z.string().optional().transform(val => {
-    if (!val || val.trim() === "" || val.trim() === "$undefined") {
-      return undefined;
-    }
-    return val.trim();
-  }).describe("ID do tenant (opcional)"),
+  tenantId: z
+    .string()
+    .min(1, {
+      message: "ID do tenant é obrigatório.",
+    })
+    .transform((val) => {
+      if (!val || val.trim() === "" || val.trim() === "$undefined") {
+        return undefined;
+      }
+      return val.trim();
+    })
+    .describe("ID do tenant (obrigatório)"),
 });
 
 // Schema para registro - corresponde ao RegisterDto do backend
