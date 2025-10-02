@@ -17,14 +17,24 @@ export const PropertyStatus = {
   RENTED: "RENTED",
 } as const;
 
-// Schema para endereço
+// Schema para endereço (seguindo o modelo Address do Prisma)
 export const addressSchema = z.object({
-  street: z.string().min(1, "Rua é obrigatória"),
-  neighborhood: z.string().min(1, "Bairro é obrigatório"),
+  street: z.string().optional(),
+  number: z.string().optional(),
+  district: z.string().optional(),
   city: z.string().min(1, "Cidade é obrigatória"),
   state: z.string().min(2, "Estado deve ter pelo menos 2 caracteres"),
-  zipCode: z.string().min(8, "CEP deve ter pelo menos 8 caracteres"),
-  country: z.string().optional(),
+  zip: z.string().optional(),
+  lat: z.number().optional(),
+  lng: z.number().optional(),
+});
+
+// Schema para mídia (seguindo o modelo Media do Prisma)
+export const mediaSchema = z.object({
+  url: z.string().url("URL inválida"),
+  alt: z.string().optional(),
+  isCover: z.boolean().default(false),
+  order: z.number().int().min(0).default(0),
 });
 
 // Schema para criação de propriedade
@@ -68,6 +78,7 @@ export const createPropertySchema = z.object({
   address: addressSchema.optional(),
   features: z.record(z.string(), z.any()).optional(),
   ownerId: z.string().optional(),
+  media: z.array(mediaSchema).optional(),
 });
 
 // Schema para atualização de propriedade (todos os campos opcionais)
@@ -77,6 +88,7 @@ export const updatePropertySchema = createPropertySchema.partial();
 export type CreatePropertyValues = z.infer<typeof createPropertySchema>;
 export type UpdatePropertyValues = z.infer<typeof updatePropertySchema>;
 export type AddressValues = z.infer<typeof addressSchema>;
+export type MediaValues = z.infer<typeof mediaSchema>;
 
 // Type para resposta da API
 export interface PropertyResponse {
@@ -94,17 +106,24 @@ export interface PropertyResponse {
   area?: number;
   address?: {
     id: string;
-    street: string;
-    neighborhood: string;
+    street?: string;
+    number?: string;
+    district?: string;
     city: string;
     state: string;
-    zipCode: string;
-    country: string;
-    createdAt: Date;
-    updatedAt: Date;
+    zip?: string;
+    lat?: number;
+    lng?: number;
   };
   features?: Record<string, unknown>;
   ownerId?: string;
+  media?: {
+    id: string;
+    url: string;
+    alt?: string;
+    isCover: boolean;
+    order: number;
+  }[];
   createdAt: Date;
   updatedAt: Date;
   deletedAt?: Date;

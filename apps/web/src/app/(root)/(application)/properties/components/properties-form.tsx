@@ -1,5 +1,6 @@
 "use client";
 
+import { useState } from "react";
 import { Button } from "@/components/ui/button";
 import {
   Card,
@@ -42,6 +43,8 @@ import { useCreateProperty, useUpdateProperty } from "@/hooks/use-properties";
 import { useAuth } from "@/hooks/auth";
 import { toast } from "sonner";
 import { LoadingSpinner } from "@/components/common/loading-spinner";
+import { PropertyMediaUpload } from "@/components/property-media-upload";
+import { PropertyMedia } from "@/types/property";
 
 interface FormDialogProps {
   mode?: "create" | "edit";
@@ -62,7 +65,11 @@ export function PropertiesForm({
   const isManager = currentUser?.role === "MANAGER";
   const canEdit = isAdmin || isManager;
 
-  const form = useForm<CreatePropertyValues | UpdatePropertyValues>({
+  // Estado para gerenciar as imagens
+  const [media, setMedia] = useState<PropertyMedia[]>(property?.media || []);
+
+  // eslint-disable-next-line @typescript-eslint/no-explicit-any
+  const form = useForm<any>({
     resolver: zodResolver(
       isEditMode ? updatePropertySchema : createPropertySchema
     ),
@@ -80,11 +87,13 @@ export function PropertiesForm({
       address: property?.address
         ? {
             street: property.address.street,
-            neighborhood: property.address.neighborhood,
+            number: property.address.number,
+            district: property.address.district,
             city: property.address.city,
             state: property.address.state,
-            zipCode: property.address.zipCode,
-            country: property.address.country,
+            zip: property.address.zip,
+            lat: property.address.lat,
+            lng: property.address.lng,
           }
         : undefined,
       features: property?.features || undefined,
@@ -105,15 +114,26 @@ export function PropertiesForm({
     }
 
     try {
+      // Adicionar media aos dados
+      const dataWithMedia = {
+        ...data,
+        media: media.map((item) => ({
+          url: item.url,
+          alt: item.alt,
+          isCover: item.isCover,
+          order: item.order,
+        })),
+      };
+
       if (isEditMode && property) {
         await updatePropertyMutation.mutateAsync({
           id: property.id,
           // eslint-disable-next-line @typescript-eslint/no-explicit-any
-          data: data as any,
+          data: dataWithMedia as any,
         });
       } else {
         // eslint-disable-next-line @typescript-eslint/no-explicit-any
-        await createPropertyMutation.mutateAsync(data as any);
+        await createPropertyMutation.mutateAsync(dataWithMedia as any);
       }
 
       onSuccess?.();
@@ -445,7 +465,7 @@ export function PropertiesForm({
               <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
                 <FormField
                   control={form.control}
-                  name="address.neighborhood"
+                  name="address.district"
                   render={({ field }) => (
                     <FormItem>
                       <FormLabel>Bairro</FormLabel>
@@ -472,7 +492,7 @@ export function PropertiesForm({
                 />
               </div>
 
-              <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+              <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
                 <FormField
                   control={form.control}
                   name="address.state"
@@ -489,7 +509,7 @@ export function PropertiesForm({
 
                 <FormField
                   control={form.control}
-                  name="address.zipCode"
+                  name="address.zip"
                   render={({ field }) => (
                     <FormItem>
                       <FormLabel>CEP</FormLabel>
@@ -501,22 +521,15 @@ export function PropertiesForm({
                   )}
                 />
               </div>
-
-              <FormField
-                control={form.control}
-                name="address.country"
-                render={({ field }) => (
-                  <FormItem>
-                    <FormLabel>País</FormLabel>
-                    <FormControl>
-                      <Input placeholder="Brasil" {...field} />
-                    </FormControl>
-                    <FormMessage />
-                  </FormItem>
-                )}
-              />
             </CardContent>
           </Card>
+
+          {/* Upload de Imagens */}
+          <PropertyMediaUpload
+            media={media}
+            onMediaChange={setMedia}
+            maxFiles={10}
+          />
 
           {/* Botões de Ação */}
           <Card>

@@ -14,6 +14,7 @@ export interface Property {
   address?: PropertyAddress;
   features?: Record<string, unknown>;
   ownerId?: string;
+  media?: PropertyMedia[];
   createdAt: Date;
   updatedAt: Date;
   deletedAt?: Date;
@@ -21,14 +22,22 @@ export interface Property {
 
 export interface PropertyAddress {
   id: string;
-  street: string;
-  neighborhood: string;
+  street?: string;
+  number?: string;
+  district?: string;
   city: string;
   state: string;
-  zipCode: string;
-  country: string;
-  createdAt: Date;
-  updatedAt: Date;
+  zip?: string;
+  lat?: number;
+  lng?: number;
+}
+
+export interface PropertyMedia {
+  id: string;
+  url: string;
+  alt?: string;
+  isCover: boolean;
+  order: number;
 }
 
 export enum PropertyType {
@@ -75,15 +84,23 @@ export interface CreatePropertyData {
   parking?: number;
   area?: number;
   address?: {
-    street: string;
-    neighborhood: string;
+    street?: string;
+    number?: string;
+    district?: string;
     city: string;
     state: string;
-    zipCode: string;
-    country?: string;
+    zip?: string;
+    lat?: number;
+    lng?: number;
   };
   features?: Record<string, unknown>;
   ownerId?: string;
+  media?: {
+    url: string;
+    alt?: string;
+    isCover?: boolean;
+    order?: number;
+  }[];
 }
 
 export type UpdatePropertyData = Partial<CreatePropertyData>;
