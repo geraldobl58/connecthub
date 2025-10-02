@@ -204,12 +204,6 @@ export const mainItems: NavItem[] = [
         permission: PERMISSIONS.USERS_READ,
       },
       {
-        title: "Planos",
-        url: "/settings/plans",
-        icon: WalletMinimal,
-        permission: PERMISSIONS.SUBSCRIPTIONS_READ,
-      },
-      {
         title: "Empresa",
         url: "/settings/tenant",
         icon: Settings,

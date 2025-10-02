@@ -8,6 +8,7 @@ import { Search, SearchIcon, X } from "lucide-react";
 import { useRouter } from "next/navigation";
 import { useUrlFilters } from "@/hooks/use-url-filters";
 import { Form, FormControl, FormField, FormItem } from "@/components/ui/form";
+import { toast } from "sonner";
 import {
   Select,
   SelectContent,
@@ -36,7 +37,8 @@ export const UsersSearch = ({ onSearchSuccess }: UsersSearchProps) => {
     defaultValues: {
       search: urlFilters.search || "",
       role: urlFilters.role || "",
-      isActive: urlFilters.isActive !== undefined ? String(urlFilters.isActive) : "",
+      isActive:
+        urlFilters.isActive !== undefined ? String(urlFilters.isActive) : "",
     },
   });
 
@@ -45,23 +47,38 @@ export const UsersSearch = ({ onSearchSuccess }: UsersSearchProps) => {
     form.reset({
       search: urlFilters.search || "",
       role: urlFilters.role || "",
-      isActive: urlFilters.isActive !== undefined ? String(urlFilters.isActive) : "",
+      isActive:
+        urlFilters.isActive !== undefined ? String(urlFilters.isActive) : "",
     });
   }, [urlFilters, form]);
 
   // Função para submeter o formulário (busca)
   const onSubmit = useCallback(
     (values: UsersSearchValues) => {
+      // Verificar se pelo menos um campo está preenchido
+      const hasSearchTerm = values.search && values.search.trim();
+      const hasRoleFilter =
+        values.role && values.role !== "all" && values.role !== "";
+      const hasStatusFilter =
+        values.isActive && values.isActive !== "all" && values.isActive !== "";
+
+      if (!hasSearchTerm && !hasRoleFilter && !hasStatusFilter) {
+        toast.error(
+          "Por favor, preencha pelo menos um campo para realizar a busca"
+        );
+        return;
+      }
+
       const params = new URLSearchParams();
 
       // Adicionar parâmetros apenas se tiverem valor e não forem "all"
-      if (values.search && values.search.trim()) {
+      if (hasSearchTerm) {
         params.set("search", values.search.trim());
       }
-      if (values.role && values.role !== "all" && values.role !== "") {
+      if (hasRoleFilter) {
         params.set("role", values.role);
       }
-      if (values.isActive && values.isActive !== "all" && values.isActive !== "") {
+      if (hasStatusFilter) {
         params.set("isActive", values.isActive);
       }
 
@@ -124,10 +141,7 @@ export const UsersSearch = ({ onSearchSuccess }: UsersSearchProps) => {
           name="role"
           render={({ field }) => (
             <FormItem>
-              <Select
-                value={field.value}
-                onValueChange={field.onChange}
-              >
+              <Select value={field.value} onValueChange={field.onChange}>
                 <FormControl>
                   <SelectTrigger className="w-full">
                     <SelectValue placeholder="Cargo" />
@@ -151,10 +165,7 @@ export const UsersSearch = ({ onSearchSuccess }: UsersSearchProps) => {
           name="isActive"
           render={({ field }) => (
             <FormItem>
-              <Select
-                value={field.value}
-                onValueChange={field.onChange}
-              >
+              <Select value={field.value} onValueChange={field.onChange}>
                 <FormControl>
                   <SelectTrigger className="w-full">
                     <SelectValue placeholder="Status" />
