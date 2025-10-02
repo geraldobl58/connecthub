@@ -13,8 +13,8 @@ import { Property } from "@/types/property";
 import { MoreHorizontal } from "lucide-react";
 import { AlertDialogGeneric } from "@/components/alert-dialog-generic";
 import { useDeleteProperty } from "@/hooks/use-properties";
-import { PropertiesFormDialog } from "./properties-form-dialog";
 import { useAuth } from "@/hooks/auth";
+import { useRouter } from "next/navigation";
 
 interface PropertiesActionsProps {
   property: Property;
@@ -26,7 +26,6 @@ export const PropertiesActions = ({
   onSuccess,
 }: PropertiesActionsProps) => {
   const [isDeleteDialogOpen, setIsDeleteDialogOpen] = useState(false);
-  const [isEditDialogOpen, setIsEditDialogOpen] = useState(false);
   const [isDeleting, setIsDeleting] = useState(false);
   const deletePropertyMutation = useDeleteProperty();
   const { user: currentUser } = useAuth();
@@ -34,6 +33,7 @@ export const PropertiesActions = ({
   const isManager = currentUser?.role === "MANAGER";
   const canEdit = isAdmin || isManager;
   const canDelete = isAdmin || isManager;
+  const router = useRouter();
 
   const handleDelete = async () => {
     setIsDeleting(true);
@@ -60,7 +60,9 @@ export const PropertiesActions = ({
         <DropdownMenuContent align="end">
           <DropdownMenuLabel>Ações</DropdownMenuLabel>
           {canEdit && (
-            <DropdownMenuItem onClick={() => setIsEditDialogOpen(true)}>
+            <DropdownMenuItem
+              onClick={() => router.push(`/properties/${property.id}`)}
+            >
               Editar
             </DropdownMenuItem>
           )}
@@ -79,14 +81,6 @@ export const PropertiesActions = ({
           )}
         </DropdownMenuContent>
       </DropdownMenu>
-
-      <PropertiesFormDialog
-        isOpen={isEditDialogOpen}
-        onClose={() => setIsEditDialogOpen(false)}
-        mode="edit"
-        property={property}
-        onSuccess={onSuccess}
-      />
 
       <AlertDialogGeneric
         open={isDeleteDialogOpen}

@@ -2,14 +2,12 @@
 
 import { Button } from "@/components/ui/button";
 import {
-  Dialog,
-  DialogClose,
-  DialogContent,
-  DialogDescription,
-  DialogFooter,
-  DialogHeader,
-  DialogTitle,
-} from "@/components/ui/dialog";
+  Card,
+  CardContent,
+  CardDescription,
+  CardHeader,
+  CardTitle,
+} from "@/components/ui/card";
 import {
   Form,
   FormControl,
@@ -40,23 +38,18 @@ import {
 import { Property } from "@/types/property";
 import { zodResolver } from "@hookform/resolvers/zod";
 import { useForm } from "react-hook-form";
-import { useEffect } from "react";
 import { useCreateProperty, useUpdateProperty } from "@/hooks/use-properties";
 import { useAuth } from "@/hooks/auth";
 import { toast } from "sonner";
 import { LoadingSpinner } from "@/components/common/loading-spinner";
 
 interface FormDialogProps {
-  isOpen: boolean;
-  onClose: () => void;
   mode?: "create" | "edit";
   property?: Property;
   onSuccess?: () => void;
 }
 
-export function PropertiesFormDialog({
-  isOpen,
-  onClose,
+export function PropertiesForm({
   mode = "create",
   property,
   onSuccess,
@@ -99,36 +92,6 @@ export function PropertiesFormDialog({
     },
   });
 
-  // Reset form when property changes or dialog opens
-  useEffect(() => {
-    if (isOpen) {
-      form.reset({
-        code: property?.code || "",
-        title: property?.title || "",
-        description: property?.description || "",
-        type: property?.type || PropertyType.HOUSE,
-        status: property?.status || PropertyStatus.ACTIVE,
-        price: property?.price || undefined,
-        bedroom: property?.bedroom || undefined,
-        bathroom: property?.bathroom || undefined,
-        parking: property?.parking || undefined,
-        area: property?.area || undefined,
-        address: property?.address
-          ? {
-              street: property.address.street,
-              neighborhood: property.address.neighborhood,
-              city: property.address.city,
-              state: property.address.state,
-              zipCode: property.address.zipCode,
-              country: property.address.country,
-            }
-          : undefined,
-        features: property?.features || undefined,
-        ownerId: property?.ownerId || undefined,
-      });
-    }
-  }, [isOpen, property, form]);
-
   const onSubmit = async (
     data: CreatePropertyValues | UpdatePropertyValues
   ) => {
@@ -145,6 +108,7 @@ export function PropertiesFormDialog({
       if (isEditMode && property) {
         await updatePropertyMutation.mutateAsync({
           id: property.id,
+          // eslint-disable-next-line @typescript-eslint/no-explicit-any
           data: data as any,
         });
       } else {
@@ -152,7 +116,6 @@ export function PropertiesFormDialog({
         await createPropertyMutation.mutateAsync(data as any);
       }
 
-      onClose();
       onSuccess?.();
     } catch {
       // Erro já tratado pelo hook
@@ -168,26 +131,35 @@ export function PropertiesFormDialog({
   }
 
   return (
-    <Dialog open={isOpen} onOpenChange={onClose}>
-      <DialogContent className="sm:max-w-[800px] max-h-[90vh] overflow-y-auto">
-        <DialogHeader>
-          <DialogTitle>
-            {isEditMode ? "Editar Propriedade" : "Criar Propriedade"}
-          </DialogTitle>
-          <DialogDescription>
-            {isEditMode
-              ? "Edite as informações da propriedade."
-              : "Crie uma nova propriedade no sistema."}
-          </DialogDescription>
-        </DialogHeader>
+    <div>
+      <div className="mb-8">
+        <h1 className="text-3xl font-bold text-gray-900">
+          {isEditMode ? "Editar Propriedade" : "Criar Propriedade"}
+        </h1>
+        <p className="text-gray-600 mt-2">
+          {isEditMode
+            ? "Edite as informações da propriedade."
+            : "Crie uma nova propriedade no sistema."}
+        </p>
+      </div>
 
-        <Form {...form}>
-          <form onSubmit={form.handleSubmit(onSubmit)} className="space-y-6">
-            {/* Informações Básicas */}
-            <div className="space-y-4">
-              <h3 className="text-lg font-medium">Informações Básicas</h3>
-
-              <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+      <Form {...form}>
+        <form onSubmit={form.handleSubmit(onSubmit)} className="space-y-8">
+          {/* Informações Básicas */}
+          <Card>
+            <CardHeader>
+              <CardTitle className="flex items-center gap-2">
+                <div className="w-8 h-8 bg-blue-100 rounded-full flex items-center justify-center">
+                  <span className="text-blue-600 text-sm font-semibold">1</span>
+                </div>
+                Informações Básicas
+              </CardTitle>
+              <CardDescription>
+                Dados principais da propriedade como código, título e descrição
+              </CardDescription>
+            </CardHeader>
+            <CardContent className="space-y-6">
+              <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
                 <FormField
                   control={form.control}
                   name="code"
@@ -268,7 +240,7 @@ export function PropertiesFormDialog({
                 )}
               />
 
-              <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+              <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
                 <FormField
                   control={form.control}
                   name="status"
@@ -323,13 +295,27 @@ export function PropertiesFormDialog({
                   )}
                 />
               </div>
-            </div>
+            </CardContent>
+          </Card>
 
-            {/* Características */}
-            <div className="space-y-4">
-              <h3 className="text-lg font-medium">Características</h3>
-
-              <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
+          {/* Características */}
+          <Card>
+            <CardHeader>
+              <CardTitle className="flex items-center gap-2">
+                <div className="w-8 h-8 bg-green-100 rounded-full flex items-center justify-center">
+                  <span className="text-green-600 text-sm font-semibold">
+                    2
+                  </span>
+                </div>
+                Características
+              </CardTitle>
+              <CardDescription>
+                Detalhes específicos da propriedade como quartos, banheiros e
+                área
+              </CardDescription>
+            </CardHeader>
+            <CardContent>
+              <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-6">
                 <FormField
                   control={form.control}
                   name="bedroom"
@@ -423,12 +409,25 @@ export function PropertiesFormDialog({
                   </FormItem>
                 )}
               />
-            </div>
+            </CardContent>
+          </Card>
 
-            {/* Endereço */}
-            <div className="space-y-4">
-              <h3 className="text-lg font-medium">Endereço</h3>
-
+          {/* Endereço */}
+          <Card>
+            <CardHeader>
+              <CardTitle className="flex items-center gap-2">
+                <div className="w-8 h-8 bg-purple-100 rounded-full flex items-center justify-center">
+                  <span className="text-purple-600 text-sm font-semibold">
+                    3
+                  </span>
+                </div>
+                Endereço
+              </CardTitle>
+              <CardDescription>
+                Localização completa da propriedade
+              </CardDescription>
+            </CardHeader>
+            <CardContent className="space-y-6">
               <FormField
                 control={form.control}
                 name="address.street"
@@ -516,29 +515,32 @@ export function PropertiesFormDialog({
                   </FormItem>
                 )}
               />
-            </div>
+            </CardContent>
+          </Card>
 
-            <DialogFooter>
-              <Button
-                type="submit"
-                disabled={isLoading}
-                className="flex items-center justify-center"
-              >
-                {isLoading ? (
-                  <LoadingSpinner size={14} text="Salvando..." />
-                ) : (
-                  "Salvar"
-                )}
-              </Button>
-              <DialogClose asChild>
+          {/* Botões de Ação */}
+          <Card>
+            <CardContent className="pt-6">
+              <div className="flex gap-4 justify-end">
+                <Button
+                  type="submit"
+                  disabled={isLoading}
+                  className="flex items-center justify-center min-w-[120px]"
+                >
+                  {isLoading ? (
+                    <LoadingSpinner size={14} text="Salvando..." />
+                  ) : (
+                    "Salvar Propriedade"
+                  )}
+                </Button>
                 <Button type="button" variant="outline">
                   Cancelar
                 </Button>
-              </DialogClose>
-            </DialogFooter>
-          </form>
-        </Form>
-      </DialogContent>
-    </Dialog>
+              </div>
+            </CardContent>
+          </Card>
+        </form>
+      </Form>
+    </div>
   );
 }

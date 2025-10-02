@@ -1,6 +1,6 @@
 "use client";
 
-import { useCallback, useEffect, useRef, useState } from "react";
+import { useCallback, useEffect, useState } from "react";
 import { useProperties } from "@/hooks/use-properties";
 import { DataTable } from "@/components/data-table";
 import { columns } from "./columns";
