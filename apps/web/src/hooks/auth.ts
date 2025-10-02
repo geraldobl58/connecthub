@@ -1,10 +1,12 @@
 "use client";
 
-import { useMutation, useQuery, useQueryClient } from "@tanstack/react-query";
+import { useMutation, useQueryClient } from "@tanstack/react-query";
 import { useRouter } from "next/navigation";
 
 import { cookieUtils } from "@/lib/cookies";
 import { isAuthError } from "@/lib/error-utils";
+import { useApiQuery } from "./use-api-query";
+import { queryKeys } from "@/lib/query-keys";
 
 import { loginAction, getProfileAction } from "../actions/auth";
 import { LoginValues } from "../schemas/auth";
@@ -21,23 +23,10 @@ export const useAuth = () => {
     data: user,
     isLoading: isLoadingUser,
     error: profileError,
-  } = useQuery<User>({
-    queryKey: ["user"],
-    queryFn: async () => {
-      try {
-        const userData = await authHttpService.getProfile();
-        return userData;
-      } catch (error) {
-        if (isAuthError(error)) {
-          cookieUtils.removeToken();
-        }
-        throw error;
-      }
-    },
-    enabled: cookieUtils.hasToken(),
-    retry: false,
-    staleTime: 5 * 60 * 1000, // 5 minutos
-  });
+  } = useApiQuery<User>(
+    queryKeys.user,
+    async () => await authHttpService.getProfile()
+  );
 
   const loginMutation = useMutation({
     mutationFn: async (credentials: LoginValues) => {
