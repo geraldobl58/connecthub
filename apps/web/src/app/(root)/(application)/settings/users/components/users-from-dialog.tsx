@@ -41,6 +41,7 @@ import { useForm } from "react-hook-form";
 import { useEffect } from "react";
 import { useCreateUser, useUpdateUser } from "@/hooks/use-users";
 import { useAuth } from "@/hooks/auth";
+import { toast } from "sonner";
 
 interface FormDialogProps {
   isOpen: boolean;
@@ -87,6 +88,10 @@ export function UsersFormDialog({
   }, [isOpen, user, form]);
 
   const onSubmit = async (data: CreateUserFormValues | UpdateUserValues) => {
+    const toastId = toast.loading(
+      isEditMode ? "Atualizando usuário..." : "Criando usuário..."
+    );
+
     try {
       if (isEditMode && user) {
         await updateUserMutation.mutateAsync({
@@ -97,6 +102,11 @@ export function UsersFormDialog({
             role: data.role as Role,
             isActive: data.isActive,
           },
+        });
+
+        toast.success("Usuário Atualizado", {
+          id: toastId,
+          description: `${data.name} foi atualizado com sucesso!`,
         });
       } else {
         // Criar novo usuário com dados do formulário
@@ -110,7 +120,13 @@ export function UsersFormDialog({
           role: createData.role as Role,
           isActive: createData.isActive ?? true,
         });
+
+        toast.success("Usuário Criado", {
+          id: toastId,
+          description: `${data.name} foi criado com sucesso!`,
+        });
       }
+
       onClose();
       onSuccess?.();
     } catch (error: unknown) {
@@ -124,13 +140,22 @@ export function UsersFormDialog({
       }
       const axiosError = error as ErrorResponse;
       if (axiosError?.response?.status === 403) {
-        alert("Erro: Apenas administradores podem criar usuários");
+        toast.error("Acesso Negado", {
+          id: toastId,
+          description: "Apenas administradores podem criar usuários.",
+        });
       } else if (axiosError?.response?.status === 409) {
-        alert(
-          `Erro: ${axiosError?.response?.data?.message || "Email já está em uso"}`
-        );
+        toast.error("Email em Uso", {
+          id: toastId,
+          description:
+            axiosError?.response?.data?.message ||
+            "Email já está sendo usado. Aguarde alguns segundos e tente novamente.",
+        });
       } else {
-        alert("Erro ao salvar usuário. Verifique os dados e tente novamente.");
+        toast.error("Erro ao Salvar", {
+          id: toastId,
+          description: "Verifique os dados e tente novamente.",
+        });
       }
     }
   };
