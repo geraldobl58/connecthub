@@ -9,6 +9,7 @@ import { useUrlFilters } from "@/hooks/use-url-filters";
 import { UsersSearch } from "./users-search";
 import { UsersBulkActions } from "./users-bulk-actions";
 import { UserResponse } from "@/types/users";
+import { LoadingSpinner } from "@/components/common/loading-spinner";
 
 export const UsersList = () => {
   const [isMounted, setIsMounted] = useState(false);
@@ -53,18 +54,12 @@ export const UsersList = () => {
       {!isMounted ? (
         // Estado inicial durante hidratação
         <div className="flex items-center justify-center h-64">
-          <div className="text-center">
-            <div className="animate-spin rounded-full h-8 w-8 border-b-2 border-gray-900 mx-auto"></div>
-            <p className="mt-2 text-gray-500">Carregando...</p>
-          </div>
+          <LoadingSpinner size={32} text="Carregando..." />
         </div>
       ) : isLoading ? (
         // Estado de loading após hidratação
         <div className="flex items-center justify-center h-64">
-          <div className="text-center">
-            <div className="animate-spin rounded-full h-8 w-8 border-b-2 border-gray-900 mx-auto"></div>
-            <p className="mt-2 text-gray-500">Carregando usuários...</p>
-          </div>
+          <LoadingSpinner size={32} text="Carregando usuários..." />
         </div>
       ) : error ? (
         // Estado de erro
