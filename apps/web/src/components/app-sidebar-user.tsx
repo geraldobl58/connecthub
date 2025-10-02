@@ -1,6 +1,6 @@
 "use client";
 
-import { useState } from "react";
+import React, { useState } from "react";
 import { ChevronDown, LogOut, Star, Check, Bell, Receipt } from "lucide-react";
 import { useAuth } from "@/hooks/auth";
 import { LoadingSpinner } from "./common/loading-spinner";
@@ -18,6 +18,12 @@ export function AppSidebarUser() {
   const { user, logout } = useAuth();
   const [showLogoutConfirm, setShowLogoutConfirm] = useState(false);
   const [isLoggingOut, setIsLoggingOut] = useState(false);
+  const [isMounted, setIsMounted] = useState(false);
+
+  // Garantir que renderizamos apenas no cliente após hidratação
+  React.useEffect(() => {
+    setIsMounted(true);
+  }, []);
 
   const handleLogout = () => {
     setShowLogoutConfirm(true);
@@ -36,6 +42,11 @@ export function AppSidebarUser() {
   const cancelLogout = () => {
     setShowLogoutConfirm(false);
   };
+
+  // Durante SSR e hidratação inicial, não renderizar nada
+  if (!isMounted) {
+    return null;
+  }
 
   if (!user) return null;
 
