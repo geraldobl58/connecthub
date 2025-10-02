@@ -29,9 +29,9 @@ import {
 } from "@/components/ui/select";
 import { Switch } from "@/components/ui/switch";
 import {
-  createUserSchema,
+  createUserFormSchema,
   updateUserSchema,
-  CreateUserValues,
+  CreateUserFormValues,
   UpdateUserValues,
 } from "@/schemas/user";
 import { UserResponse } from "@/types/users";
@@ -40,6 +40,7 @@ import { zodResolver } from "@hookform/resolvers/zod";
 import { useForm } from "react-hook-form";
 import { useEffect } from "react";
 import { useCreateUser, useUpdateUser } from "@/hooks/use-users";
+import { useAuth } from "@/hooks/auth";
 
 interface FormDialogProps {
   isOpen: boolean;
@@ -56,12 +57,13 @@ export function UsersFormDialog({
   user,
   onSuccess,
 }: FormDialogProps) {
+  const { user: currentUser } = useAuth();
   const createUserMutation = useCreateUser();
   const updateUserMutation = useUpdateUser();
   const isEditMode = mode === "edit" && user;
 
-  const form = useForm<CreateUserValues | UpdateUserValues>({
-    resolver: zodResolver(isEditMode ? updateUserSchema : createUserSchema),
+  const form = useForm<CreateUserFormValues | UpdateUserValues>({
+    resolver: zodResolver(isEditMode ? updateUserSchema : createUserFormSchema),
     defaultValues: {
       name: user?.name || "",
       email: user?.email || "",
@@ -84,7 +86,7 @@ export function UsersFormDialog({
     }
   }, [isOpen, user, form]);
 
-  const onSubmit = async (data: CreateUserValues | UpdateUserValues) => {
+  const onSubmit = async (data: CreateUserFormValues | UpdateUserValues) => {
     try {
       if (isEditMode && user) {
         await updateUserMutation.mutateAsync({
@@ -96,19 +98,40 @@ export function UsersFormDialog({
             isActive: data.isActive,
           },
         });
-        console.log("Usuário atualizado com sucesso!");
       } else {
+        // Criar novo usuário com dados do formulário
+        const createData = data as CreateUserFormValues;
+
         await createUserMutation.mutateAsync({
-          ...(data as CreateUserValues),
-          tenantId: "default", // TODO: pegar do contexto/estado global
-          isActive: data.isActive ?? true,
+          tenantId: currentUser?.tenantId || "default",
+          name: createData.name,
+          email: createData.email,
+          password: createData.password,
+          role: createData.role as Role,
+          isActive: createData.isActive ?? true,
         });
-        console.log("Usuário criado com sucesso!");
       }
       onClose();
       onSuccess?.();
-    } catch (error) {
-      console.error("Erro ao salvar usuário:", error);
+    } catch (error: unknown) {
+      interface ErrorResponse {
+        response?: {
+          status?: number;
+          data?: {
+            message?: string;
+          };
+        };
+      }
+      const axiosError = error as ErrorResponse;
+      if (axiosError?.response?.status === 403) {
+        alert("Erro: Apenas administradores podem criar usuários");
+      } else if (axiosError?.response?.status === 409) {
+        alert(
+          `Erro: ${axiosError?.response?.data?.message || "Email já está em uso"}`
+        );
+      } else {
+        alert("Erro ao salvar usuário. Verifique os dados e tente novamente.");
+      }
     }
   };
 
