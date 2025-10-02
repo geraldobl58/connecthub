@@ -1,6 +1,8 @@
 "use client";
 
-import { useQuery, useMutation, useQueryClient } from "@tanstack/react-query";
+import { useApiQuery, useApiMutation } from "./use-api-query";
+import { useQueryClient } from "@tanstack/react-query";
+import { queryKeys } from "@/lib/query-keys";
 import {
   UserResponse,
   UserPaginatedResponse,
@@ -8,9 +10,7 @@ import {
   CreateUserRequest,
   UpdateUserRequest,
 } from "@/types/users";
-import { cookieUtils } from "@/lib/cookies";
 import { userHttpService } from "@/http/user";
-import { isAuthError } from "@/lib/error-utils";
 
 export const useUsers = (params?: UserListParams) => {
   const {
@@ -18,23 +18,10 @@ export const useUsers = (params?: UserListParams) => {
     isLoading: isLoadingUsers,
     error: usersError,
     refetch,
-  } = useQuery<UserPaginatedResponse>({
-    queryKey: ["users", params],
-    queryFn: async () => {
-      try {
-        const userData = await userHttpService.getUsers(params);
-        return userData;
-      } catch (error) {
-        if (isAuthError(error)) {
-          cookieUtils.removeToken();
-        }
-        throw error;
-      }
-    },
-    enabled: cookieUtils.hasToken(),
-    retry: false,
-    staleTime: 5 * 60 * 1000, // Cache válido por 5 minutos
-  });
+  } = useApiQuery<UserPaginatedResponse>(
+    queryKeys.usersList(params),
+    async () => await userHttpService.getUsers(params)
+  );
 
   return {
     users: usersData?.data || [],
@@ -50,23 +37,13 @@ export const useUser = (id: string) => {
     data: user,
     isLoading: isLoadingUser,
     error: userError,
-  } = useQuery<UserResponse>({
-    queryKey: ["user", id],
-    queryFn: async () => {
-      try {
-        const userData = await userHttpService.getUserById(id);
-        return userData;
-      } catch (error) {
-        if (isAuthError(error)) {
-          cookieUtils.removeToken();
-        }
-        throw error;
-      }
-    },
-    enabled: !!id && cookieUtils.hasToken(),
-    retry: false,
-    staleTime: 5 * 60 * 1000, // Cache válido por 5 minutos
-  });
+  } = useApiQuery<UserResponse>(
+    queryKeys.userById(id),
+    async () => await userHttpService.getUserById(id),
+    {
+      enabled: !!id,
+    }
+  );
 
   return {
     user,
@@ -76,83 +53,52 @@ export const useUser = (id: string) => {
 };
 
 export const useCreateUser = () => {
-  const queryClient = useQueryClient();
-
-  return useMutation({
-    mutationFn: async (userData: CreateUserRequest) => {
-      return await userHttpService.createUser(userData);
-    },
-    onSuccess: () => {
-      queryClient.invalidateQueries({ queryKey: ["users"] });
-      queryClient.invalidateQueries({ queryKey: ["user"] });
-    },
-    onError: (error) => {
-      if (isAuthError(error)) {
-        cookieUtils.removeToken();
-      }
-    },
-  });
+  return useApiMutation<unknown, CreateUserRequest>(
+    async (userData: CreateUserRequest) =>
+      await userHttpService.createUser(userData),
+    [queryKeys.users, queryKeys.user]
+  );
 };
 
 export const useUpdateUser = () => {
   const queryClient = useQueryClient();
 
-  return useMutation({
-    mutationFn: async ({
-      id,
-      userData,
-    }: {
-      id: string;
-      userData: UpdateUserRequest;
-    }) => {
-      return await userHttpService.updateUser(id, userData);
-    },
-    onSuccess: (_, variables) => {
-      queryClient.invalidateQueries({ queryKey: ["users"] });
-      queryClient.invalidateQueries({ queryKey: ["user", variables.id] });
-    },
-    onError: (error) => {
-      if (isAuthError(error)) {
-        cookieUtils.removeToken();
-      }
-    },
-  });
+  return useApiMutation<unknown, { id: string; userData: UpdateUserRequest }>(
+    async ({ id, userData }) => await userHttpService.updateUser(id, userData),
+    [queryKeys.users, queryKeys.user],
+    {
+      onSuccess: (
+        _: unknown,
+        variables: { id: string; userData: UpdateUserRequest }
+      ) => {
+        queryClient.invalidateQueries({
+          queryKey: queryKeys.userById(variables.id),
+        });
+      },
+    }
+  );
 };
 
 export const useDeleteUser = () => {
-  const queryClient = useQueryClient();
-
-  return useMutation({
-    mutationFn: async (id: string) => {
-      return await userHttpService.deleteUser(id);
-    },
-    onSuccess: () => {
-      queryClient.invalidateQueries({ queryKey: ["users"] });
-      queryClient.invalidateQueries({ queryKey: ["user"] });
-    },
-    onError: (error) => {
-      if (isAuthError(error)) {
-        cookieUtils.removeToken();
-      }
-    },
-  });
+  return useApiMutation<unknown, string>(
+    async (id: string) => await userHttpService.deleteUser(id),
+    [queryKeys.users, queryKeys.user]
+  );
 };
 
 export const useToggleUserStatus = () => {
   const queryClient = useQueryClient();
 
-  return useMutation({
-    mutationFn: async ({ id, isActive }: { id: string; isActive: boolean }) => {
-      return await userHttpService.toggleUserStatus(id, isActive);
-    },
-    onSuccess: (_, variables) => {
-      queryClient.invalidateQueries({ queryKey: ["users"] });
-      queryClient.invalidateQueries({ queryKey: ["user", variables.id] });
-    },
-    onError: (error) => {
-      if (isAuthError(error)) {
-        cookieUtils.removeToken();
-      }
-    },
-  });
+  return useApiMutation<unknown, { id: string; isActive: boolean }>(
+    async ({ id, isActive }) =>
+      await userHttpService.toggleUserStatus(id, isActive),
+    [queryKeys.users],
+    {
+      onSuccess: (_: unknown, variables: { id: string; isActive: boolean }) => {
+        queryClient.invalidateQueries({
+          queryKey: queryKeys.userById(variables.id),
+        });
+      },
+    }
+  );
 };
