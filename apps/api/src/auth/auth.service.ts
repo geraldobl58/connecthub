@@ -11,60 +11,40 @@ export class AuthService {
     private jwt: JwtService,
   ) {}
 
-  async login(email: string, password: string, tenantId?: string) {
-    // Primeiro, verificar se o tenant existe quando informado e obter o ID real
-    let actualTenantId = tenantId;
-    if (tenantId) {
-      const tenantExists = await this.prisma.tenant.findFirst({
-        where: {
-          OR: [{ id: tenantId }, { slug: tenantId }],
-        },
-      });
+  async login(email: string, password: string, tenantId: string) {
+    // Verificar se o tenant existe e obter o ID real
+    const tenantExists = await this.prisma.tenant.findFirst({
+      where: {
+        OR: [{ id: tenantId }, { slug: tenantId }],
+      },
+    });
 
-      if (!tenantExists) {
-        throw new UnauthorizedException('Invalid credentials');
-      }
-
-      // Usar o ID real do tenant para a busca do usuário
-      actualTenantId = tenantExists.id;
+    if (!tenantExists) {
+      throw new UnauthorizedException('Invalid credentials');
     }
 
-    const user = actualTenantId
-      ? await this.prisma.user.findUnique({
-          where: {
-            tenantId_email: {
-              tenantId: actualTenantId,
-              email,
-            },
-            deletedAt: null,
-            isActive: true,
+    // Usar o ID real do tenant para a busca do usuário
+    const actualTenantId = tenantExists.id;
+
+    const user = await this.prisma.user.findUnique({
+      where: {
+        tenantId_email: {
+          tenantId: actualTenantId,
+          email,
+        },
+        deletedAt: null,
+        isActive: true,
+      },
+      include: {
+        tenant: {
+          select: {
+            id: true,
+            name: true,
+            slug: true,
           },
-          include: {
-            tenant: {
-              select: {
-                id: true,
-                name: true,
-                slug: true,
-              },
-            },
-          },
-        })
-      : await this.prisma.user.findFirst({
-          where: {
-            email,
-            deletedAt: null,
-            isActive: true,
-          },
-          include: {
-            tenant: {
-              select: {
-                id: true,
-                name: true,
-                slug: true,
-              },
-            },
-          },
-        });
+        },
+      },
+    });
 
     if (!user) {
       throw new UnauthorizedException('Invalid credentials');

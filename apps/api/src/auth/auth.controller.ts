@@ -107,6 +107,17 @@ export class AuthController {
     },
   })
   @ApiResponse({
+    status: 400,
+    description: 'Validation error - Tenant ID is required',
+    schema: {
+      example: {
+        statusCode: 400,
+        message: 'Tenant ID is required',
+        error: 'Bad Request',
+      },
+    },
+  })
+  @ApiResponse({
     status: 401,
     description: 'Invalid credentials',
     schema: {
