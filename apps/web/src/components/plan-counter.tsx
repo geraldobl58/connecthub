@@ -11,7 +11,6 @@ import {
 import { Badge } from "@/components/ui/badge";
 import { Button } from "@/components/ui/button";
 import {
-  Clock,
   AlertTriangle,
   CheckCircle,
   Calendar,
@@ -95,24 +94,19 @@ export const PlanCounter = ({
     return () => clearInterval(interval);
   }, [actualExpiresAt, isMounted]);
 
-  if (!isMounted || isLoadingPlan) {
+  if (!isMounted) {
     return (
-      <Card className="w-full">
-        <CardHeader className="pb-3">
-          <div className="flex items-center justify-between">
-            <div className="flex items-center space-x-2">
-              <Clock className="h-5 w-5 text-blue-600" />
-              <CardTitle className="text-lg">Plano Atual</CardTitle>
-            </div>
-          </div>
-        </CardHeader>
-        <CardContent>
-          <div className="animate-pulse">
-            <div className="h-4 bg-gray-200 rounded w-3/4 mb-2"></div>
-            <div className="h-6 bg-gray-200 rounded w-1/2"></div>
-          </div>
-        </CardContent>
-      </Card>
+      <div className="flex items-center justify-center p-8">
+        <LoadingSpinner size={24} text="Carregando..." />
+      </div>
+    );
+  }
+
+  if (isLoadingPlan) {
+    return (
+      <div className="flex items-center justify-center p-8">
+        <LoadingSpinner size={24} text="Carregando plano..." />
+      </div>
     );
   }
 
