@@ -1,10 +1,34 @@
 import { z } from "zod";
 
-// Schema para criação de usuário
+// Schema para criação de usuário (para API)
 export const createUserSchema = z.object({
   tenantId: z.string().min(1, {
     message: "ID do tenant é obrigatório.",
   }),
+  name: z.string().min(1, {
+    message: "Nome é obrigatório.",
+  }),
+  email: z.string().email({
+    message: "O e-mail deve ser válido.",
+  }),
+  password: z
+    .string()
+    .min(6, {
+      message: "A senha deve ter no mínimo 6 caracteres.",
+    })
+    .max(20, {
+      message: "A senha deve ter no máximo 20 caracteres.",
+    })
+    .regex(/^(?=.*[a-z])(?=.*[A-Z])(?=.*\d)(?=.*[@$!%*?&])[A-Za-z\d@$!%*?&]/, {
+      message:
+        "A senha deve conter ao menos: 1 maiúscula, 1 minúscula, 1 número e 1 símbolo.",
+    }),
+  role: z.enum(["ADMIN", "MANAGER", "AGENT", "VIEWER"]).optional(),
+  isActive: z.boolean().optional(),
+});
+
+// Schema para formulário de criação de usuário (sem tenantId)
+export const createUserFormSchema = z.object({
   name: z.string().min(1, {
     message: "Nome é obrigatório.",
   }),
@@ -63,6 +87,7 @@ export const userIdSchema = z.object({
 
 // Types
 export type CreateUserValues = z.infer<typeof createUserSchema>;
+export type CreateUserFormValues = z.infer<typeof createUserFormSchema>;
 export type UpdateUserValues = z.infer<typeof updateUserSchema>;
 export type UserListParamsValues = z.infer<typeof userListParamsSchema>;
 export type UserIdValues = z.infer<typeof userIdSchema>;
