@@ -13,7 +13,7 @@ import {
 import { UserResponse } from "@/types/users";
 import { MoreHorizontal } from "lucide-react";
 import { AlertDialogGeneric } from "@/components/alert-dialog-generic";
-import { useDeleteUser, useToggleUserStatus } from "@/hooks/use-users";
+import { useDeleteUser } from "@/hooks/use-users";
 import { UsersFormDialog } from "./users-from-dialog";
 
 interface UsersActionsProps {
@@ -26,7 +26,6 @@ export const UsersActions = ({ user, onSuccess }: UsersActionsProps) => {
   const [isEditDialogOpen, setIsEditDialogOpen] = useState(false);
   const [isDeleting, setIsDeleting] = useState(false);
   const deleteUserMutation = useDeleteUser();
-  const toggleStatusMutation = useToggleUserStatus();
 
   const handleDelete = async () => {
     setIsDeleting(true);
@@ -38,18 +37,6 @@ export const UsersActions = ({ user, onSuccess }: UsersActionsProps) => {
       // Erro tratado silenciosamente
     } finally {
       setIsDeleting(false);
-    }
-  };
-
-  const handleToggleStatus = async () => {
-    try {
-      await toggleStatusMutation.mutateAsync({
-        id: user.id,
-        isActive: !user.isActive,
-      });
-      onSuccess?.();
-    } catch {
-      // Erro tratado silenciosamente
     }
   };
 
@@ -67,9 +54,6 @@ export const UsersActions = ({ user, onSuccess }: UsersActionsProps) => {
           <DropdownMenuSeparator />
           <DropdownMenuItem onClick={() => setIsEditDialogOpen(true)}>
             Editar
-          </DropdownMenuItem>
-          <DropdownMenuItem onClick={handleToggleStatus}>
-            {user.isActive ? "Desativar" : "Ativar"}
           </DropdownMenuItem>
           <DropdownMenuSeparator />
           <DropdownMenuItem
