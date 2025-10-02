@@ -93,6 +93,16 @@ async function main() {
     },
   });
 
+  // Tenant 4: G3 Developer - Para demonstração técnica
+  const tenant4 = await prisma.tenant.upsert({
+    where: { slug: 'g3developer' },
+    update: {},
+    create: {
+      name: 'G3 Developer',
+      slug: 'g3developer',
+    },
+  });
+
   // Criar Users com todas as roles
   console.log('👥 Creating users...');
   const passwordHash = await hash('Demo123!', 10);
@@ -563,6 +573,26 @@ async function main() {
     },
   });
 
+  const owner3 = await prisma.owner.create({
+    data: {
+      tenantId: tenant3.id,
+      name: 'Tech Solutions Corp',
+      phone: '1133334444',
+      email: 'contato@techsolutions.com',
+      notes: 'Empresa de tecnologia, interessada em propriedades comerciais',
+    },
+  });
+
+  const owner4 = await prisma.owner.create({
+    data: {
+      tenantId: tenant4.id,
+      name: 'G3 Developer Properties',
+      phone: '1199998888',
+      email: 'properties@g3developer.com',
+      notes: 'Propriedades para demonstração e desenvolvimento',
+    },
+  });
+
   // Criar Properties
   const property1 = await prisma.property.upsert({
     where: {
@@ -676,6 +706,286 @@ async function main() {
   });
 
   console.log(`✅ Created ${3} properties`);
+
+  // Criar 25 propriedades para cada tenant
+  console.log('🏠 Creating 25 properties for each tenant...');
+
+  // Função para gerar propriedades aleatórias
+  const generateProperties = (tenant: any, owner: any, prefix: string) => {
+    const propertyTypes = ['HOUSE', 'APARTMENT', 'CONDO', 'LAND', 'COMMERCIAL'];
+    const propertyStatuses = [
+      'ACTIVE',
+      'INACTIVE',
+      'RESERVED',
+      'SOLD',
+      'RENTED',
+    ];
+    const cities = [
+      {
+        name: 'São Paulo',
+        state: 'SP',
+        districts: [
+          'Centro',
+          'Vila Madalena',
+          'Alto de Pinheiros',
+          'Jardim Europa',
+          'Bela Vista',
+          'Vila Olímpia',
+          'Brooklin',
+        ],
+      },
+      {
+        name: 'Rio de Janeiro',
+        state: 'RJ',
+        districts: [
+          'Copacabana',
+          'Ipanema',
+          'Barra da Tijuca',
+          'Recreio dos Bandeirantes',
+          'Leblon',
+          'Botafogo',
+        ],
+      },
+      {
+        name: 'Belo Horizonte',
+        state: 'MG',
+        districts: [
+          'Savassi',
+          'Funcionários',
+          'Lourdes',
+          'Centro',
+          'Sion',
+          'Pampulha',
+        ],
+      },
+      {
+        name: 'Brasília',
+        state: 'DF',
+        districts: [
+          'Asa Norte',
+          'Asa Sul',
+          'Lago Sul',
+          'Lago Norte',
+          'Taguatinga',
+          'Guará',
+        ],
+      },
+      {
+        name: 'Salvador',
+        state: 'BA',
+        districts: [
+          'Barra',
+          'Ondina',
+          'Pituba',
+          'Rio Vermelho',
+          'Centro',
+          'Costa Azul',
+        ],
+      },
+    ];
+
+    const properties: any[] = [];
+
+    for (let i = 1; i <= 25; i++) {
+      const type =
+        propertyTypes[Math.floor(Math.random() * propertyTypes.length)];
+      const status =
+        propertyStatuses[Math.floor(Math.random() * propertyStatuses.length)];
+      const city = cities[Math.floor(Math.random() * cities.length)];
+      const district =
+        city.districts[Math.floor(Math.random() * city.districts.length)];
+
+      // Gerar dados baseados no tipo
+      let bedroom: number | null = null;
+      let bathroom: number | null = null;
+      let parking: number | null = null;
+      let area: number | null = null;
+
+      if (type === 'HOUSE' || type === 'APARTMENT' || type === 'CONDO') {
+        bedroom = Math.floor(Math.random() * 4) + 1; // 1-4 quartos
+        bathroom = Math.floor(Math.random() * 3) + 1; // 1-3 banheiros
+        parking = Math.floor(Math.random() * 3); // 0-2 vagas
+        area = Math.floor(Math.random() * 150) + 50; // 50-200m²
+      } else if (type === 'LAND') {
+        area = Math.floor(Math.random() * 1000) + 200; // 200-1200m²
+      } else if (type === 'COMMERCIAL') {
+        bathroom = Math.floor(Math.random() * 4) + 1; // 1-4 banheiros
+        parking = Math.floor(Math.random() * 10) + 2; // 2-11 vagas
+        area = Math.floor(Math.random() * 300) + 100; // 100-400m²
+      }
+
+      // Gerar preço baseado no tipo e área
+      let basePrice = 300000;
+      if (type === 'LAND') basePrice = 200000;
+      else if (type === 'COMMERCIAL') basePrice = 500000;
+      else if (type === 'CONDO') basePrice = 600000;
+
+      const price = Math.floor(basePrice + Math.random() * 1000000);
+
+      const code = `${prefix}${i.toString().padStart(3, '0')}`;
+
+      properties.push({
+        code,
+        title: `${type === 'HOUSE' ? 'Casa' : type === 'APARTMENT' ? 'Apartamento' : type === 'CONDO' ? 'Cobertura' : type === 'LAND' ? 'Terreno' : 'Sala Comercial'} ${bedroom ? bedroom + ' quartos' : ''} - ${district}`,
+        description: `Propriedade ${type.toLowerCase()} em ${district}, ${city.name}. ${type === 'HOUSE' || type === 'APARTMENT' ? 'Ideal para' + (bedroom && bedroom > 2 ? ' famílias' : ' casais ou solteiros') : type === 'LAND' ? 'Terreno plano, ideal para construção' : type === 'COMMERCIAL' ? 'Ideal para escritórios e empresas' : 'Cobertura luxuosa com vista privilegiada'}.`,
+        type,
+        status,
+        price,
+        bedroom,
+        bathroom,
+        parking,
+        area,
+        address: {
+          street: `Rua ${['das Flores', 'dos Girassóis', 'das Palmeiras', 'Harmonia', 'dos Lírios', 'das Conchas', 'Funchal', 'dos Três Irmãos', 'Barata Ribeiro', 'Visconde de Pirajá'][Math.floor(Math.random() * 10)]}`,
+          number: (Math.floor(Math.random() * 9999) + 1).toString(),
+          district,
+          city: city.name,
+          state: city.state,
+          zip: `${Math.floor(Math.random() * 99999)
+            .toString()
+            .padStart(5, '0')}-${Math.floor(Math.random() * 999)
+            .toString()
+            .padStart(3, '0')}`,
+          lat: -23.5 + (Math.random() - 0.5) * 0.2, // Variação em SP
+          lng: -46.6 + (Math.random() - 0.5) * 0.2,
+        },
+      });
+    }
+
+    return properties;
+  };
+
+  // Gerar propriedades para cada tenant
+  const tenant1Properties = generateProperties(tenant1, owner1, 'SP');
+  const tenant2Properties = generateProperties(tenant2, owner2, 'RJ');
+  const tenant3Properties = generateProperties(tenant3, owner3, 'TS');
+  const tenant4Properties = generateProperties(tenant4, owner4, 'G3');
+
+  // Criar propriedades do Tenant 1
+  for (const propData of tenant1Properties) {
+    await prisma.property.upsert({
+      where: {
+        tenantId_code: {
+          tenantId: tenant1.id,
+          code: propData.code,
+        },
+      },
+      update: {},
+      create: {
+        tenantId: tenant1.id,
+        code: propData.code,
+        title: propData.title,
+        description: propData.description,
+        type: propData.type,
+        status: propData.status,
+        price: propData.price,
+        bedroom: propData.bedroom,
+        bathroom: propData.bathroom,
+        parking: propData.parking,
+        area: propData.area,
+        ownerId: owner1.id,
+        address: {
+          create: propData.address,
+        },
+      },
+    });
+  }
+
+  // Criar propriedades do Tenant 2
+  for (const propData of tenant2Properties) {
+    await prisma.property.upsert({
+      where: {
+        tenantId_code: {
+          tenantId: tenant2.id,
+          code: propData.code,
+        },
+      },
+      update: {},
+      create: {
+        tenantId: tenant2.id,
+        code: propData.code,
+        title: propData.title,
+        description: propData.description,
+        type: propData.type,
+        status: propData.status,
+        price: propData.price,
+        bedroom: propData.bedroom,
+        bathroom: propData.bathroom,
+        parking: propData.parking,
+        area: propData.area,
+        ownerId: owner2.id,
+        address: {
+          create: propData.address,
+        },
+      },
+    });
+  }
+
+  // Criar propriedades do Tenant 3
+  for (const propData of tenant3Properties) {
+    await prisma.property.upsert({
+      where: {
+        tenantId_code: {
+          tenantId: tenant3.id,
+          code: propData.code,
+        },
+      },
+      update: {},
+      create: {
+        tenantId: tenant3.id,
+        code: propData.code,
+        title: propData.title,
+        description: propData.description,
+        type: propData.type,
+        status: propData.status,
+        price: propData.price,
+        bedroom: propData.bedroom,
+        bathroom: propData.bathroom,
+        parking: propData.parking,
+        area: propData.area,
+        ownerId: owner3.id,
+        address: {
+          create: propData.address,
+        },
+      },
+    });
+  }
+
+  // Criar propriedades do Tenant 4 (G3 Developer)
+  for (const propData of tenant4Properties) {
+    await prisma.property.upsert({
+      where: {
+        tenantId_code: {
+          tenantId: tenant4.id,
+          code: propData.code,
+        },
+      },
+      update: {},
+      create: {
+        tenantId: tenant4.id,
+        code: propData.code,
+        title: propData.title,
+        description: propData.description,
+        type: propData.type,
+        status: propData.status,
+        price: propData.price,
+        bedroom: propData.bedroom,
+        bathroom: propData.bathroom,
+        parking: propData.parking,
+        area: propData.area,
+        ownerId: owner4.id,
+        address: {
+          create: propData.address,
+        },
+      },
+    });
+  }
+
+  const totalProperties = 3 + 25 * 4; // 3 originais + 25 para cada tenant
+  console.log(
+    `✅ Created 25 properties for each tenant (100 total additional properties)`,
+  );
+  console.log(`📊 Total properties created: ${totalProperties}`);
 
   console.log('🎯 Creating stages...');
 
