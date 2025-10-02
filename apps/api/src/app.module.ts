@@ -6,6 +6,7 @@ import { PrismaModule } from './prisma/prisma.module';
 import { PlansModule } from './plans/plans.module';
 import { PermissionsModule } from './permissions/permissions.module';
 import { UsersModule } from './users/users.module';
+import { PropertyModule } from './property/property.module';
 
 @Module({
   imports: [
@@ -15,6 +16,7 @@ import { UsersModule } from './users/users.module';
     PlansModule,
     PermissionsModule,
     UsersModule,
+    PropertyModule,
   ],
   controllers: [],
   providers: [],
