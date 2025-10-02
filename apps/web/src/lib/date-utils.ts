@@ -33,6 +33,7 @@ export const formatLongDate = (date: string | Date): string => {
  */
 export const formatRelativeDate = (date: string | Date): string => {
   const dateObj = typeof date === "string" ? new Date(date) : date;
+  // eslint-disable-next-line @typescript-eslint/no-require-imports
   const { formatDistanceToNow } = require("date-fns");
   return formatDistanceToNow(dateObj, {
     addSuffix: true,
