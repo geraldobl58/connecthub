@@ -25,7 +25,6 @@ export function MenuPermissionsDemo() {
     canViewReports,
     canManageSettings,
     canViewSettings,
-    canManageSubscriptions,
     canViewSubscriptions,
   } = usePermissions();
 
