@@ -5,7 +5,8 @@ import { useForm } from "react-hook-form";
 import { zodResolver } from "@hookform/resolvers/zod";
 import { useRouter, useSearchParams } from "next/navigation";
 
-import { Eye, EyeOff, Loader2, Building2 } from "lucide-react";
+import { Eye, EyeOff, Building2 } from "lucide-react";
+import { LoadingSpinner } from "./common/loading-spinner";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
@@ -247,10 +248,7 @@ export const LoginForm = ({
 
         <Button type="submit" className="w-full" disabled={isLoading} size="lg">
           {isLoading ? (
-            <div className="flex items-center justify-center">
-              <Loader2 className="animate-spin mr-2 h-4 w-4" />
-              <span>Entrando...</span>
-            </div>
+            <LoadingSpinner size={16} text="Entrando..." />
           ) : (
             "Entrar"
           )}
