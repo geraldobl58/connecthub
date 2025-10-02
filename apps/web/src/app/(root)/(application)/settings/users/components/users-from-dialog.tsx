@@ -36,12 +36,14 @@ import {
 } from "@/schemas/user";
 import { UserResponse } from "@/types/users";
 import { Role } from "@/types/permissions";
+import { ROLE_LABELS, ERROR_MESSAGES } from "@/lib/constants";
 import { zodResolver } from "@hookform/resolvers/zod";
 import { useForm } from "react-hook-form";
 import { useEffect } from "react";
 import { useCreateUser, useUpdateUser } from "@/hooks/use-users";
 import { useAuth } from "@/hooks/auth";
 import { toast } from "sonner";
+import { LoadingSpinner } from "@/components/common/loading-spinner";
 
 interface FormDialogProps {
   isOpen: boolean;
@@ -142,19 +144,18 @@ export function UsersFormDialog({
       if (axiosError?.response?.status === 403) {
         toast.error("Acesso Negado", {
           id: toastId,
-          description: "Apenas administradores podem criar usuários.",
+          description: ERROR_MESSAGES.ACCESS_DENIED,
         });
       } else if (axiosError?.response?.status === 409) {
         toast.error("Email em Uso", {
           id: toastId,
           description:
-            axiosError?.response?.data?.message ||
-            "Email já está sendo usado. Aguarde alguns segundos e tente novamente.",
+            axiosError?.response?.data?.message || ERROR_MESSAGES.EMAIL_IN_USE,
         });
       } else {
         toast.error("Erro ao Salvar", {
           id: toastId,
-          description: "Verifique os dados e tente novamente.",
+          description: ERROR_MESSAGES.INVALID_DATA,
         });
       }
     }
@@ -252,10 +253,11 @@ export function UsersFormDialog({
                       </SelectTrigger>
                     </FormControl>
                     <SelectContent>
-                      <SelectItem value="ADMIN">Administrador</SelectItem>
-                      <SelectItem value="MANAGER">Gerente</SelectItem>
-                      <SelectItem value="AGENT">Agente</SelectItem>
-                      <SelectItem value="VIEWER">Visualizador</SelectItem>
+                      {Object.entries(ROLE_LABELS).map(([value, label]) => (
+                        <SelectItem key={value} value={value}>
+                          {label}
+                        </SelectItem>
+                      ))}
                     </SelectContent>
                   </Select>
                   <FormMessage />
@@ -285,8 +287,16 @@ export function UsersFormDialog({
             />
 
             <DialogFooter>
-              <Button type="submit" disabled={isLoading}>
-                {isLoading ? "Salvando..." : "Salvar"}
+              <Button
+                type="submit"
+                disabled={isLoading}
+                className="flex items-center justify-center"
+              >
+                {isLoading ? (
+                  <LoadingSpinner size={14} text="Salvando..." />
+                ) : (
+                  "Salvar"
+                )}
               </Button>
               <DialogClose asChild>
                 <Button type="button" variant="outline">
