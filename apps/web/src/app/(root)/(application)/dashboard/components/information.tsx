@@ -37,10 +37,18 @@ export const Information = () => {
     setIsMounted(true);
   }, []);
 
-  if (!isMounted || isLoading) {
+  if (!isMounted) {
     return (
       <div className="flex items-center justify-center min-h-screen">
         <LoadingSpinner size={32} text="Carregando..." />
+      </div>
+    );
+  }
+
+  if (isLoading) {
+    return (
+      <div className="flex items-center justify-center min-h-screen">
+        <LoadingSpinner size={32} text="Carregando dashboard..." />
       </div>
     );
   }
