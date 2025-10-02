@@ -18,6 +18,7 @@ import {
   CreditCard,
   Zap,
 } from "lucide-react";
+import { LoadingSpinner } from "./common/loading-spinner";
 import { plans } from "@/data/plans";
 import { planHttpService } from "@/http/plan";
 import { useUpgradePlan, useRenewPlan, usePlan } from "@/hooks/plan";
@@ -267,10 +268,7 @@ export const PlanCounter = ({
               disabled={isRenewing}
             >
               {isRenewing ? (
-                <div className="flex items-center">
-                  <div className="animate-spin rounded-full h-4 w-4 border-2 border-white border-t-transparent mr-2"></div>
-                  Renovando...
-                </div>
+                <LoadingSpinner size={16} text="Renovando..." />
               ) : (
                 <>
                   <CreditCard className="h-4 w-4 mr-2" />
@@ -288,10 +286,7 @@ export const PlanCounter = ({
               disabled={isRenewing}
             >
               {isRenewing ? (
-                <div className="flex items-center">
-                  <div className="animate-spin rounded-full h-4 w-4 border-2 border-blue-600 border-t-transparent mr-2"></div>
-                  Renovando...
-                </div>
+                <LoadingSpinner size={16} text="Renovando..." />
               ) : (
                 <>
                   <CreditCard className="h-4 w-4 mr-2" />
@@ -309,10 +304,7 @@ export const PlanCounter = ({
               disabled={isUpgrading}
             >
               {isUpgrading ? (
-                <div className="flex items-center">
-                  <div className="animate-spin rounded-full h-4 w-4 border-2 border-blue-600 border-t-transparent mr-2"></div>
-                  Fazendo Upgrade...
-                </div>
+                <LoadingSpinner size={16} text="Fazendo Upgrade..." />
               ) : (
                 <>
                   <Zap className="h-4 w-4 mr-2" />
