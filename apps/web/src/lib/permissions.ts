@@ -3,12 +3,17 @@
  * Baseado no sistema de roles do backend
  */
 
-import {
-  Role,
-  Permission,
-  RolePermissions,
-  ROLE_HIERARCHY,
-} from "@/types/permissions";
+import type { Permission } from "@/types/permissions";
+import { Role, ROLE_HIERARCHY } from "@/types/permissions";
+
+// Re-exportar Role para uso em outros arquivos
+export type { Role };
+
+// Definir interface local para mapeamento de permissões
+interface RolePermissions {
+  role: Role;
+  permissions: Permission[];
+}
 
 /**
  * Mapeamento de permissões por role
