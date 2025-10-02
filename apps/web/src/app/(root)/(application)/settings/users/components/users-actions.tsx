@@ -34,7 +34,6 @@ export const UsersActions = ({ user, onSuccess }: UsersActionsProps) => {
       await deleteUserMutation.mutateAsync(user.id);
       setIsDeleteDialogOpen(false);
       onSuccess?.();
-      console.log("Usuário excluído com sucesso!");
     } catch (error) {
       console.error("Erro ao excluir usuário:", error);
     } finally {
@@ -49,9 +48,6 @@ export const UsersActions = ({ user, onSuccess }: UsersActionsProps) => {
         isActive: !user.isActive,
       });
       onSuccess?.();
-      console.log(
-        `Usuário ${!user.isActive ? "ativado" : "desativado"} com sucesso!`
-      );
     } catch (error) {
       console.error("Erro ao alterar status do usuário:", error);
     }
