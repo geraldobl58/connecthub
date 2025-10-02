@@ -3,6 +3,7 @@
 import { useState } from "react";
 import { ChevronDown, LogOut, Star, Check, Bell, Receipt } from "lucide-react";
 import { useAuth } from "@/hooks/auth";
+import { LoadingSpinner } from "./common/loading-spinner";
 import {
   DropdownMenu,
   DropdownMenuContent,
@@ -140,10 +141,7 @@ export function AppSidebarUser() {
                 className="bg-red-600 hover:bg-red-700 text-white disabled:opacity-50"
               >
                 {isLoggingOut ? (
-                  <div className="flex items-center gap-2">
-                    <div className="animate-spin rounded-full h-3 w-3 border border-white border-t-transparent"></div>
-                    Saindo...
-                  </div>
+                  <LoadingSpinner size={12} text="Saindo..." />
                 ) : (
                   "Sair"
                 )}
