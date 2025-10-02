@@ -32,16 +32,48 @@ export class UsersService {
         );
       }
 
-      // Verificar se o email já existe no tenant
-      const existingUser = await this.prisma.user.findFirst({
+      // Verificar se o email já existe no tenant (apenas usuários não deletados)
+      const normalizedEmail = createUserDto.email.toLowerCase().trim();
+
+      // Buscar usuário ativo (não deletado) com este email
+      const activeUser = await this.prisma.user.findFirst({
         where: {
-          email: createUserDto.email,
+          email: normalizedEmail,
           tenantId,
           deletedAt: null,
+          isActive: true,
+        },
+        select: {
+          id: true,
+          email: true,
+          name: true,
+          deletedAt: true,
+          isActive: true,
         },
       });
 
-      if (existingUser) {
+      // SOLUÇÃO RADICAL: Se não há usuário ativo, limpar QUALQUER usuário deletado com este email
+      if (!activeUser) {
+        const deletedUsersWithThisEmail = await this.prisma.user.findMany({
+          where: {
+            email: normalizedEmail,
+            tenantId,
+            deletedAt: { not: null }, // Apenas usuários deletados
+          },
+        });
+
+        if (deletedUsersWithThisEmail.length > 0) {
+          // REMOVER PERMANENTEMENTE todos os usuários deletados com este email
+          await this.prisma.user.deleteMany({
+            where: {
+              email: normalizedEmail,
+              tenantId,
+              deletedAt: { not: null },
+            },
+          });
+        }
+      } else {
+        // Se há usuário ativo, bloqueia
         throw new ConflictException('Email já está em uso neste tenant');
       }
 
@@ -52,6 +84,7 @@ export class UsersService {
       const user = await this.prisma.user.create({
         data: {
           ...createUserDto,
+          email: createUserDto.email.toLowerCase().trim(), // Normalizar email
           password: hashedPassword,
           tenantId,
           isActive: createUserDto.isActive ?? true,
@@ -209,12 +242,38 @@ export class UsersService {
 
     // Se estiver alterando email, verificar se já existe
     if (updateUserDto.email && updateUserDto.email !== existingUser.email) {
+      const normalizedNewEmail = updateUserDto.email.toLowerCase().trim();
+
+      // SOLUÇÃO RADICAL para UPDATE: Limpar TODOS os usuários deletados com este email primeiro
+      const deletedUsersWithThisEmail = await this.prisma.user.findMany({
+        where: {
+          email: normalizedNewEmail,
+          tenantId,
+          deletedAt: { not: null }, // Apenas usuários deletados
+          id: { not: id }, // Não o próprio usuário que está sendo atualizado
+        },
+      });
+
+      if (deletedUsersWithThisEmail.length > 0) {
+        // REMOVER PERMANENTEMENTE todos os usuários deletados com este email
+        await this.prisma.user.deleteMany({
+          where: {
+            email: normalizedNewEmail,
+            tenantId,
+            deletedAt: { not: null },
+            id: { not: id },
+          },
+        });
+      }
+
+      // Agora verificar se há usuário ativo com este email (após limpeza)
       const emailExists = await this.prisma.user.findFirst({
         where: {
-          email: updateUserDto.email,
+          email: normalizedNewEmail,
           tenantId,
           deletedAt: null,
           id: { not: id },
+          isActive: true,
         },
       });
 
@@ -262,6 +321,14 @@ export class UsersService {
         tenantId,
         deletedAt: null,
       },
+      select: {
+        id: true,
+        email: true,
+        name: true,
+        isActive: true,
+        createdAt: true,
+        deletedAt: true,
+      },
     });
 
     if (!existingUser) {
@@ -276,9 +343,11 @@ export class UsersService {
     }
 
     // Soft delete
+    const deletedAtValue = new Date();
+
     await this.prisma.user.update({
       where: { id },
-      data: { deletedAt: new Date() },
+      data: { deletedAt: deletedAtValue },
     });
   }
 }
