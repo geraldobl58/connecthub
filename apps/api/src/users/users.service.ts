@@ -24,50 +24,58 @@ export class UsersService {
     tenantId: string,
     currentUserRole: Role,
   ): Promise<UserResponseDto> {
-    // Verificar se o usuário atual tem permissão para criar usuários
-    if (currentUserRole !== Role.ADMIN) {
-      throw new ForbiddenException(
-        'Apenas administradores podem criar usuários',
-      );
+    try {
+      // Verificar se o usuário atual tem permissão para criar usuários
+      if (currentUserRole !== Role.ADMIN) {
+        throw new ForbiddenException(
+          'Apenas administradores podem criar usuários',
+        );
+      }
+
+      // Verificar se o email já existe no tenant
+      const existingUser = await this.prisma.user.findFirst({
+        where: {
+          email: createUserDto.email,
+          tenantId,
+          deletedAt: null,
+        },
+      });
+
+      if (existingUser) {
+        throw new ConflictException('Email já está em uso neste tenant');
+      }
+
+      // Hash da senha
+      const hashedPassword = await hash(createUserDto.password, 10);
+
+      // Criar usuário
+      const user = await this.prisma.user.create({
+        data: {
+          ...createUserDto,
+          password: hashedPassword,
+          tenantId,
+          isActive: createUserDto.isActive ?? true,
+        },
+        select: {
+          id: true,
+          name: true,
+          email: true,
+          role: true,
+          isActive: true,
+          createdAt: true,
+          updatedAt: true,
+          tenantId: true,
+        },
+      });
+
+      return user;
+    } catch (error) {
+      // Capturar erros de constraint única do Prisma
+      if (error.code === 'P2002') {
+        throw new ConflictException('Email já está em uso neste tenant');
+      }
+      throw error;
     }
-
-    // Verificar se o email já existe no tenant
-    const existingUser = await this.prisma.user.findFirst({
-      where: {
-        email: createUserDto.email,
-        tenantId,
-        deletedAt: null,
-      },
-    });
-
-    if (existingUser) {
-      throw new ConflictException('Email já está em uso neste tenant');
-    }
-
-    // Hash da senha
-    const hashedPassword = await hash(createUserDto.password, 10);
-
-    // Criar usuário
-    const user = await this.prisma.user.create({
-      data: {
-        ...createUserDto,
-        password: hashedPassword,
-        tenantId,
-        isActive: createUserDto.isActive ?? true,
-      },
-      select: {
-        id: true,
-        name: true,
-        email: true,
-        role: true,
-        isActive: true,
-        createdAt: true,
-        updatedAt: true,
-        tenantId: true,
-      },
-    });
-
-    return user;
   }
 
   async findAll(
