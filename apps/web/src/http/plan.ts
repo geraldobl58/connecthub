@@ -1,5 +1,4 @@
 import api from "@/lib/api";
-import { getErrorMessage } from "@/lib/error-utils";
 
 export interface PlanInfo {
   id: string;
