@@ -34,12 +34,10 @@ export interface CreateUserRequest {
 }
 
 export interface UpdateUserRequest {
-  id: string;
-  tenantId: string;
-  name: string;
-  email: string;
-  role: Role;
-  isActive: boolean;
+  name?: string;
+  email?: string;
+  role?: Role;
+  isActive?: boolean;
 }
 
 export interface UserListParams {

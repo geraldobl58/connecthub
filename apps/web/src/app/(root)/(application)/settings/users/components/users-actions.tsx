@@ -13,7 +13,8 @@ import {
 import { UserResponse } from "@/types/users";
 import { MoreHorizontal } from "lucide-react";
 import { AlertDialogGeneric } from "@/components/alert-dialog-generic";
-import { useDeleteUser } from "@/hooks/use-users";
+import { useDeleteUser, useToggleUserStatus } from "@/hooks/use-users";
+import { UsersFormDialog } from "./users-from-dialog";
 
 interface UsersActionsProps {
   user: UserResponse;
@@ -22,8 +23,10 @@ interface UsersActionsProps {
 
 export const UsersActions = ({ user, onSuccess }: UsersActionsProps) => {
   const [isDeleteDialogOpen, setIsDeleteDialogOpen] = useState(false);
+  const [isEditDialogOpen, setIsEditDialogOpen] = useState(false);
   const [isDeleting, setIsDeleting] = useState(false);
   const deleteUserMutation = useDeleteUser();
+  const toggleStatusMutation = useToggleUserStatus();
 
   const handleDelete = async () => {
     setIsDeleting(true);
@@ -31,10 +34,26 @@ export const UsersActions = ({ user, onSuccess }: UsersActionsProps) => {
       await deleteUserMutation.mutateAsync(user.id);
       setIsDeleteDialogOpen(false);
       onSuccess?.();
+      console.log("Usuário excluído com sucesso!");
     } catch (error) {
       console.error("Erro ao excluir usuário:", error);
     } finally {
       setIsDeleting(false);
+    }
+  };
+
+  const handleToggleStatus = async () => {
+    try {
+      await toggleStatusMutation.mutateAsync({
+        id: user.id,
+        isActive: !user.isActive,
+      });
+      onSuccess?.();
+      console.log(
+        `Usuário ${!user.isActive ? "ativado" : "desativado"} com sucesso!`
+      );
+    } catch (error) {
+      console.error("Erro ao alterar status do usuário:", error);
     }
   };
 
@@ -50,8 +69,10 @@ export const UsersActions = ({ user, onSuccess }: UsersActionsProps) => {
         <DropdownMenuContent align="end">
           <DropdownMenuLabel>Ações</DropdownMenuLabel>
           <DropdownMenuSeparator />
-          <DropdownMenuItem>Editar</DropdownMenuItem>
-          <DropdownMenuItem>
+          <DropdownMenuItem onClick={() => setIsEditDialogOpen(true)}>
+            Editar
+          </DropdownMenuItem>
+          <DropdownMenuItem onClick={handleToggleStatus}>
             {user.isActive ? "Desativar" : "Ativar"}
           </DropdownMenuItem>
           <DropdownMenuSeparator />
@@ -63,6 +84,14 @@ export const UsersActions = ({ user, onSuccess }: UsersActionsProps) => {
           </DropdownMenuItem>
         </DropdownMenuContent>
       </DropdownMenu>
+
+      <UsersFormDialog
+        isOpen={isEditDialogOpen}
+        onClose={() => setIsEditDialogOpen(false)}
+        mode="edit"
+        user={user}
+        onSuccess={onSuccess}
+      />
 
       <AlertDialogGeneric
         open={isDeleteDialogOpen}

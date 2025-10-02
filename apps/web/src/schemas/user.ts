@@ -24,6 +24,7 @@ export const createUserSchema = z.object({
         "A senha deve conter ao menos: 1 maiúscula, 1 minúscula, 1 número e 1 símbolo.",
     }),
   role: z.enum(["ADMIN", "MANAGER", "AGENT", "VIEWER"]).optional(),
+  isActive: z.boolean().optional(),
 });
 
 // Schema para atualização de usuário

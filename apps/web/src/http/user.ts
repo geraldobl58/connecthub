@@ -60,7 +60,7 @@ export const userHttpService = {
     id: string,
     userData: UpdateUserRequest
   ): Promise<UpdateUserResponse> {
-    const response = await api.put(`/users/${id}`, userData);
+    const response = await api.patch(`/users/${id}`, userData);
     return response.data;
   },
 
