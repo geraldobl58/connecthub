@@ -50,10 +50,23 @@ export class PropertyService {
     const property = await this.prisma.property.create({
       data: {
         ...createPropertyDto,
+        // Converter price de string para Decimal se necessário
+        price: createPropertyDto.price
+          ? parseFloat(createPropertyDto.price.toString())
+          : null,
         tenantId,
         address: createPropertyDto.address
           ? {
-              create: createPropertyDto.address,
+              create: {
+                street: createPropertyDto.address.street,
+                number: null, // campo não está no DTO, deixar null
+                district: createPropertyDto.address.neighborhood, // mapear neighborhood para district
+                city: createPropertyDto.address.city,
+                state: createPropertyDto.address.state,
+                zip: createPropertyDto.address.zipCode, // mapear zipCode para zip
+                lat: null, // campo não está no DTO, deixar null
+                lng: null, // campo não está no DTO, deixar null
+              },
             }
           : undefined,
       },
