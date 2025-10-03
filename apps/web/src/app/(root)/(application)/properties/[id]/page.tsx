@@ -36,12 +36,12 @@ import { PropertyFeatures } from "@/components/property-features";
 import { PropertyOwner } from "@/components/property-owner";
 import { useViaCep } from "@/hooks/use-viacep";
 import { usePropertyCodeValidation } from "@/hooks/use-property-code-validation";
-import { useOwners } from "@/hooks/use-owners";
 import {
   useProperty,
   useCreateProperty,
   useUpdateProperty,
 } from "@/hooks/use-properties";
+import { useMedia } from "@/hooks/use-media";
 import {
   PROPERTY_TYPE_LABELS,
   PROPERTY_STATUS_LABELS,
@@ -64,7 +64,6 @@ export default function PropertyFormPage() {
   const [ownerId, setOwnerId] = useState<string | undefined>();
 
   const viaCep = useViaCep();
-  const { createOwner, getOwnerById } = useOwners();
 
   // Buscar propriedade se estiver editando
   const { property, isLoading: isFetchingProperty } = useProperty(
@@ -74,6 +73,9 @@ export default function PropertyFormPage() {
   // Mutations
   const createProperty = useCreateProperty();
   const updateProperty = useUpdateProperty();
+
+  // Hook para upload de mídias
+  const { uploadTempFiles } = useMedia({ enabled: false });
 
   const form = useForm<CreatePropertyValues>({
     resolver: zodResolver(createPropertySchema) as any,
@@ -131,17 +133,9 @@ export default function PropertyFormPage() {
         },
       });
 
-      // Preencher mídias existentes
-      if (property.media && property.media.length > 0) {
-        setMedia(
-          property.media.map((m) => ({
-            id: m.id,
-            url: m.url,
-            alt: m.alt || "",
-            isCover: m.isCover,
-            order: m.order,
-          }))
-        );
+      // As mídias são carregadas junto com a propriedade
+      if (property.media) {
+        setMedia(property.media);
       }
 
       // Preencher features e ownerId
@@ -175,30 +169,27 @@ export default function PropertyFormPage() {
     return `${timestamp}-${random}`;
   };
 
-  // Função para criar owner padrão quando necessário
-  const ensureOwnerExists = async (
-    currentOwnerId?: string
-  ): Promise<string | undefined> => {
-    if (!currentOwnerId) return undefined;
-
+  // Função para fazer upload de imagens durante a criação
+  const handleUploadFiles = async (files: File[]): Promise<PropertyMedia[]> => {
     try {
-      // Verificar se o owner existe
-      const existingOwner = await getOwnerById(currentOwnerId);
-      if (existingOwner) {
-        return currentOwnerId;
-      }
+      // Fazer upload das imagens como temporárias
+      const uploadedFiles = await uploadTempFiles(files);
 
-      // Se não existir, criar um owner padrão
-      const defaultOwner = await createOwner({
-        name: `Proprietário ${currentOwnerId.slice(-6)}`,
-        email: `owner-${currentOwnerId.slice(-6)}@example.com`,
-      });
+      // Converter para formato PropertyMedia
+      const propertyMedia: PropertyMedia[] = uploadedFiles.map(
+        (file, index) => ({
+          id: `temp-${Date.now()}-${index}`,
+          url: file.url,
+          alt: file.alt || "",
+          isCover: index === 0, // Primeira imagem é capa
+          order: index,
+        })
+      );
 
-      toast.success("Proprietário criado automaticamente");
-      return defaultOwner.id;
+      return propertyMedia;
     } catch (error) {
-      console.error("Erro ao verificar/criar proprietário:", error);
-      return currentOwnerId; // Retorna o ID original em caso de erro
+      console.error("Erro ao fazer upload das imagens:", error);
+      throw new Error("Erro ao fazer upload das imagens");
     }
   };
 
@@ -209,9 +200,6 @@ export default function PropertyFormPage() {
         toast.error("Por favor, use um código único para a propriedade");
         return;
       }
-
-      // Verificar e criar owner se necessário
-      const validOwnerId = await ensureOwnerExists(ownerId);
 
       // Gerar código único se não foi informado
       const finalData = {
@@ -245,14 +233,11 @@ export default function PropertyFormPage() {
           return mediaItem;
         }),
         features: features,
-        ownerId: validOwnerId,
+        ownerId: ownerId,
       };
 
       // Transformar para o formato esperado pela API
       const payload = transformToApiFormat(formDataWithMedia) as any;
-
-      // Debug: verificar o payload
-      console.log("Payload sendo enviado:", JSON.stringify(payload, null, 2));
 
       if (isEditMode) {
         await updateProperty.mutateAsync({
@@ -804,7 +789,12 @@ export default function PropertyFormPage() {
             <PropertyOwner ownerId={ownerId} onChange={setOwnerId} />
 
             {/* Mídias */}
-            <PropertyMediaUpload media={media} onMediaChange={setMedia} />
+            <PropertyMediaUpload
+              media={media}
+              onMediaChange={setMedia}
+              propertyId={isEditMode ? propertyId : undefined}
+              onUploadFiles={!isEditMode ? handleUploadFiles : undefined}
+            />
 
             {/* Botões de ação */}
             <div className="flex gap-4">
