@@ -10,9 +10,31 @@ import {
   MaxLength,
   IsObject,
   ValidateNested,
+  IsArray,
 } from 'class-validator';
 import { Type } from 'class-transformer';
 import { PropertyType, PropertyStatus } from '@prisma/client';
+
+export class CreateMediaDto {
+  @IsString()
+  @IsNotEmpty()
+  @ApiProperty({ example: '/uploads/properties/image-123.jpg' })
+  url: string;
+
+  @IsString()
+  @IsOptional()
+  @ApiProperty({ example: 'Sala de estar da propriedade', required: false })
+  alt?: string;
+
+  @IsOptional()
+  @ApiProperty({ example: true, default: false, required: false })
+  isCover?: boolean;
+
+  @IsNumber()
+  @IsOptional()
+  @ApiProperty({ example: 1, default: 0, required: false })
+  order?: number;
+}
 
 export class CreateAddressDto {
   @IsString()
@@ -122,4 +144,15 @@ export class CreatePropertyDto {
   @IsOptional()
   @ApiProperty({ example: 'owner-uuid', required: false })
   ownerId?: string;
+
+  @IsArray()
+  @IsOptional()
+  @ValidateNested({ each: true })
+  @Type(() => CreateMediaDto)
+  @ApiProperty({
+    type: [CreateMediaDto],
+    required: false,
+    description: 'Lista de mídias da propriedade',
+  })
+  media?: CreateMediaDto[];
 }

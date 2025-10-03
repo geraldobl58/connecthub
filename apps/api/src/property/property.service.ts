@@ -69,9 +69,24 @@ export class PropertyService {
               },
             }
           : undefined,
+        media: createPropertyDto.media
+          ? {
+              create: createPropertyDto.media.map((media, index) => ({
+                url: media.url,
+                alt: media.alt,
+                isCover: media.isCover || false,
+                order: media.order || index,
+              })),
+            }
+          : undefined,
       },
       include: {
         address: true,
+        media: {
+          orderBy: {
+            order: 'asc',
+          },
+        },
       },
     });
 
@@ -99,6 +114,11 @@ export class PropertyService {
         },
         include: {
           address: true,
+          media: {
+            orderBy: {
+              order: 'asc',
+            },
+          },
         },
         orderBy: {
           createdAt: 'desc',
@@ -132,6 +152,11 @@ export class PropertyService {
       },
       include: {
         address: true,
+        media: {
+          orderBy: {
+            order: 'asc',
+          },
+        },
       },
     });
 
@@ -195,21 +220,29 @@ export class PropertyService {
       }
     }
 
+    // Separar campos que não podem ser atualizados diretamente
+    const { media, ...updateData } = updatePropertyDto;
+
     const property = await this.prisma.property.update({
       where: { id },
       data: {
-        ...updatePropertyDto,
-        address: updatePropertyDto.address
+        ...updateData,
+        address: updateData.address
           ? {
               upsert: {
-                create: updatePropertyDto.address,
-                update: updatePropertyDto.address,
+                create: updateData.address,
+                update: updateData.address,
               },
             }
           : undefined,
       },
       include: {
         address: true,
+        media: {
+          orderBy: {
+            order: 'asc',
+          },
+        },
       },
     });
 
@@ -319,6 +352,7 @@ export class PropertyService {
       area: property.area,
       address: property.address,
       features: property.features,
+      media: property.media || [],
       ownerId: property.ownerId,
       createdAt: property.createdAt,
       updatedAt: property.updatedAt,

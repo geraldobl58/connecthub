@@ -1,6 +1,26 @@
 import { ApiProperty } from '@nestjs/swagger';
 import { PropertyType, PropertyStatus } from '@prisma/client';
 
+export class MediaResponseDto {
+  @ApiProperty({ example: 'uuid' })
+  id: string;
+
+  @ApiProperty({ example: 'property-uuid' })
+  propertyId: string;
+
+  @ApiProperty({ example: '/uploads/properties/image-123.jpg' })
+  url: string;
+
+  @ApiProperty({ example: 'Sala de estar da propriedade', required: false })
+  alt?: string;
+
+  @ApiProperty({ example: true })
+  isCover: boolean;
+
+  @ApiProperty({ example: 1 })
+  order: number;
+}
+
 export class AddressResponseDto {
   @ApiProperty({ example: 'uuid' })
   id: string;
@@ -72,6 +92,9 @@ export class PropertyResponseDto {
 
   @ApiProperty({ example: { pool: true, garden: true }, required: false })
   features?: Record<string, any>;
+
+  @ApiProperty({ type: [MediaResponseDto], required: false })
+  media?: MediaResponseDto[];
 
   @ApiProperty({ example: 'owner-uuid', required: false })
   ownerId?: string;
