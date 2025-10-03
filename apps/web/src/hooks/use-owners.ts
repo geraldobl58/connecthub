@@ -45,7 +45,6 @@ export function useOwners({
               ? err.message
               : "Erro ao carregar proprietários";
           setError(errorMessage);
-          console.error("Erro ao carregar proprietários:", err);
         } finally {
           setIsLoading(false);
         }
