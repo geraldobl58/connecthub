@@ -6,6 +6,7 @@ import {
   CreatePropertyData,
   UpdatePropertyData,
 } from "@/types/property";
+import { convertMediaUrls } from "@/lib/image-utils";
 
 export const propertyHttpService = {
   async getAll(filters: PropertyFilters = {}): Promise<PropertyListResponse> {
@@ -23,12 +24,29 @@ export const propertyHttpService = {
       : "/properties";
 
     const response = await api.get(url);
-    return response.data;
+    const data = response.data;
+
+    // Converter URLs das mídias para absolutas
+    if (data.data && Array.isArray(data.data)) {
+      data.data = data.data.map((property: Property) => ({
+        ...property,
+        media: convertMediaUrls(property.media || []),
+      }));
+    }
+
+    return data;
   },
 
   async getById(id: string): Promise<Property> {
     const response = await api.get(`/properties/${id}`);
-    return response.data;
+    const property = response.data;
+
+    // Converter URLs das mídias para absolutas
+    if (property.media) {
+      property.media = convertMediaUrls(property.media);
+    }
+
+    return property;
   },
 
   async create(data: CreatePropertyData): Promise<Property> {
