@@ -19,12 +19,12 @@ export const PropertyStatus = {
 
 // Schema para endereço (seguindo o modelo Address do Prisma)
 export const addressSchema = z.object({
-  street: z.string().optional(),
-  number: z.string().optional(),
-  district: z.string().optional(),
+  street: z.string().min(1, "Rua é obrigatória"),
+  number: z.string().min(1, "Número é obrigatório"),
+  district: z.string().min(1, "Bairro é obrigatório"),
   city: z.string().min(1, "Cidade é obrigatória"),
   state: z.string().min(2, "Estado deve ter pelo menos 2 caracteres"),
-  zip: z.string().optional(),
+  zip: z.string().min(8, "CEP deve ter pelo menos 8 caracteres"),
   lat: z.number().optional(),
   lng: z.number().optional(),
 });
@@ -54,31 +54,30 @@ export const createPropertySchema = z.object({
   type: z.nativeEnum(PropertyType, {
     message: "Tipo de propriedade é obrigatório",
   }),
-  status: z
-    .nativeEnum(PropertyStatus)
-    .optional()
-    .default(PropertyStatus.ACTIVE),
-  price: z.number().min(0, "Preço deve ser maior ou igual a zero").optional(),
+  status: z.nativeEnum(PropertyStatus, {
+    message: "Status da propriedade é obrigatório",
+  }),
+  price: z.number().min(0.01, "Preço deve ser maior que zero").optional(),
   bedroom: z
     .number()
     .int("Número de quartos deve ser um número inteiro")
-    .min(0, "Número de quartos deve ser maior ou igual a zero")
-    .optional(),
+    .min(1, "Número de quartos deve ser pelo menos 1"),
   bathroom: z
     .number()
     .int("Número de banheiros deve ser um número inteiro")
-    .min(0, "Número de banheiros deve ser maior ou igual a zero")
-    .optional(),
+    .min(1, "Número de banheiros deve ser pelo menos 1"),
   parking: z
     .number()
     .int("Número de vagas deve ser um número inteiro")
-    .min(0, "Número de vagas deve ser maior ou igual a zero")
-    .optional(),
-  area: z.number().min(0, "Área deve ser maior ou igual a zero").optional(),
-  address: addressSchema.optional(),
+    .min(0, "Número de vagas deve ser maior ou igual a zero"),
+  area: z.number().min(0.01, "Área deve ser maior que zero"),
+  address: addressSchema,
   features: z.record(z.string(), z.any()).optional(),
   ownerId: z.string().optional(),
-  media: z.array(mediaSchema).optional(),
+  media: z
+    .array(mediaSchema)
+    .min(1, "Pelo menos uma imagem é obrigatória")
+    .optional(),
 });
 
 // Schema para atualização de propriedade (todos os campos opcionais)
