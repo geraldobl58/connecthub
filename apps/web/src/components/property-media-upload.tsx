@@ -1,6 +1,6 @@
 "use client";
 
-import { useState, useRef } from "react";
+import { useState, useRef, useEffect } from "react";
 import { Button } from "@/components/ui/button";
 import {
   Card,
@@ -17,22 +17,33 @@ import {
   Image as ImageIcon,
   Star,
   StarOff,
+  Loader2,
 } from "lucide-react";
 import { PropertyMedia } from "@/types/property";
+import { useMedia, Media } from "@/hooks/use-media";
+import { toast } from "sonner";
 
 interface PropertyMediaUploadProps {
   media: PropertyMedia[];
   onMediaChange: (media: PropertyMedia[]) => void;
   maxFiles?: number;
+  propertyId?: string; // Para upload direto para API
+  onUploadFiles?: (files: File[]) => Promise<PropertyMedia[]>; // Callback para upload durante criação
 }
 
 export function PropertyMediaUpload({
   media = [],
   onMediaChange,
   maxFiles = 10,
+  propertyId,
+  onUploadFiles,
 }: PropertyMediaUploadProps) {
   const [isUploading, setIsUploading] = useState(false);
   const fileInputRef = useRef<HTMLInputElement>(null);
+
+  const { uploadFiles, updateMedia, deleteMedia } = useMedia({
+    enabled: false,
+  });
 
   const handleFileSelect = async (files: FileList | null) => {
     if (!files || files.length === 0) return;
@@ -40,69 +51,140 @@ export function PropertyMediaUpload({
     setIsUploading(true);
 
     try {
-      const newMediaItems: PropertyMedia[] = [];
+      const fileArray = Array.from(files);
 
-      for (let i = 0; i < files.length; i++) {
-        const file = files[i];
-
-        // Validar tipo de arquivo
+      // Validar arquivos
+      for (const file of fileArray) {
         if (!file.type.startsWith("image/")) {
-          alert(`Arquivo ${file.name} não é uma imagem válida`);
-          continue;
+          toast.error(`Arquivo ${file.name} não é uma imagem válida`);
+          return;
         }
 
-        // Validar tamanho (máximo 5MB)
-        if (file.size > 5 * 1024 * 1024) {
-          alert(`Arquivo ${file.name} é muito grande (máximo 5MB)`);
-          continue;
+        if (file.size > 10 * 1024 * 1024) {
+          // 10MB como na API
+          toast.error(`Arquivo ${file.name} é muito grande (máximo 10MB)`);
+          return;
         }
-
-        // Simular upload local - criar URL temporária
-        const url = URL.createObjectURL(file);
-
-        const newItem: PropertyMedia = {
-          id: `temp-${Date.now()}-${i}`,
-          url,
-          alt: file.name.replace(/\.[^/.]+$/, ""), // Remove extensão do nome
-          isCover: media.length === 0 && i === 0, // Primeira imagem é capa por padrão
-          order: media.length + i,
-        };
-
-        newMediaItems.push(newItem);
       }
 
-      onMediaChange([...media, ...newMediaItems]);
+      if (propertyId) {
+        // Upload direto para API (edição)
+        const uploadedMedia = await uploadFiles(propertyId, fileArray);
+
+        // Converter para formato PropertyMedia
+        const newMediaItems: PropertyMedia[] = uploadedMedia.map((item) => ({
+          id: item.id,
+          url: item.url,
+          alt: item.alt || "",
+          isCover: item.isCover,
+          order: item.order,
+        }));
+
+        onMediaChange([...media, ...newMediaItems]);
+        toast.success(`${fileArray.length} imagem(ns) enviada(s) com sucesso!`);
+      } else if (onUploadFiles) {
+        // Upload via callback (criação)
+        const uploadedMedia = await onUploadFiles(fileArray);
+        onMediaChange([...media, ...uploadedMedia]);
+        toast.success(`${fileArray.length} imagem(ns) enviada(s) com sucesso!`);
+      } else {
+        // Modo local (fallback - não recomendado)
+        const newMediaItems: PropertyMedia[] = [];
+
+        for (let i = 0; i < fileArray.length; i++) {
+          const file = fileArray[i];
+          const url = URL.createObjectURL(file);
+
+          const newItem: PropertyMedia = {
+            id: `temp-${Date.now()}-${i}`,
+            url,
+            alt: file.name.replace(/\.[^/.]+$/, ""),
+            isCover: media.length === 0 && i === 0,
+            order: media.length + i,
+          };
+
+          newMediaItems.push(newItem);
+        }
+
+        onMediaChange([...media, ...newMediaItems]);
+        toast.warning(
+          "Imagens salvas localmente. Serão enviadas ao salvar a propriedade."
+        );
+      }
     } catch (error) {
       console.error("Erro ao processar arquivos:", error);
-      alert("Erro ao fazer upload das imagens");
+      toast.error("Erro ao fazer upload das imagens");
     } finally {
       setIsUploading(false);
     }
   };
 
-  const handleRemoveMedia = (mediaId: string) => {
-    const updatedMedia = media.filter((item) => item.id !== mediaId);
-    // Reordenar
-    const reorderedMedia = updatedMedia.map((item, index) => ({
-      ...item,
-      order: index,
-    }));
-    onMediaChange(reorderedMedia);
+  const handleRemoveMedia = async (mediaId: string) => {
+    try {
+      // Se não é um ID temporário, deletar da API
+      if (!mediaId.startsWith("temp-") && propertyId) {
+        await deleteMedia(mediaId);
+        toast.success("Imagem removida com sucesso!");
+      }
+
+      const updatedMedia = media.filter((item) => item.id !== mediaId);
+      // Reordenar
+      const reorderedMedia = updatedMedia.map((item, index) => ({
+        ...item,
+        order: index,
+      }));
+      onMediaChange(reorderedMedia);
+    } catch (error) {
+      console.error("Erro ao remover mídia:", error);
+      toast.error("Erro ao remover imagem");
+    }
   };
 
-  const handleSetCover = (mediaId: string) => {
-    const updatedMedia = media.map((item) => ({
-      ...item,
-      isCover: item.id === mediaId,
-    }));
-    onMediaChange(updatedMedia);
+  const handleSetCover = async (mediaId: string) => {
+    try {
+      // Se não é um ID temporário, atualizar na API
+      if (!mediaId.startsWith("temp-") && propertyId) {
+        // Primeiro, remover capa de todas as outras
+        for (const item of media) {
+          if (
+            item.id !== mediaId &&
+            item.isCover &&
+            !item.id.startsWith("temp-")
+          ) {
+            await updateMedia(item.id, { isCover: false });
+          }
+        }
+        // Definir nova capa
+        await updateMedia(mediaId, { isCover: true });
+        toast.success("Imagem de capa alterada!");
+      }
+
+      const updatedMedia = media.map((item) => ({
+        ...item,
+        isCover: item.id === mediaId,
+      }));
+      onMediaChange(updatedMedia);
+    } catch (error) {
+      console.error("Erro ao alterar capa:", error);
+      toast.error("Erro ao alterar imagem de capa");
+    }
   };
 
-  const handleAltChange = (mediaId: string, alt: string) => {
-    const updatedMedia = media.map((item) =>
-      item.id === mediaId ? { ...item, alt } : item
-    );
-    onMediaChange(updatedMedia);
+  const handleAltChange = async (mediaId: string, alt: string) => {
+    try {
+      // Se não é um ID temporário, atualizar na API
+      if (!mediaId.startsWith("temp-") && propertyId) {
+        await updateMedia(mediaId, { alt });
+      }
+
+      const updatedMedia = media.map((item) =>
+        item.id === mediaId ? { ...item, alt } : item
+      );
+      onMediaChange(updatedMedia);
+    } catch (error) {
+      console.error("Erro ao alterar descrição:", error);
+      toast.error("Erro ao alterar descrição da imagem");
+    }
   };
 
   const handleDragOver = (e: React.DragEvent) => {
@@ -142,7 +224,7 @@ export function PropertyMediaUpload({
               Clique para fazer upload ou arraste as imagens aqui
             </p>
             <p className="text-sm text-gray-500 mt-1">
-              PNG, JPG, JPEG até 5MB cada
+              PNG, JPG, JPEG, GIF, WebP até 10MB cada
             </p>
             <p className="text-xs text-gray-400 mt-1">
               Máximo {maxFiles} imagens
@@ -154,7 +236,11 @@ export function PropertyMediaUpload({
             className="mt-4"
             disabled={isUploading || media.length >= maxFiles}
           >
-            <Upload className="h-4 w-4 mr-2" />
+            {isUploading ? (
+              <Loader2 className="h-4 w-4 mr-2 animate-spin" />
+            ) : (
+              <Upload className="h-4 w-4 mr-2" />
+            )}
             {isUploading ? "Fazendo upload..." : "Selecionar Imagens"}
           </Button>
         </div>
