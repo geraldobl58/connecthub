@@ -63,7 +63,7 @@ export const useCreateProperty = () => {
       try {
         const result = await propertyHttpService.create(data);
         return result;
-      } catch (error: any) {
+      } catch (error: unknown) {
         throw error;
       }
     },

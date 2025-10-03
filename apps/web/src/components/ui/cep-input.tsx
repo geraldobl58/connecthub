@@ -11,7 +11,12 @@ export interface CepInputProps
   > {
   value?: string;
   onChange?: (value: string | undefined) => void;
-  onAddressFound?: (address: any) => void;
+  onAddressFound?: (address: {
+    street: string;
+    district: string;
+    city: string;
+    state: string;
+  }) => void;
   viaCep: UseViaCepReturn;
 }
 
@@ -48,8 +53,13 @@ const CepInput = React.forwardRef<HTMLInputElement, CepInputProps>(
       const cleanedCep = displayValue.replace(/\D/g, "");
       if (cleanedCep.length === 8) {
         const addressData = await viaCep.searchAddress(cleanedCep);
-        if (addressData) {
-          onAddressFound?.(addressData);
+        if (addressData && onAddressFound) {
+          onAddressFound({
+            street: addressData.logradouro,
+            district: addressData.bairro,
+            city: addressData.localidade,
+            state: addressData.uf,
+          });
         }
       }
     };

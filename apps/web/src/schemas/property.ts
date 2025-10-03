@@ -51,10 +51,10 @@ export const createPropertySchema = z.object({
     .string()
     .max(2000, "Descrição deve ter no máximo 2000 caracteres")
     .optional(),
-  type: z.nativeEnum(PropertyType, {
+  type: z.enum(["HOUSE", "APARTMENT", "CONDO", "LAND", "COMMERCIAL"], {
     message: "Tipo de propriedade é obrigatório",
   }),
-  status: z.nativeEnum(PropertyStatus, {
+  status: z.enum(["ACTIVE", "INACTIVE", "RESERVED", "SOLD", "RENTED"], {
     message: "Status da propriedade é obrigatório",
   }),
   price: z.number().min(0.01, "Preço deve ser maior que zero").optional(),
@@ -159,4 +159,28 @@ export const formatPrice = (price: number): string => {
 // Função para formatar área
 export const formatArea = (area: number): string => {
   return `${area.toFixed(1)} m²`;
+};
+
+// Função para transformar dados do formulário para o formato da API
+export const transformToApiFormat = (data: CreatePropertyValues & { media?: any[] }) => {
+  const { address, ...rest } = data;
+
+  return {
+    ...rest,
+    price: data.price ? data.price.toString() : undefined,
+    address: {
+      street: address.street,
+      number: address.number,
+      neighborhood: address.district, // Transforma district -> neighborhood
+      city: address.city,
+      state: address.state,
+      zipCode: address.zip, // Transforma zip -> zipCode
+      lat: address.lat,
+      lng: address.lng,
+    },
+    // Garantir que media, ownerId e features sejam incluídos
+    media: data.media || [],
+    ownerId: data.ownerId || undefined,
+    features: data.features || undefined,
+  };
 };
