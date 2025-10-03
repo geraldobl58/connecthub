@@ -7,6 +7,7 @@ import { PlansModule } from './plans/plans.module';
 import { PermissionsModule } from './permissions/permissions.module';
 import { UsersModule } from './users/users.module';
 import { PropertyModule } from './property/property.module';
+import { OwnersModule } from './owners/owners.module';
 
 @Module({
   imports: [
@@ -17,6 +18,7 @@ import { PropertyModule } from './property/property.module';
     PermissionsModule,
     UsersModule,
     PropertyModule,
+    OwnersModule,
   ],
   controllers: [],
   providers: [],
