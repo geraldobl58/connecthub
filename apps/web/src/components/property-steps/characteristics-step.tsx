@@ -16,7 +16,7 @@ import {
   FormLabel,
   FormMessage,
 } from "@/components/ui/form";
-import { NumberInput } from "@/components/ui/number-input";
+import { Input } from "../ui/input";
 
 interface CharacteristicsStepProps {
   form: UseFormReturn<CreatePropertyValues | UpdatePropertyValues>;
@@ -45,12 +45,11 @@ export function CharacteristicsStep({ form }: CharacteristicsStepProps) {
               <FormItem>
                 <FormLabel>Quartos *</FormLabel>
                 <FormControl>
-                  <NumberInput
+                  <Input
                     type="number"
                     placeholder="3"
                     value={field.value}
                     onChange={field.onChange}
-                    parse="int"
                   />
                 </FormControl>
                 <FormMessage />
@@ -65,12 +64,11 @@ export function CharacteristicsStep({ form }: CharacteristicsStepProps) {
               <FormItem>
                 <FormLabel>Banheiros *</FormLabel>
                 <FormControl>
-                  <NumberInput
+                  <Input
                     type="number"
                     placeholder="2"
                     value={field.value}
                     onChange={field.onChange}
-                    parse="int"
                   />
                 </FormControl>
                 <FormMessage />
@@ -85,12 +83,11 @@ export function CharacteristicsStep({ form }: CharacteristicsStepProps) {
               <FormItem>
                 <FormLabel>Vagas *</FormLabel>
                 <FormControl>
-                  <NumberInput
+                  <Input
                     type="number"
                     placeholder="1"
                     value={field.value}
                     onChange={field.onChange}
-                    parse="int"
                   />
                 </FormControl>
                 <FormMessage />
@@ -105,13 +102,12 @@ export function CharacteristicsStep({ form }: CharacteristicsStepProps) {
               <FormItem>
                 <FormLabel>Área (m²) *</FormLabel>
                 <FormControl>
-                  <NumberInput
+                  <Input
                     type="number"
                     step="0.1"
                     placeholder="120.5"
                     value={field.value}
                     onChange={field.onChange}
-                    parse="float"
                   />
                 </FormControl>
                 <FormMessage />
