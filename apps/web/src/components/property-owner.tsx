@@ -19,8 +19,9 @@ import {
   SelectTrigger,
   SelectValue,
 } from "@/components/ui/select";
-import { Plus, User, Building, Search, X } from "lucide-react";
+import { Plus, User, Building, Search, X, Loader2, Check } from "lucide-react";
 import { useOwners, Owner } from "@/hooks/use-owners";
+import { toast } from "sonner";
 
 interface PropertyOwnerProps {
   ownerId?: string;
@@ -31,33 +32,38 @@ export function PropertyOwner({ ownerId, onChange }: PropertyOwnerProps) {
   const [searchTerm, setSearchTerm] = useState("");
   const [selectedOwner, setSelectedOwner] = useState<Owner | null>(null);
   const [showOwnerForm, setShowOwnerForm] = useState(false);
+  const [isCreatingOwner, setIsCreatingOwner] = useState(false);
   const [newOwner, setNewOwner] = useState({
     name: "",
     email: "",
     phone: "",
-    document: "",
+    notes: "",
   });
   const [filteredOwners, setFilteredOwners] = useState<Owner[]>([]);
+  const [showSearchResults, setShowSearchResults] = useState(false);
 
-  const { owners, isLoading, createOwner, searchOwners } = useOwners();
+  const { owners, isLoading, createOwner, searchOwners, error } = useOwners();
 
-  // Filtrar proprietários baseado na busca
+  // Busca com debounce para melhor performance
   useEffect(() => {
-    const performSearch = async () => {
+    const timeoutId = setTimeout(async () => {
       if (searchTerm.trim()) {
         try {
           const results = await searchOwners(searchTerm);
           setFilteredOwners(results);
+          setShowSearchResults(true);
         } catch (error) {
           console.error("Erro ao buscar proprietários:", error);
           setFilteredOwners([]);
+          setShowSearchResults(false);
         }
       } else {
         setFilteredOwners(owners);
+        setShowSearchResults(false);
       }
-    };
+    }, 300); // Debounce de 300ms
 
-    performSearch();
+    return () => clearTimeout(timeoutId);
   }, [searchTerm, owners, searchOwners]);
 
   // Encontrar o proprietário selecionado
@@ -82,22 +88,31 @@ export function PropertyOwner({ ownerId, onChange }: PropertyOwnerProps) {
   };
 
   const handleCreateOwner = async () => {
-    if (newOwner.name.trim()) {
-      try {
-        const createdOwner = await createOwner({
-          name: newOwner.name,
-          email: newOwner.email || undefined,
-          phone: newOwner.phone || undefined,
-          document: newOwner.document || undefined,
-        });
+    if (!newOwner.name.trim()) {
+      toast.error("Nome é obrigatório");
+      return;
+    }
 
-        setSelectedOwner(createdOwner);
-        onChange(createdOwner.id);
-        setShowOwnerForm(false);
-        setNewOwner({ name: "", email: "", phone: "", document: "" });
-      } catch (error) {
-        console.error("Erro ao criar proprietário:", error);
-      }
+    setIsCreatingOwner(true);
+    try {
+      const createdOwner = await createOwner({
+        name: newOwner.name.trim(),
+        email: newOwner.email?.trim() || undefined,
+        phone: newOwner.phone?.trim() || undefined,
+        notes: newOwner.notes?.trim() || undefined,
+      });
+
+      setSelectedOwner(createdOwner);
+      onChange(createdOwner.id);
+      setShowOwnerForm(false);
+      setNewOwner({ name: "", email: "", phone: "", notes: "" });
+      setSearchTerm("");
+      toast.success("Proprietário criado com sucesso!");
+    } catch (error) {
+      console.error("Erro ao criar proprietário:", error);
+      toast.error("Erro ao criar proprietário. Tente novamente.");
+    } finally {
+      setIsCreatingOwner(false);
     }
   };
 
@@ -189,17 +204,17 @@ export function PropertyOwner({ ownerId, onChange }: PropertyOwnerProps) {
                 />
               </div>
               <div>
-                <Label htmlFor="owner-document">CPF/CNPJ</Label>
+                <Label htmlFor="owner-notes">Observações</Label>
                 <Input
-                  id="owner-document"
-                  value={newOwner.document}
+                  id="owner-notes"
+                  value={newOwner.notes}
                   onChange={(e) =>
                     setNewOwner((prev) => ({
                       ...prev,
-                      document: e.target.value,
+                      notes: e.target.value,
                     }))
                   }
-                  placeholder="123.456.789-00"
+                  placeholder="Informações adicionais"
                 />
               </div>
             </div>
@@ -207,10 +222,15 @@ export function PropertyOwner({ ownerId, onChange }: PropertyOwnerProps) {
               <Button
                 type="button"
                 onClick={handleCreateOwner}
-                disabled={!newOwner.name.trim()}
+                disabled={!newOwner.name.trim() || isCreatingOwner}
+                className="bg-green-600 hover:bg-green-700"
               >
-                <Plus className="h-4 w-4 mr-2" />
-                Cadastrar Proprietário
+                {isCreatingOwner ? (
+                  <Loader2 className="h-4 w-4 mr-2 animate-spin" />
+                ) : (
+                  <Plus className="h-4 w-4 mr-2" />
+                )}
+                {isCreatingOwner ? "Cadastrando..." : "Cadastrar Proprietário"}
               </Button>
               <Button
                 type="button"
