@@ -59,7 +59,14 @@ export const useProperty = (id: string) => {
 
 export const useCreateProperty = () => {
   return useApiMutation<Property, CreatePropertyData>(
-    async (data: CreatePropertyData) => await propertyHttpService.create(data),
+    async (data: CreatePropertyData) => {
+      try {
+        const result = await propertyHttpService.create(data);
+        return result;
+      } catch (error: any) {
+        throw error;
+      }
+    },
     [queryKeys.properties, queryKeys.property]
   );
 };
