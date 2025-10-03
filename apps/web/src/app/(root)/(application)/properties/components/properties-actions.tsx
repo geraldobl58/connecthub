@@ -10,7 +10,7 @@ import {
   DropdownMenuTrigger,
 } from "@/components/ui/dropdown-menu";
 import { Property } from "@/types/property";
-import { MoreHorizontal } from "lucide-react";
+import { MoreHorizontal, Eye } from "lucide-react";
 import { AlertDialogGeneric } from "@/components/alert-dialog-generic";
 import { useDeleteProperty } from "@/hooks/use-properties";
 import { useAuth } from "@/hooks/auth";
@@ -59,6 +59,12 @@ export const PropertiesActions = ({
         </DropdownMenuTrigger>
         <DropdownMenuContent align="end">
           <DropdownMenuLabel>Ações</DropdownMenuLabel>
+          <DropdownMenuItem
+            onClick={() => router.push(`/properties/${property.id}/view`)}
+          >
+            <Eye className="h-4 w-4 mr-2" />
+            Visualizar
+          </DropdownMenuItem>
           {canEdit && (
             <DropdownMenuItem
               onClick={() => router.push(`/properties/${property.id}`)}
