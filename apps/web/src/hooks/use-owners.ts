@@ -1,4 +1,5 @@
 import { useState, useEffect } from "react";
+import api from "@/lib/api";
 
 export interface Owner {
   id: string;
@@ -28,40 +29,29 @@ export function useOwners({
   const [isLoading, setIsLoading] = useState(false);
   const [error, setError] = useState<string | null>(null);
 
-  // Mock data inicial - em produção, isso viria de uma API
+  // Carregar owners da API
   useEffect(() => {
     if (enabled) {
-      const mockOwners: Owner[] = [
-        {
-          id: "owner-1",
-          name: "João Silva",
-          email: "joao.silva@email.com",
-          phone: "(11) 99999-9999",
-          document: "123.456.789-00",
-        },
-        {
-          id: "owner-2",
-          name: "Maria Santos",
-          email: "maria.santos@email.com",
-          phone: "(11) 88888-8888",
-          document: "987.654.321-00",
-        },
-        {
-          id: "owner-3",
-          name: "Carlos Oliveira",
-          email: "carlos.oliveira@email.com",
-          phone: "(11) 77777-7777",
-          document: "456.789.123-00",
-        },
-        {
-          id: "owner-4",
-          name: "Ana Costa",
-          email: "ana.costa@email.com",
-          phone: "(11) 66666-6666",
-          document: "789.123.456-00",
-        },
-      ];
-      setOwners(mockOwners);
+      const loadOwners = async () => {
+        setIsLoading(true);
+        setError(null);
+
+        try {
+          const response = await api.get("/owners?limit=100");
+          setOwners(response.data.data || []);
+        } catch (err) {
+          const errorMessage =
+            err instanceof Error
+              ? err.message
+              : "Erro ao carregar proprietários";
+          setError(errorMessage);
+          console.error("Erro ao carregar proprietários:", err);
+        } finally {
+          setIsLoading(false);
+        }
+      };
+
+      loadOwners();
     }
   }, [enabled]);
 
@@ -70,26 +60,13 @@ export function useOwners({
     setError(null);
 
     try {
-      // Simular chamada para API
-      await new Promise((resolve) => setTimeout(resolve, 500));
-
-      const newOwner: Owner = {
-        id: `owner-${Date.now()}`,
-        ...ownerData,
-      };
-
-      // Em produção, aqui você faria a chamada para a API
-      // const response = await fetch('/api/owners', {
-      //   method: 'POST',
-      //   headers: { 'Content-Type': 'application/json' },
-      //   body: JSON.stringify(ownerData)
-      // });
-      // const newOwner = await response.json();
-
+      const response = await api.post("/owners", ownerData);
+      const newOwner = response.data;
       setOwners((prev) => [...prev, newOwner]);
       return newOwner;
     } catch (err) {
-      const errorMessage = "Erro ao criar proprietário";
+      const errorMessage =
+        err instanceof Error ? err.message : "Erro ao criar proprietário";
       setError(errorMessage);
       throw new Error(errorMessage);
     } finally {
@@ -104,19 +81,13 @@ export function useOwners({
     setError(null);
 
     try {
-      // Simular busca - em produção, isso viria de uma API
-      await new Promise((resolve) => setTimeout(resolve, 300));
-
-      const filteredOwners = owners.filter(
-        (owner) =>
-          owner.name.toLowerCase().includes(query.toLowerCase()) ||
-          owner.email?.toLowerCase().includes(query.toLowerCase()) ||
-          owner.document?.includes(query)
+      const response = await api.get(
+        `/owners?search=${encodeURIComponent(query)}&limit=50`
       );
-
-      return filteredOwners;
+      return response.data.data || [];
     } catch (err) {
-      const errorMessage = "Erro ao buscar proprietários";
+      const errorMessage =
+        err instanceof Error ? err.message : "Erro ao buscar proprietários";
       setError(errorMessage);
       throw new Error(errorMessage);
     } finally {
@@ -131,13 +102,14 @@ export function useOwners({
     setError(null);
 
     try {
-      // Simular busca - em produção, isso viria de uma API
-      await new Promise((resolve) => setTimeout(resolve, 200));
-
-      const owner = owners.find((o) => o.id === id);
-      return owner || null;
+      const response = await api.get(`/owners/${id}`);
+      return response.data;
     } catch (err) {
-      const errorMessage = "Erro ao buscar proprietário";
+      if (err instanceof Error && err.message.includes("404")) {
+        return null;
+      }
+      const errorMessage =
+        err instanceof Error ? err.message : "Erro ao buscar proprietário";
       setError(errorMessage);
       throw new Error(errorMessage);
     } finally {
