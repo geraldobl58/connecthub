@@ -8,6 +8,7 @@ import { PermissionsModule } from './permissions/permissions.module';
 import { UsersModule } from './users/users.module';
 import { PropertyModule } from './property/property.module';
 import { OwnersModule } from './owners/owners.module';
+import { MediaModule } from './media/media.module';
 
 @Module({
   imports: [
@@ -19,6 +20,7 @@ import { OwnersModule } from './owners/owners.module';
     UsersModule,
     PropertyModule,
     OwnersModule,
+    MediaModule,
   ],
   controllers: [],
   providers: [],
