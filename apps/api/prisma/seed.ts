@@ -989,49 +989,29 @@ async function main() {
 
   console.log('🎯 Creating stages...');
 
-  // Criar Stages para pipeline de vendas
-  const stages = [
+  // Criar Stages padrão para pipeline de vendas
+  const defaultStages = [
+    { name: 'Novo', type: 'SALES' as const, order: 1, color: '#3B82F6' },
+    { name: 'Qualificado', type: 'SALES' as const, order: 2, color: '#10B981' },
+    { name: 'Proposta', type: 'SALES' as const, order: 3, color: '#F59E0B' },
     {
-      name: 'Novo Lead',
-      order: 1,
-      color: '#3B82F6',
-      isWon: false,
-      isLost: false,
-    },
-    {
-      name: 'Qualificado',
-      order: 2,
-      color: '#8B5CF6',
-      isWon: false,
-      isLost: false,
-    },
-    {
-      name: 'Visita Agendada',
-      order: 3,
-      color: '#06B6D4',
-      isWon: false,
-      isLost: false,
-    },
-    {
-      name: 'Proposta Enviada',
+      name: 'Fechado (Won)',
+      type: 'SALES' as const,
       order: 4,
-      color: '#F59E0B',
-      isWon: false,
-      isLost: false,
+      color: '#059669',
+      isWon: true,
     },
     {
-      name: 'Negociação',
+      name: 'Fechado (Lost)',
+      type: 'SALES' as const,
       order: 5,
-      color: '#EF4444',
-      isWon: false,
-      isLost: false,
+      color: '#DC2626',
+      isLost: true,
     },
-    { name: 'Fechado', order: 6, color: '#10B981', isWon: true, isLost: false },
-    { name: 'Perdido', order: 7, color: '#6B7280', isWon: false, isLost: true },
   ];
 
-  for (const tenant of [tenant1, tenant2]) {
-    for (const stageData of stages) {
+  for (const tenant of [tenant1, tenant2, tenant3, tenant4]) {
+    for (const stageData of defaultStages) {
       await prisma.stage.upsert({
         where: {
           tenantId_name: {
@@ -1043,7 +1023,6 @@ async function main() {
         create: {
           tenantId: tenant.id,
           ...stageData,
-          type: 'SALES',
         },
       });
     }
@@ -1053,7 +1032,7 @@ async function main() {
 
   // Buscar stages para criar leads
   const novoLeadStage = await prisma.stage.findFirst({
-    where: { tenantId: tenant1.id, name: 'Novo Lead' },
+    where: { tenantId: tenant1.id, name: 'Novo' },
   });
 
   const qualificadoStage = await prisma.stage.findFirst({
@@ -1340,7 +1319,7 @@ async function main() {
     '- 59 Users created (all roles covered + inactive + multi-tenant test)',
   );
   console.log('- 3 Properties created');
-  console.log('- 7 Stages created for each tenant');
+  console.log('- 5 Default stages created for each tenant');
   console.log('- 3 Leads created');
   console.log('- 6 Tasks created');
   console.log('- 3 Tags created');
