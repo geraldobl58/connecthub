@@ -29,7 +29,7 @@ export class AddressResponseDto {
   street: string;
 
   @ApiProperty({ example: 'Centro' })
-  neighborhood: string;
+  district: string;
 
   @ApiProperty({ example: 'São Paulo' })
   city: string;
@@ -38,7 +38,7 @@ export class AddressResponseDto {
   state: string;
 
   @ApiProperty({ example: '01234-567' })
-  zipCode: string;
+  zip: string;
 
   @ApiProperty({ example: 'Brasil' })
   country: string;

@@ -45,7 +45,7 @@ export class CreateAddressDto {
   @IsString()
   @IsNotEmpty()
   @ApiProperty({ example: 'Centro' })
-  neighborhood: string;
+  district: string;
 
   @IsString()
   @IsNotEmpty()
@@ -60,7 +60,7 @@ export class CreateAddressDto {
   @IsString()
   @IsNotEmpty()
   @ApiProperty({ example: '01234-567' })
-  zipCode: string;
+  zip: string;
 
   @IsString()
   @IsOptional()
@@ -103,10 +103,10 @@ export class CreatePropertyDto {
   })
   status?: PropertyStatus;
 
-  @IsDecimal()
+  @IsString()
   @IsOptional()
   @ApiProperty({ example: '450000.00', required: false })
-  price?: number;
+  price?: string;
 
   @IsNumber()
   @IsOptional()

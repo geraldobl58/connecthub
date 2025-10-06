@@ -51,12 +51,16 @@ export const createPropertySchema = z.object({
     .string()
     .max(2000, "Descrição deve ter no máximo 2000 caracteres")
     .optional(),
-  type: z.enum(["HOUSE", "APARTMENT", "CONDO", "LAND", "COMMERCIAL"], {
-    message: "Tipo de propriedade é obrigatório",
-  }),
-  status: z.enum(["ACTIVE", "INACTIVE", "RESERVED", "SOLD", "RENTED"], {
-    message: "Status da propriedade é obrigatório",
-  }),
+  type: z
+    .enum(["HOUSE", "APARTMENT", "CONDO", "LAND", "COMMERCIAL"], {
+      message: "Tipo de propriedade é obrigatório",
+    })
+    .optional(),
+  status: z
+    .enum(["ACTIVE", "INACTIVE", "RESERVED", "SOLD", "RENTED"], {
+      message: "Status da propriedade é obrigatório",
+    })
+    .optional(),
   price: z.number().min(0.01, "Preço deve ser maior que zero").optional(),
   bedroom: z
     .number()
@@ -162,24 +166,25 @@ export const formatArea = (area: number): string => {
 };
 
 // Função para transformar dados do formulário para o formato da API
-export const transformToApiFormat = (data: CreatePropertyValues & { media?: any[] }) => {
+export const transformToApiFormat = (
+  data: CreatePropertyValues & { media?: any[] }
+) => {
   const { address, ...rest } = data;
 
   return {
     ...rest,
-    price: data.price ? data.price.toString() : undefined,
+    price: data.price ? data.price.toString() : undefined, // Convert to string for backend
     address: {
-      street: address.street,
-      number: address.number,
-      neighborhood: address.district, // Transforma district -> neighborhood
+      street: `${address.street}, ${address.number}`, // Combinar street e number
+      district: address.district, // Usar district (não neighborhood)
       city: address.city,
       state: address.state,
-      zipCode: address.zip, // Transforma zip -> zipCode
+      zip: address.zip, // Usar zip (não zipCode)
       lat: address.lat,
       lng: address.lng,
     },
-    // Garantir que media, ownerId e features sejam incluídos
-    media: data.media || [],
+    // Não incluir media na atualização por enquanto para evitar problemas
+    // media: data.media || [],
     ownerId: data.ownerId || undefined,
     features: data.features || undefined,
   };

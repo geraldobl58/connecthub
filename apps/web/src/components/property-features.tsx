@@ -1,6 +1,6 @@
 "use client";
 
-import { useState } from "react";
+import { useState, useEffect } from "react";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
@@ -37,6 +37,15 @@ export function PropertyFeatures({
 
   const [newFeature, setNewFeature] = useState<Feature>({ key: "", value: "" });
   const [editingIndex, setEditingIndex] = useState<number | null>(null);
+
+  // Atualizar featureList quando features mudarem
+  useEffect(() => {
+    const newFeatureList = Object.entries(features).map(([key, value]) => ({
+      key,
+      value: String(value),
+    }));
+    setFeatureList(newFeatureList);
+  }, [features]);
 
   const handleAddFeature = () => {
     if (newFeature.key.trim() && newFeature.value.trim()) {

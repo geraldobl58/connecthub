@@ -60,10 +60,10 @@ export class PropertyService {
               create: {
                 street: createPropertyDto.address.street,
                 number: null, // campo não está no DTO, deixar null
-                district: createPropertyDto.address.neighborhood, // mapear neighborhood para district
+                district: createPropertyDto.address.district, // usar district diretamente
                 city: createPropertyDto.address.city,
                 state: createPropertyDto.address.state,
-                zip: createPropertyDto.address.zipCode, // mapear zipCode para zip
+                zip: createPropertyDto.address.zip, // usar zip diretamente
                 lat: null, // campo não está no DTO, deixar null
                 lng: null, // campo não está no DTO, deixar null
               },
@@ -223,6 +223,7 @@ export class PropertyService {
     // Separar campos que não podem ser atualizados diretamente
     const { media, ...updateData } = updatePropertyDto;
 
+    // Atualizar a propriedade
     const property = await this.prisma.property.update({
       where: { id },
       data: {
@@ -245,6 +246,40 @@ export class PropertyService {
         },
       },
     });
+
+    // Atualizar mídias se fornecidas
+    if (media && media.length > 0) {
+      // Primeiro, remover todas as mídias existentes
+      await this.prisma.media.deleteMany({
+        where: { propertyId: id },
+      });
+
+      // Depois, criar as novas mídias
+      await this.prisma.media.createMany({
+        data: media.map((mediaItem, index) => ({
+          propertyId: id,
+          url: mediaItem.url,
+          alt: mediaItem.alt,
+          isCover: mediaItem.isCover || false,
+          order: mediaItem.order !== undefined ? mediaItem.order : index,
+        })),
+      });
+
+      // Buscar a propriedade atualizada com as novas mídias
+      const updatedProperty = await this.prisma.property.findUnique({
+        where: { id },
+        include: {
+          address: true,
+          media: {
+            orderBy: {
+              order: 'asc',
+            },
+          },
+        },
+      });
+
+      return this.mapToResponseDto(updatedProperty);
+    }
 
     return this.mapToResponseDto(property);
   }

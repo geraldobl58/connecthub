@@ -1,6 +1,6 @@
 "use client";
 
-import { useState, useRef, useEffect } from "react";
+import { useState, useRef } from "react";
 import { Button } from "@/components/ui/button";
 import {
   Card,
@@ -20,8 +20,9 @@ import {
   Loader2,
 } from "lucide-react";
 import { PropertyMedia } from "@/types/property";
-import { useMedia, Media } from "@/hooks/use-media";
+import { useMedia } from "@/hooks/use-media";
 import { toast } from "sonner";
+import Image from "next/image";
 
 interface PropertyMediaUploadProps {
   media: PropertyMedia[];
@@ -261,21 +262,23 @@ export function PropertyMediaUpload({
               Imagens ({media.length}/{maxFiles})
             </h4>
 
-            <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4">
+            <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
               {media
                 .sort((a, b) => a.order - b.order)
                 .map((item) => (
                   <div key={item.id} className="relative group">
                     <Card className="overflow-hidden">
-                      <div className="aspect-video relative bg-gray-100">
-                        <img
+                      <div className="aspect-square relative bg-gray-100">
+                        <Image
                           src={item.url}
                           alt={item.alt || "Imagem da propriedade"}
                           className="w-full h-full object-cover"
+                          width={200}
+                          height={200}
                         />
 
                         {/* Overlay com ações */}
-                        <div className="absolute inset-0 bg-black bg-opacity-0 group-hover:bg-opacity-50 transition-all duration-200 flex items-center justify-center">
+                        <div className="absolute inset-0bg-opacity-0 group-hover:bg-opacity-50 transition-all duration-200 flex items-center justify-center">
                           <div className="opacity-0 group-hover:opacity-100 transition-opacity duration-200 flex gap-2">
                             <Button
                               size="sm"

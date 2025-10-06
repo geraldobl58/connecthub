@@ -84,7 +84,7 @@ export default function PropertyFormPage() {
       title: "",
       description: "",
       type: undefined,
-      status: "ACTIVE",
+      status: undefined,
       price: undefined,
       bedroom: 1,
       bathroom: 1,
@@ -112,26 +112,44 @@ export default function PropertyFormPage() {
   // Preencher formulário quando carregar propriedade
   useEffect(() => {
     if (property) {
+      // Usar setValue para garantir que o valor seja definido
+      if (property.type) {
+        form.setValue("type", property.type);
+      }
+      if (property.status) {
+        form.setValue("status", property.status);
+      }
+
       form.reset({
         code: property.code || "",
         title: property.title || "",
         description: property.description || "",
         type: property.type,
-        status: property.status || "ACTIVE",
+        status: property.status,
         price: property.price,
         bedroom: property.bedroom || 1,
         bathroom: property.bathroom || 1,
         parking: property.parking || 0,
         area: property.area,
         address: {
-          street: property.address?.street || "",
-          number: property.address?.number || "",
+          street: property.address?.street?.split(",")[0]?.trim() || "",
+          number: property.address?.street?.split(",")[1]?.trim() || "",
           district: property.address?.district || "",
           city: property.address?.city || "",
           state: property.address?.state || "",
           zip: property.address?.zip || "",
         },
       });
+
+      // Usar setTimeout para garantir que os valores sejam definidos após o render
+      setTimeout(() => {
+        if (property.type) {
+          form.setValue("type", property.type);
+        }
+        if (property.status) {
+          form.setValue("status", property.status);
+        }
+      }, 100);
 
       // As mídias são carregadas junto com a propriedade
       if (property.media) {
@@ -432,31 +450,33 @@ export default function PropertyFormPage() {
                   <FormField
                     control={form.control as any}
                     name="type"
-                    render={({ field }) => (
-                      <FormItem>
-                        <FormLabel>Tipo *</FormLabel>
-                        <Select
-                          onValueChange={field.onChange}
-                          value={field.value}
-                        >
-                          <FormControl>
-                            <SelectTrigger className="w-full">
-                              <SelectValue placeholder="Selecione o tipo" />
-                            </SelectTrigger>
-                          </FormControl>
-                          <SelectContent>
-                            {Object.entries(PROPERTY_TYPE_LABELS).map(
-                              ([value, label]) => (
-                                <SelectItem key={value} value={value}>
-                                  {label}
-                                </SelectItem>
-                              )
-                            )}
-                          </SelectContent>
-                        </Select>
-                        <FormMessage />
-                      </FormItem>
-                    )}
+                    render={({ field }) => {
+                      return (
+                        <FormItem>
+                          <FormLabel>Tipo *</FormLabel>
+                          <Select
+                            onValueChange={field.onChange}
+                            value={field.value}
+                          >
+                            <FormControl>
+                              <SelectTrigger className="w-full">
+                                <SelectValue placeholder="Selecione o tipo" />
+                              </SelectTrigger>
+                            </FormControl>
+                            <SelectContent>
+                              {Object.entries(PROPERTY_TYPE_LABELS).map(
+                                ([value, label]) => (
+                                  <SelectItem key={value} value={value}>
+                                    {label}
+                                  </SelectItem>
+                                )
+                              )}
+                            </SelectContent>
+                          </Select>
+                          <FormMessage />
+                        </FormItem>
+                      );
+                    }}
                   />
 
                   <FormField

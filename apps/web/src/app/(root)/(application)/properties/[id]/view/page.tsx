@@ -23,7 +23,6 @@ import {
   PROPERTY_STATUS_LABELS,
 } from "@/schemas/property";
 import { Skeleton } from "@/components/ui/skeleton";
-import Image from "next/image";
 
 export default function PropertyViewPage() {
   const router = useRouter();
@@ -163,7 +162,7 @@ export default function PropertyViewPage() {
               {/* Imagem principal */}
               <Card className="overflow-hidden">
                 <div className="aspect-video relative bg-gray-100">
-                  <Image
+                  <img
                     src={coverImage?.url || media[0]?.url}
                     alt={coverImage?.alt || property.title}
                     className="w-full h-full object-cover"
@@ -191,7 +190,7 @@ export default function PropertyViewPage() {
                       }}
                     >
                       <div className="aspect-video relative bg-gray-100">
-                        <Image
+                        <img
                           src={image.url}
                           alt={image.alt || property.title}
                           className="w-full h-full object-cover"
