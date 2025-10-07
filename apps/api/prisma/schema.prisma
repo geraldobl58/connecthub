@@ -88,7 +88,7 @@ enum SubStatus {
 // Tenant
 // ============================
 model Tenant {
-  id        String    @id @default(cuid())
+  id        String    @id @default(uuid())
   name      String
   slug      String    @unique
   createdAt DateTime  @default(now())
@@ -117,7 +117,7 @@ model Tenant {
 // Usuários
 // ============================
 model User {
-  id        String    @id @default(cuid())
+  id        String    @id @default(uuid())
   tenantId  String
   tenant    Tenant    @relation(fields: [tenantId], references: [id], onDelete: Cascade, onUpdate: Cascade)
   name      String
@@ -144,7 +144,7 @@ model User {
 // Imóveis
 // ============================
 model Property {
-  id       String @id @default(cuid())
+  id       String @id @default(uuid())
   tenantId String
   tenant   Tenant @relation(fields: [tenantId], references: [id], onDelete: Cascade, onUpdate: Cascade)
 
@@ -186,7 +186,7 @@ model Property {
 
 // Endereço 1:1 com Property
 model Address {
-  id         String   @id @default(cuid())
+  id         String   @id @default(uuid())
   propertyId String   @unique
   property   Property @relation(fields: [propertyId], references: [id], onDelete: Cascade, onUpdate: Cascade)
   street     String?
@@ -201,7 +201,7 @@ model Address {
 
 // Mídias do imóvel
 model Media {
-  id         String   @id @default(cuid())
+  id         String   @id @default(uuid())
   propertyId String
   property   Property @relation(fields: [propertyId], references: [id], onDelete: Cascade, onUpdate: Cascade)
   url        String
@@ -214,7 +214,7 @@ model Media {
 
 // Proprietários
 model Owner {
-  id         String     @id @default(cuid())
+  id         String     @id @default(uuid())
   tenantId   String
   tenant     Tenant     @relation(fields: [tenantId], references: [id], onDelete: Cascade, onUpdate: Cascade)
   name       String
@@ -232,7 +232,7 @@ model Owner {
 // Pipeline (Stages) - NEW
 // ============================
 model Stage {
-  id       String    @id @default(cuid())
+  id       String    @id @default(uuid())
   tenantId String
   tenant   Tenant    @relation(fields: [tenantId], references: [id], onDelete: Cascade, onUpdate: Cascade)
   name     String
@@ -252,7 +252,7 @@ model Stage {
 // Leads / Deals / Tasks
 // ============================
 model Lead {
-  id       String @id @default(cuid())
+  id       String @id @default(uuid())
   tenantId String
   tenant   Tenant @relation(fields: [tenantId], references: [id], onDelete: Cascade, onUpdate: Cascade)
 
@@ -291,13 +291,14 @@ model Lead {
 
 enum LeadSource {
   WEB
+  PHONE
   REFERRAL
   SOCIAL
   OTHER
 }
 
 model Deal {
-  id       String @id @default(cuid())
+  id       String @id @default(uuid())
   tenantId String
   tenant   Tenant @relation(fields: [tenantId], references: [id], onDelete: Cascade, onUpdate: Cascade)
 
@@ -321,7 +322,7 @@ model Deal {
 }
 
 model Task {
-  id       String @id @default(cuid())
+  id       String @id @default(uuid())
   tenantId String
   tenant   Tenant @relation(fields: [tenantId], references: [id], onDelete: Cascade, onUpdate: Cascade)
 
@@ -358,7 +359,7 @@ model Task {
 // WhatsApp Business
 // ============================
 model WhatsAppAccount {
-  id       String @id @default(cuid())
+  id       String @id @default(uuid())
   tenantId String @unique // 1 conta por tenant (mantido)
   tenant   Tenant @relation(fields: [tenantId], references: [id], onDelete: Cascade, onUpdate: Cascade)
 
@@ -374,7 +375,7 @@ model WhatsAppAccount {
 }
 
 model WhatsAppMessage {
-  id       String @id @default(cuid())
+  id       String @id @default(uuid())
   tenantId String
   tenant   Tenant @relation(fields: [tenantId], references: [id], onDelete: Cascade, onUpdate: Cascade)
 
@@ -416,7 +417,7 @@ enum MessageDirection {
 // Tags / Notas / Auditoria - NEW
 // ============================
 model Tag {
-  id       String  @id @default(cuid())
+  id       String  @id @default(uuid())
   tenantId String
   tenant   Tenant  @relation(fields: [tenantId], references: [id], onDelete: Cascade, onUpdate: Cascade)
   name     String
@@ -437,7 +438,7 @@ model LeadTag {
 }
 
 model Note {
-  id       String  @id @default(cuid())
+  id       String  @id @default(uuid())
   tenantId String
   tenant   Tenant  @relation(fields: [tenantId], references: [id], onDelete: Cascade, onUpdate: Cascade)
   authorId String?
@@ -456,7 +457,7 @@ model Note {
 }
 
 model ActivityLog {
-  id       String  @id @default(cuid())
+  id       String  @id @default(uuid())
   tenantId String
   tenant   Tenant  @relation(fields: [tenantId], references: [id], onDelete: Cascade, onUpdate: Cascade)
   actorId  String?
@@ -476,7 +477,7 @@ model ActivityLog {
 // Planos / Assinaturas / Uso - NEW
 // ============================
 model Plan {
-  id            String  @id @default(cuid())
+  id            String  @id @default(uuid())
   name          String
   price         Float
   currency      String  @default("BRL")
@@ -492,7 +493,7 @@ model Plan {
 }
 
 model Subscription {
-  id       String @id @default(cuid())
+  id       String @id @default(uuid())
   tenantId String @unique // 1 assinatura ativa por tenant (simplificação)
   tenant   Tenant @relation(fields: [tenantId], references: [id], onDelete: Cascade, onUpdate: Cascade)
 
@@ -508,7 +509,7 @@ model Subscription {
 }
 
 model Usage {
-  id       String @id @default(cuid())
+  id       String @id @default(uuid())
   tenantId String @unique
   tenant   Tenant @relation(fields: [tenantId], references: [id], onDelete: Cascade, onUpdate: Cascade)
 
