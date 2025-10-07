@@ -41,12 +41,6 @@ export const mainItems: NavItem[] = [
         permission: PERMISSIONS.LEADS_READ,
       },
       {
-        title: "Novo Lead",
-        url: "/leads/new",
-        icon: CirclePlus,
-        permission: PERMISSIONS.LEADS_CREATE,
-      },
-      {
         title: "Pipeline",
         url: "/leads/pipeline",
         icon: Workflow,
