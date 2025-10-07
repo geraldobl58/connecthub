@@ -2,13 +2,22 @@
 
 import { Button } from "@/components/ui/button";
 import { ChevronLeft, ChevronRight } from "lucide-react";
-import { useUrlManager } from "@/hooks/use-url-manager";
+
+import {
+  Select,
+  SelectContent,
+  SelectItem,
+  SelectTrigger,
+  SelectValue,
+} from "@/components/ui/select";
 
 interface PaginationProps {
   currentPage: number;
   totalPages: number;
   totalItems: number;
   itemsPerPage: number;
+  onPageChange: (page: number) => void;
+  onLimitChange: (limit: number) => void;
 }
 
 export function Pagination({
@@ -16,9 +25,9 @@ export function Pagination({
   totalPages,
   totalItems,
   itemsPerPage,
+  onPageChange,
+  onLimitChange,
 }: PaginationProps) {
-  const { updatePage, updateLimit } = useUrlManager();
-
   const startItem = (currentPage - 1) * itemsPerPage + 1;
   const endItem = Math.min(currentPage * itemsPerPage, totalItems);
 
@@ -39,16 +48,20 @@ export function Pagination({
           <span className="text-sm text-muted-foreground">
             Itens por página:
           </span>
-          <select
-            value={itemsPerPage}
-            onChange={(e) => updateLimit(Number(e.target.value))}
-            className="h-8 w-16 rounded border border-input bg-background px-2 text-sm"
+          <Select
+            value={itemsPerPage.toString()}
+            onValueChange={(value) => onLimitChange(Number(value))}
           >
-            <option value={5}>5</option>
-            <option value={10}>10</option>
-            <option value={20}>20</option>
-            <option value={50}>50</option>
-          </select>
+            <SelectTrigger className="w-full">
+              <SelectValue placeholder="Itens por página" />
+            </SelectTrigger>
+            <SelectContent>
+              <SelectItem value="5">5</SelectItem>
+              <SelectItem value="10">10</SelectItem>
+              <SelectItem value="20">20</SelectItem>
+              <SelectItem value="50">50</SelectItem>
+            </SelectContent>
+          </Select>
         </div>
 
         <div className="text-sm text-muted-foreground">
@@ -59,7 +72,7 @@ export function Pagination({
           <Button
             variant="outline"
             size="sm"
-            onClick={() => updatePage(currentPage - 1)}
+            onClick={() => onPageChange(currentPage - 1)}
             disabled={currentPage <= 1}
           >
             <ChevronLeft className="h-4 w-4" />
@@ -68,7 +81,7 @@ export function Pagination({
           <Button
             variant="outline"
             size="sm"
-            onClick={() => updatePage(currentPage + 1)}
+            onClick={() => onPageChange(currentPage + 1)}
             disabled={currentPage >= totalPages}
           >
             Próximo
