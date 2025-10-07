@@ -15,6 +15,11 @@ export const queryKeys = {
   stagesList: (params?: unknown) => ["stages", params],
   stageById: (id: string) => ["stage", id],
 
+  // Owners
+  owners: ["owners"],
+  ownersList: (params?: unknown) => ["owners", params],
+  ownerById: (id: string) => ["owner", id],
+
   // Plans
   currentPlan: ["currentPlan"],
   planHistory: ["planHistory"],
