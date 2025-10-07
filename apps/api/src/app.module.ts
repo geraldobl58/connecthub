@@ -7,7 +7,6 @@ import { PlansModule } from './plans/plans.module';
 import { PermissionsModule } from './permissions/permissions.module';
 import { UsersModule } from './users/users.module';
 import { StagesModule } from './stages/stages.module';
-import { LeadsModule } from './leads/leads.module';
 import { ActivityLogModule } from './activity-log/activity-log.module';
 
 @Module({
@@ -19,7 +18,6 @@ import { ActivityLogModule } from './activity-log/activity-log.module';
     PermissionsModule,
     UsersModule,
     StagesModule,
-    LeadsModule,
     ActivityLogModule,
   ],
   controllers: [],
