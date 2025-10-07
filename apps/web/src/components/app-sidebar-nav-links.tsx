@@ -35,7 +35,7 @@ export const mainItems: NavItem[] = [
     permission: PERMISSIONS.LEADS_READ,
     subitems: [
       {
-        title: "Listar Leads",
+        title: "Leads",
         url: "/leads",
         icon: Binoculars,
         permission: PERMISSIONS.LEADS_READ,
