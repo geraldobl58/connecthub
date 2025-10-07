@@ -6,6 +6,7 @@ import {
   Delete,
   Body,
   Param,
+  Query,
   UseGuards,
 } from '@nestjs/common';
 import { StagesService } from './stages.service';
@@ -13,6 +14,7 @@ import {
   CreateStageDto,
   UpdateStageDto,
   ReorderStagesDto,
+  StageListQueryDto,
 } from './dto/stages.dto';
 import { JwtAuthGuard } from '../common/guards/jwt-auth.guard';
 import { PermissionsGuard } from '../common/guards/permissions.guard';
@@ -26,6 +28,7 @@ import {
   ApiResponse,
   ApiBearerAuth,
   ApiBody,
+  ApiQuery,
 } from '@nestjs/swagger';
 
 @ApiTags('Stages')
@@ -38,32 +41,79 @@ export class StagesController {
   @Get()
   @ApiOperation({
     summary: 'Listar stages',
-    description: 'Lista todos os stages do tenant ordenados por ordem',
+    description: 'Lista stages do tenant com paginação e filtros',
+  })
+  @ApiQuery({
+    name: 'search',
+    required: false,
+    type: String,
+    description: 'Buscar por nome do stage',
+  })
+  @ApiQuery({
+    name: 'type',
+    required: false,
+    enum: ['SALES', 'SUPPORT'],
+    description: 'Filtrar por tipo',
+  })
+  @ApiQuery({
+    name: 'isWon',
+    required: false,
+    type: Boolean,
+    description: 'Filtrar por status ganho',
+  })
+  @ApiQuery({
+    name: 'isLost',
+    required: false,
+    type: Boolean,
+    description: 'Filtrar por status perdido',
+  })
+  @ApiQuery({
+    name: 'page',
+    required: false,
+    type: Number,
+    description: 'Página (padrão: 1)',
+  })
+  @ApiQuery({
+    name: 'limit',
+    required: false,
+    type: Number,
+    description: 'Itens por página (padrão: 10)',
   })
   @ApiResponse({
     status: 200,
     description: 'Lista de stages retornada com sucesso',
     schema: {
-      example: [
-        {
-          id: 'stage-id',
-          tenantId: 'tenant-id',
-          name: 'Novo',
-          type: 'SALES',
-          order: 1,
-          isWon: false,
-          isLost: false,
-          color: '#3B82F6',
+      example: {
+        data: [
+          {
+            id: 'stage-id',
+            tenantId: 'tenant-id',
+            name: 'Novo',
+            type: 'SALES',
+            order: 1,
+            isWon: false,
+            isLost: false,
+            color: '#3B82F6',
+          },
+        ],
+        meta: {
+          page: 1,
+          limit: 10,
+          total: 5,
+          totalPages: 1,
         },
-      ],
+      },
     },
   })
   @ApiResponse({
     status: 401,
     description: 'Não autorizado',
   })
-  async findAll(@GetCurrentUser() user: CurrentUser) {
-    return this.stagesService.findAll(user.tenantId);
+  async findAll(
+    @GetCurrentUser() user: CurrentUser,
+    @Query() query: StageListQueryDto,
+  ) {
+    return this.stagesService.findAll(user.tenantId, query);
   }
 
   @Get(':id')
@@ -136,6 +186,46 @@ export class StagesController {
     return this.stagesService.create(user.tenantId, createStageDto);
   }
 
+  @Patch('reorder')
+  @ApiOperation({
+    summary: 'Reordenar stages',
+    description: 'Reordena os stages conforme a lista de IDs fornecida',
+  })
+  @ApiBody({ type: ReorderStagesDto })
+  @ApiResponse({
+    status: 200,
+    description: 'Stages reordenados com sucesso',
+    schema: {
+      example: [
+        {
+          id: 'stage-id-1',
+          tenantId: 'tenant-id',
+          name: 'Novo',
+          type: 'SALES',
+          order: 1,
+          isWon: false,
+          isLost: false,
+          color: '#3B82F6',
+        },
+      ],
+    },
+  })
+  @ApiResponse({
+    status: 400,
+    description:
+      'Alguns stages não foram encontrados ou não pertencem ao tenant',
+  })
+  @ApiResponse({
+    status: 401,
+    description: 'Não autorizado',
+  })
+  async reorder(
+    @GetCurrentUser() user: CurrentUser,
+    @Body() reorderDto: ReorderStagesDto,
+  ) {
+    return this.stagesService.reorder(user.tenantId, reorderDto);
+  }
+
   @Patch(':id')
   @ApiOperation({
     summary: 'Atualizar stage',
@@ -176,46 +266,6 @@ export class StagesController {
     @Body() updateStageDto: UpdateStageDto,
   ) {
     return this.stagesService.update(user.tenantId, id, updateStageDto);
-  }
-
-  @Patch('reorder')
-  @ApiOperation({
-    summary: 'Reordenar stages',
-    description: 'Reordena os stages conforme a lista de IDs fornecida',
-  })
-  @ApiBody({ type: ReorderStagesDto })
-  @ApiResponse({
-    status: 200,
-    description: 'Stages reordenados com sucesso',
-    schema: {
-      example: [
-        {
-          id: 'stage-id-1',
-          tenantId: 'tenant-id',
-          name: 'Novo',
-          type: 'SALES',
-          order: 1,
-          isWon: false,
-          isLost: false,
-          color: '#3B82F6',
-        },
-      ],
-    },
-  })
-  @ApiResponse({
-    status: 400,
-    description:
-      'Alguns stages não foram encontrados ou não pertencem ao tenant',
-  })
-  @ApiResponse({
-    status: 401,
-    description: 'Não autorizado',
-  })
-  async reorder(
-    @GetCurrentUser() user: CurrentUser,
-    @Body() reorderDto: ReorderStagesDto,
-  ) {
-    return this.stagesService.reorder(user.tenantId, reorderDto);
   }
 
   @Delete(':id')
