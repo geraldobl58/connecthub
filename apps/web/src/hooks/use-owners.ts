@@ -1,127 +1,114 @@
-import { useState, useEffect } from "react";
-import api from "@/lib/api";
+import { useQuery, useMutation, useQueryClient } from "@tanstack/react-query";
+import { toast } from "sonner";
+import { ownerHttpService } from "@/http/owner";
+import {
+  OwnerListParams,
+  CreateOwnerRequest,
+  UpdateOwnerRequest,
+} from "@/types/owners";
+import { queryKeys } from "@/lib/query-keys";
 
-export interface Owner {
-  id: string;
-  name: string;
-  email?: string;
-  phone?: string;
-  document?: string;
-}
-
-interface UseOwnersProps {
-  enabled?: boolean;
-}
-
-interface UseOwnersReturn {
-  owners: Owner[];
-  isLoading: boolean;
-  error: string | null;
-  createOwner: (ownerData: Omit<Owner, "id">) => Promise<Owner>;
-  searchOwners: (query: string) => Promise<Owner[]>;
-  getOwnerById: (id: string) => Promise<Owner | null>;
-}
-
-export function useOwners({
-  enabled = true,
-}: UseOwnersProps = {}): UseOwnersReturn {
-  const [owners, setOwners] = useState<Owner[]>([]);
-  const [isLoading, setIsLoading] = useState(false);
-  const [error, setError] = useState<string | null>(null);
-
-  // Carregar owners da API
-  useEffect(() => {
-    if (enabled) {
-      const loadOwners = async () => {
-        setIsLoading(true);
-        setError(null);
-
-        try {
-          const response = await api.get("/owners?limit=100");
-          setOwners(response.data.data || []);
-        } catch (err) {
-          const errorMessage =
-            err instanceof Error
-              ? err.message
-              : "Erro ao carregar proprietários";
-          setError(errorMessage);
-        } finally {
-          setIsLoading(false);
-        }
-      };
-
-      loadOwners();
+// Função utilitária para tratar erros da API
+function handleApiError(error: unknown, defaultMessage: string): string {
+  if (error && typeof error === "object" && "response" in error) {
+    const axiosError = error as any;
+    if (axiosError.response?.data?.message) {
+      return axiosError.response.data.message;
+    } else if (axiosError.message) {
+      return axiosError.message;
     }
-  }, [enabled]);
+  } else if (error instanceof Error) {
+    return error.message;
+  }
 
-  const createOwner = async (ownerData: Omit<Owner, "id">): Promise<Owner> => {
-    setIsLoading(true);
-    setError(null);
+  return defaultMessage;
+}
 
-    try {
-      const response = await api.post("/owners", ownerData);
-      const newOwner = response.data;
-      setOwners((prev) => [...prev, newOwner]);
-      return newOwner;
-    } catch (err) {
-      const errorMessage =
-        err instanceof Error ? err.message : "Erro ao criar proprietário";
-      setError(errorMessage);
-      throw new Error(errorMessage);
-    } finally {
-      setIsLoading(false);
-    }
-  };
+/**
+ * Hook para listar owners com paginação e filtros
+ */
+export function useOwners(params: OwnerListParams = {}) {
+  return useQuery({
+    queryKey: queryKeys.ownersList(params),
+    queryFn: () => ownerHttpService.getOwners(params),
+    staleTime: 5 * 60 * 1000, // 5 minutes
+  });
+}
 
-  const searchOwners = async (query: string): Promise<Owner[]> => {
-    if (!query.trim()) return owners;
+/**
+ * Hook para buscar owner por ID
+ */
+export function useOwner(id: string) {
+  return useQuery({
+    queryKey: queryKeys.ownerById(id),
+    queryFn: () => ownerHttpService.getOwnerById(id),
+    enabled: !!id,
+    staleTime: 5 * 60 * 1000, // 5 minutes
+  });
+}
 
-    setIsLoading(true);
-    setError(null);
+/**
+ * Hook para criar owner
+ */
+export function useCreateOwner() {
+  const queryClient = useQueryClient();
+  return useMutation({
+    mutationFn: (ownerData: CreateOwnerRequest) =>
+      ownerHttpService.createOwner(ownerData),
+    onSuccess: () => {
+      queryClient.invalidateQueries({ queryKey: queryKeys.owners });
+      queryClient.invalidateQueries({ queryKey: queryKeys.ownersList() });
+      toast.success("Proprietário criado com sucesso!");
+    },
+    onError: (error: unknown) => {
+      const errorMessage = handleApiError(error, "Erro ao criar proprietário");
+      toast.error(errorMessage);
+    },
+  });
+}
 
-    try {
-      const response = await api.get(
-        `/owners?search=${encodeURIComponent(query)}&limit=50`
+/**
+ * Hook para atualizar owner
+ */
+export function useUpdateOwner() {
+  const queryClient = useQueryClient();
+  return useMutation({
+    mutationFn: ({ id, data }: { id: string; data: UpdateOwnerRequest }) =>
+      ownerHttpService.updateOwner(id, data),
+    onSuccess: (data) => {
+      queryClient.invalidateQueries({ queryKey: queryKeys.owners });
+      queryClient.invalidateQueries({ queryKey: queryKeys.ownersList() });
+      queryClient.invalidateQueries({ queryKey: queryKeys.ownerById(data.id) });
+      toast.success("Proprietário atualizado com sucesso!");
+    },
+    onError: (error: unknown) => {
+      const errorMessage = handleApiError(
+        error,
+        "Erro ao atualizar proprietário"
       );
-      return response.data.data || [];
-    } catch (err) {
-      const errorMessage =
-        err instanceof Error ? err.message : "Erro ao buscar proprietários";
-      setError(errorMessage);
-      throw new Error(errorMessage);
-    } finally {
-      setIsLoading(false);
-    }
-  };
+      toast.error(errorMessage);
+    },
+  });
+}
 
-  const getOwnerById = async (id: string): Promise<Owner | null> => {
-    if (!id) return null;
-
-    setIsLoading(true);
-    setError(null);
-
-    try {
-      const response = await api.get(`/owners/${id}`);
-      return response.data;
-    } catch (err) {
-      if (err instanceof Error && err.message.includes("404")) {
-        return null;
-      }
-      const errorMessage =
-        err instanceof Error ? err.message : "Erro ao buscar proprietário";
-      setError(errorMessage);
-      throw new Error(errorMessage);
-    } finally {
-      setIsLoading(false);
-    }
-  };
-
-  return {
-    owners,
-    isLoading,
-    error,
-    createOwner,
-    searchOwners,
-    getOwnerById,
-  };
+/**
+ * Hook para deletar owner
+ */
+export function useDeleteOwner() {
+  const queryClient = useQueryClient();
+  return useMutation({
+    mutationFn: (id: string) => ownerHttpService.deleteOwner(id),
+    onSuccess: () => {
+      queryClient.invalidateQueries({ queryKey: queryKeys.owners });
+      queryClient.invalidateQueries({ queryKey: queryKeys.ownersList() });
+      toast.success("Proprietário deletado com sucesso!");
+    },
+    onError: (error: unknown) => {
+      const errorMessage = handleApiError(
+        error,
+        "Erro ao deletar proprietário"
+      );
+      toast.error(errorMessage);
+    },
+  });
 }
