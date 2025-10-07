@@ -8,6 +8,7 @@ import {
   CreateStageDto,
   UpdateStageDto,
   ReorderStagesDto,
+  StageListQueryDto,
 } from './dto/stages.dto';
 import { Stage, StageType } from '@prisma/client';
 
@@ -15,11 +16,59 @@ import { Stage, StageType } from '@prisma/client';
 export class StagesService {
   constructor(private prisma: PrismaService) {}
 
-  async findAll(tenantId: string): Promise<Stage[]> {
-    return this.prisma.stage.findMany({
-      where: { tenantId },
-      orderBy: { order: 'asc' },
-    });
+  async findAll(
+    tenantId: string,
+    query?: StageListQueryDto,
+  ): Promise<{ data: Stage[]; meta: any }> {
+    const { search, type, isWon, isLost, page = 1, limit = 10 } = query || {};
+
+    // Construir filtros
+    const where: any = { tenantId };
+
+    if (search) {
+      where.name = {
+        contains: search,
+        mode: 'insensitive',
+      };
+    }
+
+    if (type) {
+      where.type = type;
+    }
+
+    if (isWon !== undefined) {
+      where.isWon = isWon;
+    }
+
+    if (isLost !== undefined) {
+      where.isLost = isLost;
+    }
+
+    // Calcular offset para paginação
+    const skip = (page - 1) * limit;
+
+    // Buscar stages com filtros e paginação
+    const [stages, total] = await Promise.all([
+      this.prisma.stage.findMany({
+        where,
+        orderBy: { order: 'asc' },
+        skip,
+        take: limit,
+      }),
+      this.prisma.stage.count({ where }),
+    ]);
+
+    const totalPages = Math.ceil(total / limit);
+
+    return {
+      data: stages,
+      meta: {
+        page,
+        limit,
+        total,
+        totalPages,
+      },
+    };
   }
 
   async findOne(tenantId: string, id: string): Promise<Stage> {
@@ -131,7 +180,8 @@ export class StagesService {
     await Promise.all(updatePromises);
 
     // Retornar os stages reordenados
-    return this.findAll(tenantId);
+    const result = await this.findAll(tenantId);
+    return result.data;
   }
 
   async delete(tenantId: string, id: string): Promise<void> {
