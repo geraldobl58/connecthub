@@ -6,6 +6,7 @@ import { Pagination } from "@/components/pagination";
 import { columns } from "./columns";
 import { useUsers } from "@/hooks/use-users";
 import { useUrlFilters } from "@/hooks/use-url-filters";
+import { useUrlManager } from "@/hooks/use-url-manager";
 import { UsersSearch } from "./users-search";
 import { UsersBulkActions } from "./users-bulk-actions";
 import { UserResponse } from "@/types/users";
@@ -15,6 +16,7 @@ export const UsersList = () => {
   const [isMounted, setIsMounted] = useState(false);
   const [selectedUsers, setSelectedUsers] = useState<UserResponse[]>([]);
   const filters = useUrlFilters();
+  const { updatePage, updateLimit } = useUrlManager();
   const { users, meta, isLoading, error, refetch } = useUsers(filters);
   const usersLengthRef = useRef(users?.length || 0);
 
@@ -101,6 +103,8 @@ export const UsersList = () => {
               totalPages={meta.totalPages}
               totalItems={meta.total}
               itemsPerPage={meta.limit}
+              onPageChange={updatePage}
+              onLimitChange={updateLimit}
             />
           )}
         </>
