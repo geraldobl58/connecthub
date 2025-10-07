@@ -8,6 +8,7 @@ import { PermissionsModule } from './permissions/permissions.module';
 import { UsersModule } from './users/users.module';
 import { StagesModule } from './stages/stages.module';
 import { ActivityLogModule } from './activity-log/activity-log.module';
+import { OwnersModule } from './owners/owners.module';
 
 @Module({
   imports: [
@@ -19,6 +20,7 @@ import { ActivityLogModule } from './activity-log/activity-log.module';
     UsersModule,
     StagesModule,
     ActivityLogModule,
+    OwnersModule,
   ],
   controllers: [],
   providers: [],
