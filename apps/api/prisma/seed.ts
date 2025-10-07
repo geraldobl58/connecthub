@@ -1030,16 +1030,40 @@ async function main() {
 
   console.log('📞 Creating leads...');
 
-  // Buscar stages para criar leads
-  const novoLeadStage = await prisma.stage.findFirst({
-    where: { tenantId: tenant1.id, name: 'Novo' },
-  });
+  // Buscar stages para todos os tenants
+  const stagesByTenant = {};
+  for (const tenant of [tenant1, tenant2, tenant3, tenant4]) {
+    const stages = await prisma.stage.findMany({
+      where: { tenantId: tenant.id },
+      orderBy: { order: 'asc' },
+    });
+    stagesByTenant[tenant.id] = {
+      novo: stages.find((s) => s.name === 'Novo'),
+      qualificado: stages.find((s) => s.name === 'Qualificado'),
+      proposta: stages.find((s) => s.name === 'Proposta'),
+      fechadoWon: stages.find((s) => s.name === 'Fechado (Won)'),
+      fechadoLost: stages.find((s) => s.name === 'Fechado (Lost)'),
+    };
+  }
 
-  const qualificadoStage = await prisma.stage.findFirst({
-    where: { tenantId: tenant1.id, name: 'Qualificado' },
-  });
+  // Buscar agentes para atribuição
+  const agentsByTenant = {};
+  for (const tenant of [tenant1, tenant2, tenant3, tenant4]) {
+    const agents = await prisma.user.findMany({
+      where: {
+        tenantId: tenant.id,
+        role: { in: ['AGENT', 'MANAGER'] },
+        isActive: true,
+      },
+      take: 3,
+    });
+    agentsByTenant[tenant.id] = agents;
+  }
 
-  // Criar Leads
+  // Criar Leads para cada tenant
+  const leads: any[] = [];
+
+  // Tenant 1 - Empresa Demo
   const lead1 = await prisma.lead.create({
     data: {
       tenantId: tenant1.id,
@@ -1047,13 +1071,14 @@ async function main() {
       phone: '11988776655',
       email: 'roberto.santos@email.com',
       source: 'WEB',
-      stageId: novoLeadStage?.id,
-      assignedTo: agent1.id,
+      stageId: stagesByTenant[tenant1.id].novo?.id,
+      assignedTo: agentsByTenant[tenant1.id][0]?.id,
       propertyId: property1.id,
       notesText:
         'Interessado em apartamentos de 2 quartos no centro. Orçamento até R$ 500.000',
     },
   });
+  leads.push(lead1);
 
   const lead2 = await prisma.lead.create({
     data: {
@@ -1062,32 +1087,152 @@ async function main() {
       phone: '11977665544',
       email: 'fernanda.lima@email.com',
       source: 'REFERRAL',
-      stageId: qualificadoStage?.id,
-      assignedTo: agent1.id,
+      stageId: stagesByTenant[tenant1.id].qualificado?.id,
+      assignedTo: agentsByTenant[tenant1.id][0]?.id,
       propertyId: property2.id,
       notesText:
         'Indicada por cliente. Procura casa com quintal para os filhos.',
     },
   });
+  leads.push(lead2);
 
   const lead3 = await prisma.lead.create({
+    data: {
+      tenantId: tenant1.id,
+      name: 'Carlos Mendes',
+      phone: '11966554433',
+      email: 'carlos.mendes@email.com',
+      source: 'PHONE',
+      stageId: stagesByTenant[tenant1.id].proposta?.id,
+      assignedTo: agentsByTenant[tenant1.id][1]?.id,
+      notesText: 'Ligou diretamente. Interesse em investimento imobiliário.',
+    },
+  });
+  leads.push(lead3);
+
+  const lead4 = await prisma.lead.create({
+    data: {
+      tenantId: tenant1.id,
+      name: 'Ana Costa',
+      phone: '11955443322',
+      email: 'ana.costa@email.com',
+      source: 'SOCIAL',
+      stageId: stagesByTenant[tenant1.id].fechadoWon?.id,
+      assignedTo: agentsByTenant[tenant1.id][0]?.id,
+      propertyId: property1.id,
+      notesText: 'Veio do Facebook. Fechou negócio de apartamento.',
+    },
+  });
+  leads.push(lead4);
+
+  // Tenant 2 - Imobiliária ABC
+  const lead5 = await prisma.lead.create({
     data: {
       tenantId: tenant2.id,
       name: 'Pedro Oliveira',
       phone: '21999887766',
       email: 'pedro.oliveira@email.com',
       source: 'SOCIAL',
-      assignedTo: agent2.id,
+      stageId: stagesByTenant[tenant2.id].qualificado?.id,
+      assignedTo: agentsByTenant[tenant2.id][0]?.id,
       propertyId: property3.id,
       notesText: 'Veio do Instagram. Interesse em cobertura de luxo.',
     },
   });
+  leads.push(lead5);
 
-  console.log(`✅ Created ${3} leads`);
+  const lead6 = await prisma.lead.create({
+    data: {
+      tenantId: tenant2.id,
+      name: 'Mariana Silva',
+      phone: '21988776655',
+      email: 'mariana.silva@email.com',
+      source: 'WEB',
+      stageId: stagesByTenant[tenant2.id].novo?.id,
+      assignedTo: agentsByTenant[tenant2.id][1]?.id,
+      notesText: 'Preencheu formulário no site. Busca casa para família.',
+    },
+  });
+  leads.push(lead6);
+
+  const lead7 = await prisma.lead.create({
+    data: {
+      tenantId: tenant2.id,
+      name: 'João Pereira',
+      phone: '21977665544',
+      email: 'joao.pereira@email.com',
+      source: 'PHONE',
+      stageId: stagesByTenant[tenant2.id].fechadoLost?.id,
+      assignedTo: agentsByTenant[tenant2.id][0]?.id,
+      notesText: 'Ligou mas não tinha orçamento adequado. Perdeu o negócio.',
+    },
+  });
+  leads.push(lead7);
+
+  // Tenant 3 - Tech Solutions
+  const lead8 = await prisma.lead.create({
+    data: {
+      tenantId: tenant3.id,
+      name: 'Lucas Ferreira',
+      phone: '11944332211',
+      email: 'lucas.ferreira@email.com',
+      source: 'WEB',
+      stageId: stagesByTenant[tenant3.id].novo?.id,
+      assignedTo: agentsByTenant[tenant3.id][0]?.id,
+      notesText:
+        'Desenvolvedor interessado em apartamento próximo ao trabalho.',
+    },
+  });
+  leads.push(lead8);
+
+  const lead9 = await prisma.lead.create({
+    data: {
+      tenantId: tenant3.id,
+      name: 'Camila Rodrigues',
+      phone: '11933221100',
+      email: 'camila.rodrigues@email.com',
+      source: 'REFERRAL',
+      stageId: stagesByTenant[tenant3.id].proposta?.id,
+      assignedTo: agentsByTenant[tenant3.id][1]?.id,
+      notesText: 'Indicada por colega. Analista de sistemas procurando casa.',
+    },
+  });
+  leads.push(lead9);
+
+  // Tenant 4 - G3 Developer
+  const lead10 = await prisma.lead.create({
+    data: {
+      tenantId: tenant4.id,
+      name: 'Rafael Almeida',
+      phone: '11922110099',
+      email: 'rafael.almeida@email.com',
+      source: 'OTHER',
+      stageId: stagesByTenant[tenant4.id].qualificado?.id,
+      assignedTo: agentsByTenant[tenant4.id][0]?.id,
+      notesText:
+        'Contato através de evento. CEO de startup procurando escritório.',
+    },
+  });
+  leads.push(lead10);
+
+  const lead11 = await prisma.lead.create({
+    data: {
+      tenantId: tenant4.id,
+      name: 'Isabela Santos',
+      phone: '11911009988',
+      email: 'isabela.santos@email.com',
+      source: 'SOCIAL',
+      stageId: stagesByTenant[tenant4.id].novo?.id,
+      notesText: 'Veio do LinkedIn. Designer procurando loft criativo.',
+    },
+  });
+  leads.push(lead11);
+
+  console.log(`✅ Created ${leads.length} leads`);
 
   console.log('📋 Creating tasks...');
 
-  // Criar Tasks
+  // Criar Tasks para os novos leads
   await prisma.task.create({
     data: {
       tenantId: tenant1.id,
@@ -1095,7 +1240,7 @@ async function main() {
       dueDate: new Date(Date.now() + 2 * 24 * 60 * 60 * 1000), // Em 2 dias
       status: 'PENDING',
       priority: 'HIGH',
-      assigneeId: agent1.id,
+      assigneeId: agentsByTenant[tenant1.id][0]?.id,
       leadId: lead1.id,
       reminderAt: new Date(Date.now() + 24 * 60 * 60 * 1000), // Em 1 dia
     },
@@ -1108,7 +1253,7 @@ async function main() {
       dueDate: new Date(Date.now() + 3 * 24 * 60 * 60 * 1000), // Em 3 dias
       status: 'PENDING',
       priority: 'NORMAL',
-      assigneeId: agent1.id,
+      assigneeId: agentsByTenant[tenant1.id][0]?.id,
       leadId: lead2.id,
       propertyId: property2.id,
     },
@@ -1116,14 +1261,50 @@ async function main() {
 
   await prisma.task.create({
     data: {
+      tenantId: tenant1.id,
+      title: 'Enviar proposta para Carlos',
+      dueDate: new Date(Date.now() + 1 * 24 * 60 * 60 * 1000), // Amanhã
+      status: 'PENDING',
+      priority: 'HIGH',
+      assigneeId: agentsByTenant[tenant1.id][1]?.id,
+      leadId: lead3.id,
+    },
+  });
+
+  await prisma.task.create({
+    data: {
       tenantId: tenant2.id,
-      title: 'Enviar fotos da cobertura',
+      title: 'Enviar fotos da cobertura para Pedro',
       dueDate: new Date(Date.now() + 1 * 24 * 60 * 60 * 1000), // Amanhã
       status: 'COMPLETED',
       priority: 'HIGH',
-      assigneeId: agent2.id,
-      leadId: lead3.id,
+      assigneeId: agentsByTenant[tenant2.id][0]?.id,
+      leadId: lead5.id,
       propertyId: property3.id,
+    },
+  });
+
+  await prisma.task.create({
+    data: {
+      tenantId: tenant2.id,
+      title: 'Contatar Mariana sobre casas disponíveis',
+      dueDate: new Date(Date.now() + 2 * 24 * 60 * 60 * 1000), // Em 2 dias
+      status: 'PENDING',
+      priority: 'NORMAL',
+      assigneeId: agentsByTenant[tenant2.id][1]?.id,
+      leadId: lead6.id,
+    },
+  });
+
+  await prisma.task.create({
+    data: {
+      tenantId: tenant3.id,
+      title: 'Mostrar apartamentos para Lucas',
+      dueDate: new Date(Date.now() + 4 * 24 * 60 * 60 * 1000), // Em 4 dias
+      status: 'PENDING',
+      priority: 'NORMAL',
+      assigneeId: agentsByTenant[tenant3.id][0]?.id,
+      leadId: lead8.id,
     },
   });
 
@@ -1223,11 +1404,11 @@ async function main() {
 
   console.log('📝 Creating notes...');
 
-  // Criar Notes
+  // Criar Notes para os novos leads
   await prisma.note.create({
     data: {
       tenantId: tenant1.id,
-      authorId: agent1.id,
+      authorId: agentsByTenant[tenant1.id][0]?.id,
       leadId: lead1.id,
       content:
         'Cliente demonstrou muito interesse no apartamento. Quer agendar visita para o final de semana.',
@@ -1237,7 +1418,7 @@ async function main() {
   await prisma.note.create({
     data: {
       tenantId: tenant1.id,
-      authorId: manager1.id,
+      authorId: agentsByTenant[tenant1.id][0]?.id,
       propertyId: property2.id,
       content: 'Proprietário autorizou desconto de até 5% para venda à vista.',
     },
@@ -1246,7 +1427,7 @@ async function main() {
   await prisma.note.create({
     data: {
       tenantId: tenant1.id,
-      authorId: admin1.id,
+      authorId: agentsByTenant[tenant1.id][0]?.id,
       leadId: lead2.id,
       content:
         'Lead de alta qualidade. Aprovação de crédito pré-confirmada pelo banco.',
@@ -1255,24 +1436,44 @@ async function main() {
 
   await prisma.note.create({
     data: {
-      tenantId: tenant2.id,
-      authorId: admin2.id,
+      tenantId: tenant1.id,
+      authorId: agentsByTenant[tenant1.id][1]?.id,
       leadId: lead3.id,
       content:
-        'Cliente tem interesse em investimento. Pode comprar mais de um imóvel.',
+        'Cliente ligou diretamente. Interesse em investimento imobiliário. Orçamento alto.',
+    },
+  });
+
+  await prisma.note.create({
+    data: {
+      tenantId: tenant2.id,
+      authorId: agentsByTenant[tenant2.id][0]?.id,
+      leadId: lead5.id,
+      content:
+        'Cliente veio do Instagram. Interesse em cobertura de luxo. Perfil alto padrão.',
+    },
+  });
+
+  await prisma.note.create({
+    data: {
+      tenantId: tenant2.id,
+      authorId: agentsByTenant[tenant2.id][1]?.id,
+      leadId: lead6.id,
+      content:
+        'Preencheu formulário no site. Busca casa para família com 2 filhos.',
     },
   });
 
   console.log('📊 Creating activity logs...');
 
-  // Criar Activity Logs
+  // Criar Activity Logs para os novos leads
   await prisma.activityLog.create({
     data: {
       tenantId: tenant1.id,
-      actorId: agent1.id,
+      actorId: agentsByTenant[tenant1.id][0]?.id,
       entity: 'Lead',
       entityId: lead1.id,
-      action: 'CREATE',
+      action: 'LEAD_CREATED',
       metadata: {
         leadName: 'Roberto Santos',
         source: 'WEB',
@@ -1283,48 +1484,131 @@ async function main() {
   await prisma.activityLog.create({
     data: {
       tenantId: tenant1.id,
-      actorId: agent1.id,
+      actorId: agentsByTenant[tenant1.id][0]?.id,
       entity: 'Lead',
       entityId: lead2.id,
-      action: 'STATUS_CHANGE',
+      action: 'LEAD_MOVED',
       metadata: {
-        from: 'Novo Lead',
-        to: 'Qualificado',
+        leadName: 'Fernanda Lima',
+        fromStage: 'Novo',
+        toStage: 'Qualificado',
       },
     },
   });
 
-  // Atualizar Usage counts
-  await prisma.usage.update({
-    where: { tenantId: tenant1.id },
+  await prisma.activityLog.create({
     data: {
+      tenantId: tenant1.id,
+      actorId: agentsByTenant[tenant1.id][1]?.id,
+      entity: 'Lead',
+      entityId: lead3.id,
+      action: 'LEAD_MOVED',
+      metadata: {
+        leadName: 'Carlos Mendes',
+        fromStage: 'Qualificado',
+        toStage: 'Proposta',
+      },
+    },
+  });
+
+  await prisma.activityLog.create({
+    data: {
+      tenantId: tenant1.id,
+      actorId: agentsByTenant[tenant1.id][0]?.id,
+      entity: 'Lead',
+      entityId: lead4.id,
+      action: 'LEAD_MOVED',
+      metadata: {
+        leadName: 'Ana Costa',
+        fromStage: 'Proposta',
+        toStage: 'Fechado (Won)',
+      },
+    },
+  });
+
+  await prisma.activityLog.create({
+    data: {
+      tenantId: tenant2.id,
+      actorId: agentsByTenant[tenant2.id][0]?.id,
+      entity: 'Lead',
+      entityId: lead7.id,
+      action: 'LEAD_MOVED',
+      metadata: {
+        leadName: 'João Pereira',
+        fromStage: 'Qualificado',
+        toStage: 'Fechado (Lost)',
+        notes: 'Orçamento insuficiente',
+      },
+    },
+  });
+
+  // Criar/Atualizar Usage counts
+  await prisma.usage.upsert({
+    where: { tenantId: tenant1.id },
+    update: {
       propertiesCount: 2,
+      contactsCount: 4, // 4 leads no tenant1
+    },
+    create: {
+      tenantId: tenant1.id,
+      propertiesCount: 2,
+      contactsCount: 4,
+    },
+  });
+
+  await prisma.usage.upsert({
+    where: { tenantId: tenant2.id },
+    update: {
+      propertiesCount: 1,
+      contactsCount: 3, // 3 leads no tenant2
+    },
+    create: {
+      tenantId: tenant2.id,
+      propertiesCount: 1,
+      contactsCount: 3,
+    },
+  });
+
+  await prisma.usage.upsert({
+    where: { tenantId: tenant3.id },
+    update: {
+      propertiesCount: 0,
+      contactsCount: 2, // 2 leads no tenant3
+    },
+    create: {
+      tenantId: tenant3.id,
+      propertiesCount: 0,
       contactsCount: 2,
     },
   });
 
-  await prisma.usage.update({
-    where: { tenantId: tenant2.id },
-    data: {
-      propertiesCount: 1,
-      contactsCount: 1,
+  await prisma.usage.upsert({
+    where: { tenantId: tenant4.id },
+    update: {
+      propertiesCount: 0,
+      contactsCount: 2, // 2 leads no tenant4
+    },
+    create: {
+      tenantId: tenant4.id,
+      propertiesCount: 0,
+      contactsCount: 2,
     },
   });
 
   console.log('🎉 Database seeding completed successfully!');
   console.log('\n📋 Summary:');
-  console.log('- 3 Tenants created');
+  console.log('- 4 Tenants created');
   console.log('- 2 Plans created');
   console.log(
     '- 59 Users created (all roles covered + inactive + multi-tenant test)',
   );
   console.log('- 3 Properties created');
   console.log('- 5 Default stages created for each tenant');
-  console.log('- 3 Leads created');
-  console.log('- 6 Tasks created');
+  console.log('- 11 Leads created (distributed across all tenants)');
+  console.log('- 6 Tasks created (linked to leads)');
   console.log('- 3 Tags created');
-  console.log('- 4 Notes created');
-  console.log('- 2 Activity logs created');
+  console.log('- 6 Notes created (linked to leads)');
+  console.log('- 5 Activity logs created (lead actions)');
   console.log('\n🔐 Default password for all users: Demo123!');
   console.log('\n🏢 Tenants:');
   console.log(
