@@ -29,7 +29,7 @@ CREATE TYPE "public"."MessageStatus" AS ENUM ('SENT', 'DELIVERED', 'READ', 'FAIL
 CREATE TYPE "public"."SubStatus" AS ENUM ('ACTIVE', 'PAST_DUE', 'CANCELED', 'EXPIRED');
 
 -- CreateEnum
-CREATE TYPE "public"."LeadSource" AS ENUM ('WEB', 'REFERRAL', 'SOCIAL', 'OTHER');
+CREATE TYPE "public"."LeadSource" AS ENUM ('WEB', 'PHONE', 'REFERRAL', 'SOCIAL', 'OTHER');
 
 -- CreateEnum
 CREATE TYPE "public"."MessageDirection" AS ENUM ('INBOUND', 'OUTBOUND');
@@ -72,6 +72,8 @@ CREATE TABLE "public"."Property" (
     "type" "public"."PropertyType" NOT NULL,
     "status" "public"."PropertyStatus" NOT NULL DEFAULT 'ACTIVE',
     "price" DECIMAL(12,2),
+    "minPrice" DECIMAL(12,2),
+    "maxPrice" DECIMAL(12,2),
     "bedroom" INTEGER,
     "bathroom" INTEGER,
     "parking" INTEGER,

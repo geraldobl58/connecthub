@@ -20,6 +20,11 @@ export const queryKeys = {
   ownersList: (params?: unknown) => ["owners", params],
   ownerById: (id: string) => ["owner", id],
 
+  // Properties
+  properties: ["properties"],
+  propertiesList: (params?: unknown) => ["properties", params],
+  propertyById: (id: string) => ["property", id],
+
   // Plans
   currentPlan: ["currentPlan"],
   planHistory: ["planHistory"],

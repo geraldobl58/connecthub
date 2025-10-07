@@ -611,6 +611,8 @@ async function main() {
       type: 'APARTMENT',
       status: 'ACTIVE',
       price: 450000.0,
+      minPrice: 420000.0,
+      maxPrice: 480000.0,
       bedroom: 2,
       bathroom: 1,
       parking: 1,
@@ -648,6 +650,8 @@ async function main() {
       type: 'HOUSE',
       status: 'ACTIVE',
       price: 750000.0,
+      minPrice: 700000.0,
+      maxPrice: 800000.0,
       bedroom: 3,
       bathroom: 2,
       parking: 2,
@@ -685,6 +689,8 @@ async function main() {
       type: 'CONDO',
       status: 'ACTIVE',
       price: 1500000.0,
+      minPrice: 1400000.0,
+      maxPrice: 1600000.0,
       bedroom: 4,
       bathroom: 5,
       parking: 3,
@@ -821,6 +827,8 @@ async function main() {
       else if (type === 'CONDO') basePrice = 600000;
 
       const price = Math.floor(basePrice + Math.random() * 1000000);
+      const minPrice = Math.floor(price * 0.9); // 10% abaixo do preço
+      const maxPrice = Math.floor(price * 1.1); // 10% acima do preço
 
       const code = `${prefix}${i.toString().padStart(3, '0')}`;
 
@@ -831,6 +839,8 @@ async function main() {
         type,
         status,
         price,
+        minPrice,
+        maxPrice,
         bedroom,
         bathroom,
         parking,
@@ -879,6 +889,8 @@ async function main() {
         type: propData.type,
         status: propData.status,
         price: propData.price,
+        minPrice: propData.minPrice,
+        maxPrice: propData.maxPrice,
         bedroom: propData.bedroom,
         bathroom: propData.bathroom,
         parking: propData.parking,
@@ -909,6 +921,8 @@ async function main() {
         type: propData.type,
         status: propData.status,
         price: propData.price,
+        minPrice: propData.minPrice,
+        maxPrice: propData.maxPrice,
         bedroom: propData.bedroom,
         bathroom: propData.bathroom,
         parking: propData.parking,
@@ -939,6 +953,8 @@ async function main() {
         type: propData.type,
         status: propData.status,
         price: propData.price,
+        minPrice: propData.minPrice,
+        maxPrice: propData.maxPrice,
         bedroom: propData.bedroom,
         bathroom: propData.bathroom,
         parking: propData.parking,
@@ -969,6 +985,8 @@ async function main() {
         type: propData.type,
         status: propData.status,
         price: propData.price,
+        minPrice: propData.minPrice,
+        maxPrice: propData.maxPrice,
         bedroom: propData.bedroom,
         bathroom: propData.bathroom,
         parking: propData.parking,

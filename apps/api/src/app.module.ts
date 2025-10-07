@@ -9,6 +9,7 @@ import { UsersModule } from './users/users.module';
 import { StagesModule } from './stages/stages.module';
 import { ActivityLogModule } from './activity-log/activity-log.module';
 import { OwnersModule } from './owners/owners.module';
+import { PropertiesModule } from './properties/properties.module';
 
 @Module({
   imports: [
@@ -21,6 +22,7 @@ import { OwnersModule } from './owners/owners.module';
     StagesModule,
     ActivityLogModule,
     OwnersModule,
+    PropertiesModule,
   ],
   controllers: [],
   providers: [],
