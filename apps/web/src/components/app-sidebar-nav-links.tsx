@@ -15,6 +15,7 @@ import {
   Users,
   WalletMinimal,
   Workflow,
+  GitBranch,
 } from "lucide-react";
 
 import { NavItem, PERMISSIONS } from "@/types/permissions";
@@ -202,6 +203,12 @@ export const mainItems: NavItem[] = [
         url: "/settings/users",
         icon: Users,
         permission: PERMISSIONS.USERS_READ,
+      },
+      {
+        title: "Stages",
+        url: "/settings/stages",
+        icon: GitBranch,
+        permission: PERMISSIONS.SETTINGS_READ,
       },
       {
         title: "Empresa",
