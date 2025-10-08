@@ -8,13 +8,19 @@ import { PropertiesPage } from "../pages/dashboard/properties";
 import { UsersPage } from "../pages/dashboard/users";
 import { PlansPage } from "../pages/dashboard/plans";
 import { SettingsPage } from "../pages/dashboard/settings";
+import { useAuthContext } from "../context/authContext";
 
 // Hook para verificar se o usuário está autenticado
 function useAuth() {
-  const token = localStorage.getItem("auth_token");
-  return !!token;
+  try {
+    const ctx = useAuthContext();
+    return ctx.isAuthenticated;
+  } catch {
+    // If not inside provider, fallback to localStorage
+    const token = localStorage.getItem("auth_token");
+    return !!token;
+  }
 }
-
 // Componente para proteger rotas autenticadas
 function ProtectedRoute({ children }: { children: React.ReactNode }) {
   const isAuthenticated = useAuth();

@@ -1,90 +1,100 @@
-import { useState } from "react";
 import { useNavigate, Link } from "react-router-dom";
 import { TextField, Button, Alert, Box, Link as MuiLink } from "@mui/material";
-import { useLogin } from "../hooks/useAuth";
+import { useForm, Controller } from "react-hook-form";
+import { zodResolver } from "@hookform/resolvers/zod";
+import { loginSchema } from "../schemas/auth";
+import { useAuthContext } from "../context/authContext";
+import { mapApiToFormError } from "../utils/formErrors";
+import type { AuthRequest } from "../types/auth";
 
 export function LoginForm() {
   const navigate = useNavigate();
-  const [email, setEmail] = useState("");
-  const [password, setPassword] = useState("");
-  const [errors, setErrors] = useState<{ email?: string; password?: string }>(
-    {}
-  );
+  const auth = useAuthContext();
 
-  const loginMutation = useLogin();
+  const {
+    control,
+    handleSubmit,
+    formState: { errors, isSubmitting },
+    setError,
+  } = useForm<AuthRequest>({
+    resolver: zodResolver(loginSchema),
+    defaultValues: {
+      tenantId: "",
+      email: "",
+      password: "",
+    },
+  });
 
-  const validateForm = () => {
-    const newErrors: { email?: string; password?: string } = {};
-
-    if (!email) {
-      newErrors.email = "Email é obrigatório";
-    } else if (!/\S+@\S+\.\S+/.test(email)) {
-      newErrors.email = "Email deve ter um formato válido";
-    }
-
-    if (!password) {
-      newErrors.password = "Senha é obrigatória";
-    } else if (password.length < 6) {
-      newErrors.password = "Senha deve ter pelo menos 6 caracteres";
-    }
-
-    setErrors(newErrors);
-    return Object.keys(newErrors).length === 0;
-  };
-
-  const handleSubmit = async (e: React.FormEvent) => {
-    e.preventDefault();
-
-    if (!validateForm()) {
-      return;
-    }
-
+  const onSubmit = async (data: AuthRequest) => {
     try {
-      await loginMutation.mutateAsync({ email, password });
-      // Redirecionar para o dashboard após login bem-sucedido
+      await auth.login(data);
       navigate("/dashboard");
-      setEmail("");
-      setPassword("");
-    } catch (error) {
-      console.error("Erro no login:", error);
+    } catch (error: unknown) {
+      mapApiToFormError(setError, error);
     }
   };
 
   return (
-    <Box component="form" onSubmit={handleSubmit} sx={{ mt: 1 }}>
-      <TextField
-        margin="normal"
-        required
-        fullWidth
-        id="email"
-        label="Email"
-        type="email"
-        value={email}
-        onChange={(e) => setEmail(e.target.value)}
-        autoComplete="email"
-        autoFocus
-        error={!!errors.email}
-        helperText={errors.email}
+    <Box component="form" onSubmit={handleSubmit(onSubmit)} sx={{ mt: 1 }}>
+      <Controller
+        name="tenantId"
+        control={control}
+        render={({ field }) => (
+          <TextField
+            {...field}
+            margin="normal"
+            required
+            fullWidth
+            label="Tenant ID"
+            type="text"
+            autoComplete="organization"
+            autoFocus
+            error={!!errors.tenantId}
+            helperText={errors.tenantId?.message}
+          />
+        )}
       />
 
-      <TextField
-        margin="normal"
-        required
-        fullWidth
+      <Controller
+        name="email"
+        control={control}
+        render={({ field }) => (
+          <TextField
+            {...field}
+            margin="normal"
+            required
+            fullWidth
+            label="Email"
+            type="email"
+            autoComplete="email"
+            error={!!errors.email}
+            helperText={errors.email?.message}
+          />
+        )}
+      />
+
+      <Controller
         name="password"
-        label="Senha"
-        type="password"
-        id="password"
-        value={password}
-        onChange={(e) => setPassword(e.target.value)}
-        autoComplete="current-password"
-        error={!!errors.password}
-        helperText={errors.password}
+        control={control}
+        render={({ field }) => (
+          <TextField
+            {...field}
+            margin="normal"
+            required
+            fullWidth
+            label="Senha"
+            type="password"
+            autoComplete="current-password"
+            error={!!errors.password}
+            helperText={errors.password?.message}
+          />
+        )}
       />
 
-      {loginMutation.isError && (
+      {errors.root && (
         <Alert severity="error" sx={{ mt: 2 }}>
-          Erro ao fazer login. Verifique suas credenciais.
+          {errors.root?.message ||
+            "Erro ao fazer login. Verifique suas credenciais."}
         </Alert>
       )}
 
@@ -93,10 +103,10 @@ export function LoginForm() {
         fullWidth
         variant="contained"
         sx={{ mt: 3, mb: 2 }}
-        disabled={loginMutation.isPending}
+        disabled={isSubmitting}
         size="large"
       >
-        {loginMutation.isPending ? "Entrando..." : "Entrar"}
+        {isSubmitting ? "Entrando..." : "Entrar"}
       </Button>
 
       <Box sx={{ textAlign: "center" }}>

@@ -88,7 +88,7 @@ export function DashboardLayout({ children }: DashboardLayoutProps) {
   const drawer = (
     <Box sx={{ height: "100%", display: "flex", flexDirection: "column" }}>
       {/* Logo */}
-      <Toolbar sx={{ backgroundColor: "primary.main", color: "white" }}>
+      <Toolbar>
         <Typography variant="h6" noWrap component="div" fontWeight="bold">
           ConnectHub
         </Typography>
