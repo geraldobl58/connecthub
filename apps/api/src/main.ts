@@ -2,7 +2,6 @@ import { NestFactory } from '@nestjs/core';
 import { ValidationPipe } from '@nestjs/common';
 import { DocumentBuilder, SwaggerModule } from '@nestjs/swagger';
 import { NestExpressApplication } from '@nestjs/platform-express';
-import { join } from 'path';
 
 import { AppModule } from './app.module';
 
@@ -11,11 +10,6 @@ async function bootstrap() {
     cors: true,
   });
   app.useGlobalPipes(new ValidationPipe({ whitelist: true, transform: true }));
-
-  // Configurar arquivos estáticos para uploads
-  app.useStaticAssets(join(process.cwd(), 'uploads'), {
-    prefix: '/uploads/',
-  });
 
   const config = new DocumentBuilder()
     .setTitle('Connecthub API')
