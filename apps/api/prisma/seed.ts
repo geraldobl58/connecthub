@@ -859,6 +859,12 @@ async function main() {
           lat: -23.5 + (Math.random() - 0.5) * 0.2, // Variação em SP
           lng: -46.6 + (Math.random() - 0.5) * 0.2,
         },
+        coverImage: `https://picsum.photos/800/600?random=${Math.floor(Math.random() * 1000)}`,
+        galleryImages: [
+          `https://picsum.photos/800/600?random=${Math.floor(Math.random() * 1000)}`,
+          `https://picsum.photos/800/600?random=${Math.floor(Math.random() * 1000)}`,
+          `https://picsum.photos/800/600?random=${Math.floor(Math.random() * 1000)}`,
+        ],
       });
     }
 
@@ -896,9 +902,9 @@ async function main() {
         parking: propData.parking,
         area: propData.area,
         ownerId: owner1.id,
-        address: {
-          create: propData.address,
-        },
+        address: propData.address,
+        coverImage: propData.coverImage,
+        galleryImages: propData.galleryImages,
       },
     });
   }
@@ -928,9 +934,9 @@ async function main() {
         parking: propData.parking,
         area: propData.area,
         ownerId: owner2.id,
-        address: {
-          create: propData.address,
-        },
+        address: propData.address,
+        coverImage: propData.coverImage,
+        galleryImages: propData.galleryImages,
       },
     });
   }
@@ -960,9 +966,9 @@ async function main() {
         parking: propData.parking,
         area: propData.area,
         ownerId: owner3.id,
-        address: {
-          create: propData.address,
-        },
+        address: propData.address,
+        coverImage: propData.coverImage,
+        galleryImages: propData.galleryImages,
       },
     });
   }
@@ -992,9 +998,9 @@ async function main() {
         parking: propData.parking,
         area: propData.area,
         ownerId: owner4.id,
-        address: {
-          create: propData.address,
-        },
+        address: propData.address,
+        coverImage: propData.coverImage,
+        galleryImages: propData.galleryImages,
       },
     });
   }
