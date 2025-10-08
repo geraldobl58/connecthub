@@ -5,45 +5,22 @@ import { DataTable } from "@/components/data-table";
 import { Pagination } from "@/components/pagination";
 import { columns } from "./columns";
 import { useProperties } from "@/hooks/use-properties";
-import { PropertyResponse, PropertyListParams } from "@/types/properties";
+import { PropertyListParams } from "@/types/properties";
 import { LoadingSpinner } from "@/components/common/loading-spinner";
 import { PropertiesSearch } from "./properties-search";
-import { PropertyFormDialog } from "./property-form-dialog";
 
 export const PropertiesList = () => {
   const [isMounted, setIsMounted] = useState(false);
-  const [editingProperty, setEditingProperty] =
-    useState<PropertyResponse | null>(null);
-  const [isFormDialogOpen, setIsFormDialogOpen] = useState(false);
   const [filters, setFilters] = useState<PropertyListParams>({
     page: 1,
     limit: 20,
   });
 
-  const {
-    data: propertiesData,
-    isLoading,
-    error,
-    refetch,
-  } = useProperties(filters);
+  const { data: propertiesData, error, refetch } = useProperties(filters);
 
   useEffect(() => {
     setIsMounted(true);
   }, []);
-
-  const handleCloseFormDialog = () => {
-    setEditingProperty(null);
-    setIsFormDialogOpen(false);
-  };
-
-  const handleFormSuccess = () => {
-    refetch();
-    handleCloseFormDialog();
-  };
-
-  const handleDeleteSuccess = useCallback(() => {
-    refetch();
-  }, [refetch]);
 
   const handleSearchSuccess = useCallback(() => {
     refetch();
@@ -58,7 +35,7 @@ export const PropertiesList = () => {
   };
 
   const handleSearchChange = (searchParams: PropertyListParams) => {
-    setFilters((prev) => ({ ...searchParams, page: 1 }));
+    setFilters({ ...searchParams, page: 1 });
   };
 
   if (!isMounted) {
@@ -96,7 +73,6 @@ export const PropertiesList = () => {
       <DataTable
         columns={columns}
         data={properties}
-        isLoading={isLoading}
         emptyMessage="Nenhuma propriedade encontrada"
       />
 
@@ -107,17 +83,9 @@ export const PropertiesList = () => {
           totalItems={meta.total}
           itemsPerPage={meta.limit}
           onPageChange={handlePageChange}
-          onItemsPerPageChange={handleLimitChange}
+          onLimitChange={handleLimitChange}
         />
       )}
-
-      <PropertyFormDialog
-        isOpen={isFormDialogOpen}
-        onClose={handleCloseFormDialog}
-        mode="edit"
-        property={editingProperty}
-        onSuccess={handleFormSuccess}
-      />
     </div>
   );
 };
