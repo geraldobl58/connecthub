@@ -31,14 +31,9 @@ export interface PropertyResponse {
     lat?: number;
     lng?: number;
   };
-  features?: Record<string, any>;
-  media?: Array<{
-    id: string;
-    url: string;
-    alt?: string;
-    isCover: boolean;
-    order: number;
-  }>;
+  features?: Record<string, unknown>;
+  coverImage?: string;
+  galleryImages?: string[];
   leads?: Array<{
     id: string;
     name: string;
@@ -122,7 +117,9 @@ export interface CreatePropertyRequest {
     lat?: number;
     lng?: number;
   };
-  features?: Record<string, any>;
+  features?: Record<string, unknown>;
+  coverImage?: string;
+  galleryImages?: string[];
 }
 
 export interface UpdatePropertyRequest {
@@ -149,7 +146,9 @@ export interface UpdatePropertyRequest {
     lat?: number;
     lng?: number;
   };
-  features?: Record<string, any>;
+  features?: Record<string, unknown>;
+  coverImage?: string;
+  galleryImages?: string[];
 }
 
 export interface PropertyListParams {
