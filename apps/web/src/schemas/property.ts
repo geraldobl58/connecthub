@@ -114,7 +114,9 @@ export const createPropertySchema = z.object({
       lng: z.number().optional(),
     })
     .optional(),
-  features: z.record(z.any()).optional(),
+  features: z.record(z.string(), z.any()).optional(),
+  coverImage: z.string().url("URL da imagem de capa inválida.").optional(),
+  galleryImages: z.array(z.string().url("URL de imagem inválida.")).optional(),
 });
 
 // Schema para formulário de criação de property
@@ -149,51 +151,34 @@ export const createPropertyFormSchema = z.object({
       message: "Status deve ser ACTIVE, INACTIVE, RESERVED, SOLD ou RENTED.",
     })
     .default("ACTIVE"),
-  price: z
-    .number()
-    .min(0, {
-      message: "Preço deve ser maior ou igual a zero.",
-    })
-    .optional(),
-  minPrice: z
-    .number()
-    .min(0, {
-      message: "Preço mínimo deve ser maior ou igual a zero.",
-    })
-    .optional(),
-  maxPrice: z
-    .number()
-    .min(0, {
-      message: "Preço máximo deve ser maior ou igual a zero.",
-    })
-    .optional(),
-  bedroom: z
-    .number()
-    .int()
-    .min(0, {
-      message: "Número de quartos deve ser maior ou igual a zero.",
-    })
-    .optional(),
-  bathroom: z
-    .number()
-    .int()
-    .min(0, {
-      message: "Número de banheiros deve ser maior ou igual a zero.",
-    })
-    .optional(),
-  parking: z
-    .number()
-    .int()
-    .min(0, {
-      message: "Número de vagas deve ser maior ou igual a zero.",
-    })
-    .optional(),
-  area: z
-    .number()
-    .min(0, {
-      message: "Área deve ser maior ou igual a zero.",
-    })
-    .optional(),
+  price: z.preprocess(
+    (val) => (val === "" || val === null || val === undefined ? undefined : Number(val)),
+    z.number().min(0, { message: "Preço deve ser maior ou igual a zero." }).optional()
+  ),
+  minPrice: z.preprocess(
+    (val) => (val === "" || val === null || val === undefined ? undefined : Number(val)),
+    z.number().min(0, { message: "Preço mínimo deve ser maior ou igual a zero." }).optional()
+  ),
+  maxPrice: z.preprocess(
+    (val) => (val === "" || val === null || val === undefined ? undefined : Number(val)),
+    z.number().min(0, { message: "Preço máximo deve ser maior ou igual a zero." }).optional()
+  ),
+  bedroom: z.preprocess(
+    (val) => (val === "" || val === null || val === undefined ? undefined : Number(val)),
+    z.number().int().min(0, { message: "Número de quartos deve ser maior ou igual a zero." }).optional()
+  ),
+  bathroom: z.preprocess(
+    (val) => (val === "" || val === null || val === undefined ? undefined : Number(val)),
+    z.number().int().min(0, { message: "Número de banheiros deve ser maior ou igual a zero." }).optional()
+  ),
+  parking: z.preprocess(
+    (val) => (val === "" || val === null || val === undefined ? undefined : Number(val)),
+    z.number().int().min(0, { message: "Número de vagas deve ser maior ou igual a zero." }).optional()
+  ),
+  area: z.preprocess(
+    (val) => (val === "" || val === null || val === undefined ? undefined : Number(val)),
+    z.number().min(0, { message: "Área deve ser maior ou igual a zero." }).optional()
+  ),
   ownerId: z
     .string()
     .uuid({
@@ -231,7 +216,9 @@ export const createPropertyFormSchema = z.object({
       lng: z.number().optional(),
     })
     .optional(),
-  features: z.record(z.any()).optional(),
+  features: z.record(z.string(), z.any()).optional(),
+  coverImage: z.string().url("URL da imagem de capa inválida.").optional(),
+  galleryImages: z.array(z.string().url("URL de imagem inválida.")).optional(),
 });
 
 // Schema para atualização de property
@@ -270,51 +257,34 @@ export const updatePropertySchema = z.object({
       message: "Status deve ser ACTIVE, INACTIVE, RESERVED, SOLD ou RENTED.",
     })
     .optional(),
-  price: z
-    .number()
-    .min(0, {
-      message: "Preço deve ser maior ou igual a zero.",
-    })
-    .optional(),
-  minPrice: z
-    .number()
-    .min(0, {
-      message: "Preço mínimo deve ser maior ou igual a zero.",
-    })
-    .optional(),
-  maxPrice: z
-    .number()
-    .min(0, {
-      message: "Preço máximo deve ser maior ou igual a zero.",
-    })
-    .optional(),
-  bedroom: z
-    .number()
-    .int()
-    .min(0, {
-      message: "Número de quartos deve ser maior ou igual a zero.",
-    })
-    .optional(),
-  bathroom: z
-    .number()
-    .int()
-    .min(0, {
-      message: "Número de banheiros deve ser maior ou igual a zero.",
-    })
-    .optional(),
-  parking: z
-    .number()
-    .int()
-    .min(0, {
-      message: "Número de vagas deve ser maior ou igual a zero.",
-    })
-    .optional(),
-  area: z
-    .number()
-    .min(0, {
-      message: "Área deve ser maior ou igual a zero.",
-    })
-    .optional(),
+  price: z.preprocess(
+    (val) => (val === "" || val === null || val === undefined ? undefined : Number(val)),
+    z.number().min(0, { message: "Preço deve ser maior ou igual a zero." }).optional()
+  ),
+  minPrice: z.preprocess(
+    (val) => (val === "" || val === null || val === undefined ? undefined : Number(val)),
+    z.number().min(0, { message: "Preço mínimo deve ser maior ou igual a zero." }).optional()
+  ),
+  maxPrice: z.preprocess(
+    (val) => (val === "" || val === null || val === undefined ? undefined : Number(val)),
+    z.number().min(0, { message: "Preço máximo deve ser maior ou igual a zero." }).optional()
+  ),
+  bedroom: z.preprocess(
+    (val) => (val === "" || val === null || val === undefined ? undefined : Number(val)),
+    z.number().int().min(0, { message: "Número de quartos deve ser maior ou igual a zero." }).optional()
+  ),
+  bathroom: z.preprocess(
+    (val) => (val === "" || val === null || val === undefined ? undefined : Number(val)),
+    z.number().int().min(0, { message: "Número de banheiros deve ser maior ou igual a zero." }).optional()
+  ),
+  parking: z.preprocess(
+    (val) => (val === "" || val === null || val === undefined ? undefined : Number(val)),
+    z.number().int().min(0, { message: "Número de vagas deve ser maior ou igual a zero." }).optional()
+  ),
+  area: z.preprocess(
+    (val) => (val === "" || val === null || val === undefined ? undefined : Number(val)),
+    z.number().min(0, { message: "Área deve ser maior ou igual a zero." }).optional()
+  ),
   ownerId: z
     .string()
     .uuid({
@@ -352,7 +322,9 @@ export const updatePropertySchema = z.object({
       lng: z.number().optional(),
     })
     .optional(),
-  features: z.record(z.any()).optional(),
+  features: z.record(z.string(), z.any()).optional(),
+  coverImage: z.string().url("URL da imagem de capa inválida.").optional(),
+  galleryImages: z.array(z.string().url("URL de imagem inválida.")).optional(),
 });
 
 // Schema para ID de property
