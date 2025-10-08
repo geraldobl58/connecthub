@@ -142,11 +142,6 @@ export class PropertiesService {
             phone: true,
           },
         },
-        media: {
-          orderBy: {
-            order: 'asc',
-          },
-        },
         leads: {
           select: {
             id: true,
@@ -262,6 +257,8 @@ export class PropertiesService {
           ownerId: createPropertyDto.ownerId,
           address: createPropertyDto.address,
           features: createPropertyDto.features,
+          coverImage: createPropertyDto.coverImage,
+          galleryImages: createPropertyDto.galleryImages || [],
           tenantId,
         },
         include: {
@@ -357,6 +354,8 @@ export class PropertiesService {
           ownerId: updatePropertyDto.ownerId,
           address: updatePropertyDto.address,
           features: updatePropertyDto.features,
+          coverImage: updatePropertyDto.coverImage,
+          galleryImages: updatePropertyDto.galleryImages,
         },
         include: {
           owner: {
