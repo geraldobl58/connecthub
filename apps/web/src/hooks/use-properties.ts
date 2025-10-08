@@ -11,7 +11,10 @@ import { queryKeys } from "@/lib/query-keys";
 // Função utilitária para tratar erros da API
 function handleApiError(error: unknown, defaultMessage: string): string {
   if (error && typeof error === "object" && "response" in error) {
-    const axiosError = error as any;
+    const axiosError = error as {
+      response?: { data?: { message?: string } };
+      message?: string;
+    };
     if (axiosError.response?.data?.message) {
       return axiosError.response.data.message;
     } else if (axiosError.message) {
