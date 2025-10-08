@@ -36,6 +36,19 @@ import {
 export class PlansController {
   constructor(private readonly plansService: PlansService) {}
 
+  @Get('available')
+  @ApiOperation({
+    summary: 'Get all available plans',
+    description: 'Returns all available subscription plans for signup',
+  })
+  @ApiResponse({
+    status: 200,
+    description: 'Available plans retrieved successfully',
+  })
+  async getAvailablePlans() {
+    return await this.plansService.getAllPlans();
+  }
+
   @Get('current')
   @ApiOperation({
     summary: 'Get current plan',
@@ -193,5 +206,105 @@ export class PlansController {
   })
   getPlanHistory(@GetCurrentUser() user: CurrentUser): Promise<PlanInfoDto[]> {
     return this.plansService.getPlanHistory(user.tenantId);
+  }
+
+  @Get('available')
+  @ApiOperation({
+    summary: 'Get all available plans',
+    description: 'Returns all available plans for subscription',
+  })
+  @ApiResponse({
+    status: 200,
+    description: 'Available plans retrieved successfully',
+  })
+  // Método removido - duplicado
+
+  @Post('checkout-session')
+  @ApiOperation({
+    summary: 'Create checkout session',
+    description: 'Creates a Stripe checkout session for plan subscription',
+  })
+  @ApiBody({
+    schema: {
+      type: 'object',
+      properties: {
+        priceId: { type: 'string', description: 'Stripe price ID' },
+        successUrl: { type: 'string', description: 'Success redirect URL' },
+        cancelUrl: { type: 'string', description: 'Cancel redirect URL' },
+      },
+      required: ['priceId', 'successUrl', 'cancelUrl'],
+    },
+  })
+  @ApiResponse({
+    status: 200,
+    description: 'Checkout session created successfully',
+  })
+  async createCheckoutSession(
+    @Body() dto: { priceId: string; successUrl: string; cancelUrl: string },
+    @GetCurrentUser() user: CurrentUser,
+  ) {
+    const sessionUrl = await this.plansService.createCheckoutSession(
+      user.tenantId,
+      dto.priceId,
+      dto.successUrl,
+      dto.cancelUrl,
+    );
+    return { url: sessionUrl };
+  }
+
+  @Post('billing-portal')
+  @ApiOperation({
+    summary: 'Create billing portal session',
+    description: 'Creates a Stripe billing portal session for subscription management',
+  })
+  @ApiBody({
+    schema: {
+      type: 'object',
+      properties: {
+        returnUrl: { type: 'string', description: 'Return URL after billing management' },
+      },
+      required: ['returnUrl'],
+    },
+  })
+  @ApiResponse({
+    status: 200,
+    description: 'Billing portal session created successfully',
+  })
+  async createBillingPortalSession(
+    @Body() dto: { returnUrl: string },
+    @GetCurrentUser() user: CurrentUser,
+  ) {
+    const portalUrl = await this.plansService.createBillingPortalSession(
+      user.tenantId,
+      dto.returnUrl,
+    );
+    return { url: portalUrl };
+  }
+
+  @Get('usage-limits')
+  @ApiOperation({
+    summary: 'Get usage limits',
+    description: 'Returns current usage and limits for the tenant',
+  })
+  @ApiResponse({
+    status: 200,
+    description: 'Usage limits retrieved successfully',
+  })
+  async getUsageLimits(@GetCurrentUser() user: CurrentUser) {
+    return this.plansService.checkUsageLimits(user.tenantId);
+  }
+
+  @Get('subscription/validate')
+  @ApiOperation({
+    summary: 'Validate subscription',
+    description: 'Validates if the current subscription is active and valid',
+  })
+  @ApiResponse({
+    status: 200,
+    description: 'Subscription validation result',
+  })
+  async validateSubscription(@GetCurrentUser() user: CurrentUser) {
+    const isValid = await this.plansService.validateSubscription(user.tenantId);
+    return { isValid };
   }
 }

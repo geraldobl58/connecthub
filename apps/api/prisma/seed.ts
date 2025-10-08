@@ -8,26 +8,28 @@ async function main() {
 
   // Criar Plans
   console.log('💳 Creating plans...');
-  const basicPlan = await prisma.plan.upsert({
-    where: { name: 'Basic' },
+  const starterPlan = await prisma.plan.upsert({
+    where: { name: 'STARTER' },
     update: {},
     create: {
-      name: 'Basic',
-      price: 99.99,
+      name: 'STARTER',
+      price: 149.99,
       currency: 'BRL',
       maxUsers: 5,
       maxProperties: 100,
       maxContacts: 500,
       hasAPI: false,
       description: 'Plano básico para pequenas empresas',
+      stripeProductId: 'prod_starter_example', // Substitua pelos IDs reais do Stripe
+      stripePriceId: 'price_starter_example',
     },
   });
 
-  const proPlan = await prisma.plan.upsert({
-    where: { name: 'Pro' },
+  const professionalPlan = await prisma.plan.upsert({
+    where: { name: 'PROFESSIONAL' },
     update: {},
     create: {
-      name: 'Pro',
+      name: 'PROFESSIONAL',
       price: 299.99,
       currency: 'BRL',
       maxUsers: 20,
@@ -35,26 +37,30 @@ async function main() {
       maxContacts: 2000,
       hasAPI: true,
       description: 'Plano profissional com API',
+      stripeProductId: 'prod_professional_example', // Substitua pelos IDs reais do Stripe
+      stripePriceId: 'price_professional_example',
     },
   });
 
   const enterprisePlan = await prisma.plan.upsert({
-    where: { name: 'Enterprise' },
+    where: { name: 'ENTERPRISE' },
     update: {},
     create: {
-      name: 'Enterprise',
-      price: 999.99,
+      name: 'ENTERPRISE',
+      price: 599.99,
       currency: 'BRL',
-      maxUsers: -1, // Ilimitado
-      maxProperties: -1, // Ilimitado
-      maxContacts: -1, // Ilimitado
+      maxUsers: null, // Ilimitado (usando null em vez de -1)
+      maxProperties: null, // Ilimitado
+      maxContacts: null, // Ilimitado
       hasAPI: true,
       description: 'Plano enterprise com recursos ilimitados',
+      stripeProductId: 'prod_enterprise_example', // Substitua pelos IDs reais do Stripe
+      stripePriceId: 'price_enterprise_example',
     },
   });
 
   console.log(
-    `✅ Created plans: ${basicPlan.name}, ${proPlan.name}, ${enterprisePlan.name}`,
+    `✅ Created plans: ${starterPlan.name}, ${professionalPlan.name}, ${enterprisePlan.name}`,
   );
 
   // Criar Tenants
@@ -106,7 +112,7 @@ async function main() {
     update: {},
     create: {
       tenantId: tenant1.id,
-      planId: basicPlan.id,
+      planId: starterPlan.id,
       status: 'ACTIVE',
       expiresAt: new Date(Date.now() + 365 * 24 * 60 * 60 * 1000), // 1 ano
     },
@@ -117,7 +123,7 @@ async function main() {
     update: {},
     create: {
       tenantId: tenant2.id,
-      planId: proPlan.id,
+      planId: professionalPlan.id,
       status: 'ACTIVE',
       expiresAt: new Date(Date.now() + 365 * 24 * 60 * 60 * 1000), // 1 ano
     },
@@ -139,7 +145,7 @@ async function main() {
     update: {},
     create: {
       tenantId: tenant4.id,
-      planId: proPlan.id,
+      planId: professionalPlan.id,
       status: 'ACTIVE',
       expiresAt: new Date(Date.now() + 365 * 24 * 60 * 60 * 1000), // 1 ano
     },
@@ -530,13 +536,13 @@ async function main() {
   console.log('\n🔐 Default password for all users: Demo123!');
   console.log('\n🏢 Tenants:');
   console.log(
-    `- ${tenant1.name} (${tenant1.slug}) - Plan: ${basicPlan.name}`,
+    `- ${tenant1.name} (${tenant1.slug}) - Plan: ${starterPlan.name}`,
   );
-  console.log(`- ${tenant2.name} (${tenant2.slug}) - Plan: ${proPlan.name}`);
+  console.log(`- ${tenant2.name} (${tenant2.slug}) - Plan: ${professionalPlan.name}`);
   console.log(
     `- ${tenant3.name} (${tenant3.slug}) - Plan: ${enterprisePlan.name}`,
   );
-  console.log(`- ${tenant4.name} (${tenant4.slug}) - Plan: ${proPlan.name}`);
+  console.log(`- ${tenant4.name} (${tenant4.slug}) - Plan: ${professionalPlan.name}`);
 }
 
 main()

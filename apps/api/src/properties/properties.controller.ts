@@ -21,6 +21,7 @@ import {
 } from '@nestjs/swagger';
 import { JwtAuthGuard } from '../common/guards/jwt-auth.guard';
 import { PermissionsGuard } from '../common/guards/permissions.guard';
+import { UsageLimitGuard, UsageLimit } from '../common/guards/usage-limit.guard';
 import {
   GetCurrentUser,
   CurrentUser,
@@ -40,6 +41,8 @@ export class PropertiesController {
   constructor(private readonly propertiesService: PropertiesService) {}
 
   @Post()
+  @UseGuards(UsageLimitGuard)
+  @UsageLimit({ resource: 'properties', action: 'create' })
   @ApiOperation({ summary: 'Criar uma nova propriedade' })
   @ApiResponse({
     status: 201,
@@ -48,6 +51,10 @@ export class PropertiesController {
   @ApiResponse({
     status: 400,
     description: 'Dados inválidos ou propriedade já existe',
+  })
+  @ApiResponse({
+    status: 403,
+    description: 'Limite de propriedades atingido',
   })
   create(
     @GetCurrentUser() user: CurrentUser,

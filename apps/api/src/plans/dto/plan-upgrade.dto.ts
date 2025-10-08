@@ -1,5 +1,5 @@
 import { ApiProperty } from '@nestjs/swagger';
-import { IsEnum, IsNotEmpty } from 'class-validator';
+import { IsEnum, IsNotEmpty, IsOptional, IsString } from 'class-validator';
 
 export enum PlanType {
   STARTER = 'STARTER',
@@ -9,11 +9,21 @@ export enum PlanType {
 
 export class PlanUpgradeDto {
   @ApiProperty({
-    description: 'Novo plano para upgrade',
+    description: 'Novo plano para upgrade (método tradicional)',
     enum: PlanType,
     example: PlanType.PROFESSIONAL,
+    required: false,
   })
   @IsEnum(PlanType)
-  @IsNotEmpty()
-  newPlan: PlanType;
+  @IsOptional()
+  newPlan?: PlanType;
+
+  @ApiProperty({
+    description: 'Stripe price ID para upgrade via Stripe',
+    example: 'price_1234567890',
+    required: false,
+  })
+  @IsString()
+  @IsOptional()
+  stripePriceId?: string;
 }

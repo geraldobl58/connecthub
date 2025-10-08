@@ -1,25 +1,27 @@
-import { Injectable, ConflictException } from '@nestjs/common';
+import { Injectable, ConflictException, NotFoundException } from '@nestjs/common';
 import { PrismaService } from '../prisma/prisma.service';
 import { EmailService } from '../email/email.service';
-import { SignupDto, PlanType } from './dto/signup.dto';
+import { StripeService } from '../stripe/stripe.service';
+import { SignupDto, PlanType, SignupResponseDto } from './dto/signup.dto';
 import { hash } from 'bcrypt';
-import { Role } from '@prisma/client';
+import { Role, SubStatus } from '@prisma/client';
 
 @Injectable()
 export class SignupService {
   constructor(
     private prisma: PrismaService,
     private emailService: EmailService,
+    private stripeService: StripeService,
   ) {}
 
-  async signup(dto: SignupDto) {
+  async signup(dto: SignupDto): Promise<SignupResponseDto> {
     // Verificar se o domínio já existe
     const existingTenant = await this.prisma.tenant.findUnique({
       where: { slug: dto.domain },
     });
 
     if (existingTenant) {
-      throw new ConflictException('User already exists');
+      throw new ConflictException('Este domínio já está em uso');
     }
 
     // Verificar se já existe um usuário com este email
@@ -28,7 +30,21 @@ export class SignupService {
     });
 
     if (existingUser) {
-      throw new ConflictException('This email is already registered');
+      throw new ConflictException('Este email já está cadastrado');
+    }
+
+    // Buscar o plano escolhido
+    const plan = await this.prisma.plan.findFirst({
+      where: { 
+        name: {
+          equals: dto.plan,
+          mode: 'insensitive'
+        }
+      },
+    });
+
+    if (!plan) {
+      throw new NotFoundException(`Plano ${dto.plan} não encontrado`);
     }
 
     // Criar o tenant
@@ -36,39 +52,6 @@ export class SignupService {
       data: {
         name: dto.companyName,
         slug: dto.domain,
-      },
-    });
-
-    // Buscar ou criar o plano
-    let plan = await this.prisma.plan.findUnique({
-      where: { name: dto.plan },
-    });
-
-    if (!plan) {
-      // Criar planos padrão se não existirem
-      const planData = this.getPlanData(dto.plan);
-      plan = await this.prisma.plan.create({
-        data: planData,
-      });
-    }
-
-    // Criar a assinatura
-    await this.prisma.subscription.create({
-      data: {
-        tenantId: tenant.id,
-        planId: plan.id,
-        status: 'ACTIVE',
-        startedAt: new Date(),
-        expiresAt: new Date(Date.now() + 30 * 24 * 60 * 60 * 1000), // 30 dias
-      },
-    });
-
-    // Criar registro de uso
-    await this.prisma.usage.create({
-      data: {
-        tenantId: tenant.id,
-        propertiesCount: 0,
-        contactsCount: 0,
       },
     });
 
@@ -94,48 +77,107 @@ export class SignupService {
       },
     });
 
+    // Criar registro de uso
+    await this.prisma.usage.create({
+      data: {
+        tenantId: tenant.id,
+        propertiesCount: 0,
+        contactsCount: 0,
+      },
+    });
+
+    let checkoutUrl: string | undefined;
+    let subscriptionStatus: SubStatus = SubStatus.ACTIVE;
+
+    // Se o plano é pago (não é STARTER), criar customer e checkout session
+    if (dto.plan !== PlanType.STARTER) {
+      try {
+        // Criar customer no Stripe
+        const customer = await this.stripeService.createCustomer({
+          email: dto.contactEmail,
+          name: dto.companyName,
+          tenantId: tenant.id,
+        });
+
+        // Criar checkout session
+        const successUrl = dto.successUrl || `https://${dto.domain}.connecthub.com/dashboard?payment=success`;
+        const cancelUrl = dto.cancelUrl || `https://${dto.domain}.connecthub.com/plans?payment=cancelled`;
+        
+        checkoutUrl = await this.stripeService.createCheckoutSession(
+          plan.stripePriceId!,
+          customer.id,
+          successUrl,
+          cancelUrl,
+          { tenantId: tenant.id }
+        );
+
+        // Para planos pagos, iniciar com status PENDING até o pagamento ser confirmado
+        subscriptionStatus = SubStatus.PENDING;
+
+        // Criar a assinatura com customer ID
+        await this.prisma.subscription.create({
+          data: {
+            tenantId: tenant.id,
+            planId: plan.id,
+            status: subscriptionStatus,
+            startedAt: new Date(),
+            expiresAt: new Date(Date.now() + 30 * 24 * 60 * 60 * 1000), // 30 dias
+            stripeCustomerId: customer.id,
+          },
+        });
+
+      } catch (error) {
+        console.error('Erro ao criar checkout Stripe:', error);
+        // Se falhar no Stripe, ainda criar a assinatura como trial
+        await this.prisma.subscription.create({
+          data: {
+            tenantId: tenant.id,
+            planId: plan.id,
+            status: SubStatus.ACTIVE,
+            startedAt: new Date(),
+            expiresAt: new Date(Date.now() + 7 * 24 * 60 * 60 * 1000), // 7 dias de trial
+          },
+        });
+      }
+    } else {
+      // Para plano STARTER, criar assinatura diretamente ativa
+      await this.prisma.subscription.create({
+        data: {
+          tenantId: tenant.id,
+          planId: plan.id,
+          status: SubStatus.ACTIVE,
+          startedAt: new Date(),
+          expiresAt: new Date(Date.now() + 30 * 24 * 60 * 60 * 1000), // 30 dias
+        },
+      });
+    }
+
+    // Enviar email de boas-vindas
     try {
       await this.emailService.sendWelcomeEmail({
         companyName: dto.companyName,
         contactName: dto.contactName,
         contactEmail: dto.contactEmail,
+        temporaryPassword,
         domain: dto.domain,
-        plan: this.getPlanDisplayName(dto.plan),
-        subdomain: dto.domain,
-        temporaryPassword: temporaryPassword,
+        planName: plan.name,
       });
     } catch (error) {
-      console.error(
-        '❌ Erro no SignupService ao enviar email de boas-vindas:',
-        {
-          error: error.message,
-          email: dto.contactEmail,
-          empresa: dto.companyName,
-        },
-      );
-      // Não falhar o signup se o email falhar, apenas logar o erro
+      console.error('Erro ao enviar email de boas-vindas:', error);
+      // Não falhar o signup se o email não for enviado
     }
-
-    // Buscar a assinatura criada para obter a data de expiração
-    const subscription = await this.prisma.subscription.findUnique({
-      where: { tenantId: tenant.id },
-      include: { plan: true },
-    });
 
     return {
       success: true,
-      message:
-        'Cadastro realizado com sucesso! Verifique seu email para acessar a plataforma com suas credenciais.',
+      message: checkoutUrl 
+        ? 'Empresa criada com sucesso. Complete o pagamento para ativar sua assinatura.'
+        : 'Empresa criada com sucesso. Verifique seu email para acessar sua conta.',
+      tenantId: tenant.id,
+      checkoutUrl,
       tenant: {
         id: tenant.id,
         name: tenant.name,
         slug: tenant.slug,
-        plan: plan.name,
-        planExpiresAt:
-          subscription?.expiresAt?.toISOString() ||
-          new Date(Date.now() + 30 * 24 * 60 * 60 * 1000).toISOString(),
-        createdAt:
-          subscription?.startedAt?.toISOString() || new Date().toISOString(),
       },
       user: {
         id: user.id,
@@ -143,83 +185,21 @@ export class SignupService {
         email: user.email,
         role: user.role,
       },
-      credentials: {
-        email: dto.contactEmail,
-        passwordSentByEmail: true,
-        loginUrl: `http://localhost:3000/login?tenant=${dto.domain}`,
+      plan: {
+        id: plan.id,
+        name: plan.name,
+        price: plan.price,
+        currency: plan.currency,
       },
     };
   }
 
   private generateTemporaryPassword(): string {
-    // Caracteres por categoria
-    const uppercase = 'ABCDEFGHIJKLMNOPQRSTUVWXYZ';
-    const lowercase = 'abcdefghijklmnopqrstuvwxyz';
-    const numbers = '0123456789';
-    const symbols = '!@#$%&*+-=?';
-
-    // Garantir pelo menos 1 de cada categoria (4 caracteres)
-    let password = '';
-    password += uppercase.charAt(Math.floor(Math.random() * uppercase.length));
-    password += lowercase.charAt(Math.floor(Math.random() * lowercase.length));
-    password += numbers.charAt(Math.floor(Math.random() * numbers.length));
-    password += symbols.charAt(Math.floor(Math.random() * symbols.length));
-
-    // Completar até 12 caracteres com caracteres aleatórios de todas as categorias
-    const allChars = uppercase + lowercase + numbers + symbols;
-    for (let i = 4; i < 12; i++) {
-      password += allChars.charAt(Math.floor(Math.random() * allChars.length));
+    const chars = 'ABCDEFGHIJKLMNOPQRSTUVWXYZabcdefghijklmnopqrstuvwxyz0123456789';
+    let result = '';
+    for (let i = 0; i < 8; i++) {
+      result += chars.charAt(Math.floor(Math.random() * chars.length));
     }
-
-    // Embaralhar a senha para que os caracteres obrigatórios não fiquem sempre no início
-    return password
-      .split('')
-      .sort(() => 0.5 - Math.random())
-      .join('');
-  }
-
-  private getPlanData(planType: PlanType) {
-    const plans = {
-      [PlanType.STARTER]: {
-        name: 'STARTER',
-        price: 149.0,
-        currency: 'BRL',
-        maxUsers: 5,
-        maxProperties: 100,
-        maxContacts: 1000,
-        hasAPI: false,
-        description: 'Perfeito para pequenos negócios',
-      },
-      [PlanType.PROFESSIONAL]: {
-        name: 'PROFESSIONAL',
-        price: 299.0,
-        currency: 'BRL',
-        maxUsers: 20,
-        maxProperties: 500,
-        maxContacts: 5000,
-        hasAPI: true,
-        description: 'Ideal para empresas em crescimento',
-      },
-      [PlanType.ENTERPRISE]: {
-        name: 'ENTERPRISE',
-        price: 599.0,
-        currency: 'BRL',
-        maxUsers: null, // ilimitado
-        maxProperties: null, // ilimitado
-        maxContacts: null, // ilimitado
-        hasAPI: true,
-        description: 'Para empresas de grande porte',
-      },
-    };
-    return plans[planType];
-  }
-
-  private getPlanDisplayName(plan: PlanType): string {
-    const planNames = {
-      [PlanType.STARTER]: 'Starter',
-      [PlanType.PROFESSIONAL]: 'Professional',
-      [PlanType.ENTERPRISE]: 'Enterprise',
-    };
-    return planNames[plan];
+    return result;
   }
 }

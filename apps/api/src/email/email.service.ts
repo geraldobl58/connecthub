@@ -8,8 +8,9 @@ export interface WelcomeEmailData {
   contactName: string;
   contactEmail: string;
   domain: string;
-  plan: string;
-  subdomain: string;
+  plan?: string;
+  planName?: string;
+  subdomain?: string;
   temporaryPassword?: string;
 }
 

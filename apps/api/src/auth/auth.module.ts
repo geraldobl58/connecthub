@@ -8,12 +8,14 @@ import { AuthController } from './auth.controller';
 import { JwtStrategy } from './jwt.strategy';
 import { EmailModule } from '../email/email.module';
 import { PermissionsModule } from '../permissions/permissions.module';
+import { StripeModule } from '../stripe/stripe.module';
 
 @Module({
   imports: [
     PassportModule,
     EmailModule,
     PermissionsModule,
+    StripeModule,
     JwtModule.registerAsync({
       inject: [ConfigService],
       useFactory: (config: ConfigService) => ({

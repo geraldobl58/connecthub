@@ -79,6 +79,7 @@ enum PropertyStatus {
 // NEW: assinatura
 enum SubStatus {
   ACTIVE
+  PENDING
   PAST_DUE
   CANCELED
   EXPIRED
@@ -463,6 +464,10 @@ model Plan {
   hasAPI        Boolean @default(false)
   description   String?
 
+  // Stripe integration
+  stripeProductId String? @unique
+  stripePriceId   String? @unique
+
   subscriptions Subscription[]
 
   @@unique([name])
@@ -476,10 +481,18 @@ model Subscription {
   planId String
   plan   Plan   @relation(fields: [planId], references: [id], onDelete: Restrict, onUpdate: Cascade)
 
-  status    SubStatus @default(ACTIVE)
-  startedAt DateTime  @default(now())
-  expiresAt DateTime?
-  renewedAt DateTime?
+  status     SubStatus @default(ACTIVE)
+  startedAt  DateTime  @default(now())
+  expiresAt  DateTime?
+  renewedAt  DateTime?
+  canceledAt DateTime?
+
+  // Stripe integration
+  stripeCustomerId     String? @unique
+  stripeSubscriptionId String? @unique
+
+  createdAt DateTime  @default(now())
+  updatedAt DateTime? @updatedAt
 
   // add-ons podem ser adicionados depois se necessário
 }
