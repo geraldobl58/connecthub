@@ -1,0 +1,53 @@
+@import "tailwindcss";
+@plugin "@tailwindcss/typography";
+@plugin "@tailwindcss/forms";
+@plugin "@tailwindcss/container-queries";
+
+@theme {
+  --color-primary: #1976d2;
+  --color-primary-50: #e3f2fd;
+  --color-primary-100: #bbdefb;
+  --color-primary-200: #90caf9;
+  --color-primary-300: #64b5f6;
+  --color-primary-400: #42a5f5;
+  --color-primary-500: #2196f3;
+  --color-primary-600: #1e88e5;
+  --color-primary-700: #1976d2;
+  --color-primary-800: #1565c0;
+  --color-primary-900: #0d47a1;
+
+  --color-secondary: #dc004e;
+  --color-secondary-50: #fce4ec;
+  --color-secondary-100: #f8bbd9;
+  --color-secondary-200: #f48fb1;
+  --color-secondary-300: #f06292;
+  --color-secondary-400: #ec407a;
+  --color-secondary-500: #e91e63;
+  --color-secondary-600: #d81b60;
+  --color-secondary-700: #c2185b;
+  --color-secondary-800: #ad1457;
+  --color-secondary-900: #880e4f;
+
+  --color-error: #d32f2f;
+  --color-warning: #ed6c02;
+  --color-info: #0288d1;
+  --color-success: #2e7d32;
+
+  --font-family-sans: "Roboto", "Helvetica", "Arial", sans-serif;
+  --font-family-mono: "Roboto Mono", monospace;
+}
+
+* {
+  box-sizing: border-box;
+}
+
+#root,
+body,
+html {
+  margin: 0;
+  padding: 0;
+  font-family: "Roboto", sans-serif;
+  -webkit-font-smoothing: antialiased;
+  -moz-osx-font-smoothing: grayscale;
+  height: 100%;
+}
