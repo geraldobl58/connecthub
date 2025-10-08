@@ -99,14 +99,6 @@ export class PropertiesService {
               phone: true,
             },
           },
-          _count: {
-            select: {
-              leads: true,
-              deals: true,
-              tasks: true,
-              notes: true,
-            },
-          },
         },
       }),
       this.prisma.property.count({ where }),
@@ -140,62 +132,6 @@ export class PropertiesService {
             name: true,
             email: true,
             phone: true,
-          },
-        },
-        leads: {
-          select: {
-            id: true,
-            name: true,
-            email: true,
-            phone: true,
-            source: true,
-            stage: {
-              select: {
-                id: true,
-                name: true,
-              },
-            },
-          },
-        },
-        deals: {
-          select: {
-            id: true,
-            value: true,
-            status: true,
-            createdAt: true,
-          },
-        },
-        tasks: {
-          select: {
-            id: true,
-            title: true,
-            status: true,
-            priority: true,
-            dueDate: true,
-          },
-        },
-        notes: {
-          select: {
-            id: true,
-            content: true,
-            createdAt: true,
-            author: {
-              select: {
-                id: true,
-                name: true,
-              },
-            },
-          },
-          orderBy: {
-            createdAt: 'desc',
-          },
-        },
-        _count: {
-          select: {
-            leads: true,
-            deals: true,
-            tasks: true,
-            notes: true,
           },
         },
       },
@@ -268,14 +204,6 @@ export class PropertiesService {
               name: true,
               email: true,
               phone: true,
-            },
-          },
-          _count: {
-            select: {
-              leads: true,
-              deals: true,
-              tasks: true,
-              notes: true,
             },
           },
         },
@@ -366,14 +294,6 @@ export class PropertiesService {
               phone: true,
             },
           },
-          _count: {
-            select: {
-              leads: true,
-              deals: true,
-              tasks: true,
-              notes: true,
-            },
-          },
         },
       });
 
@@ -393,32 +313,7 @@ export class PropertiesService {
     // Verificar se o property existe
     await this.findOne(tenantId, id);
 
-    // Verificar se o property tem leads, deals ou tasks associados
-    const relatedCounts = await this.prisma.property.findUnique({
-      where: { id },
-      select: {
-        _count: {
-          select: {
-            leads: true,
-            deals: true,
-            tasks: true,
-          },
-        },
-      },
-    });
-
-    const totalRelated =
-      (relatedCounts?._count.leads || 0) +
-      (relatedCounts?._count.deals || 0) +
-      (relatedCounts?._count.tasks || 0);
-
-    if (totalRelated > 0) {
-      throw new BadRequestException(
-        `Cannot delete property with ${totalRelated} associated records (leads, deals, or tasks)`,
-      );
-    }
-
-    // Deletar property (address será deletado automaticamente por cascade)
+    // Deletar property
     await this.prisma.property.delete({
       where: { id },
     });

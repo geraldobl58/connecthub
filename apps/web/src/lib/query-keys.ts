@@ -10,11 +10,6 @@ export const queryKeys = {
   usersList: (params?: unknown) => ["users", params],
   userById: (id: string) => ["user", id],
 
-  // Stages
-  stages: ["stages"],
-  stagesList: (params?: unknown) => ["stages", params],
-  stageById: (id: string) => ["stage", id],
-
   // Owners
   owners: ["owners"],
   ownersList: (params?: unknown) => ["owners", params],

@@ -34,39 +34,6 @@ export interface PropertyResponse {
   features?: Record<string, unknown>;
   coverImage?: string;
   galleryImages?: string[];
-  leads?: Array<{
-    id: string;
-    name: string;
-    email?: string;
-    phone?: string;
-    source: string;
-    stage?: {
-      id: string;
-      name: string;
-    };
-  }>;
-  deals?: Array<{
-    id: string;
-    value?: number;
-    status: string;
-    createdAt: string;
-  }>;
-  tasks?: Array<{
-    id: string;
-    title: string;
-    status: string;
-    priority: string;
-    dueDate?: string;
-  }>;
-  notes?: Array<{
-    id: string;
-    content: string;
-    createdAt: string;
-    author?: {
-      id: string;
-      name: string;
-    };
-  }>;
   _count?: {
     leads: number;
     deals: number;
