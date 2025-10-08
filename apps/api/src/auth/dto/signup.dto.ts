@@ -1,10 +1,34 @@
 import { ApiProperty } from '@nestjs/swagger';
-import { IsEmail, IsNotEmpty, IsString, MinLength, IsEnum, IsOptional, IsUrl } from 'class-validator';
+import { IsEmail, IsNotEmpty, IsString, MinLength, IsEnum, IsOptional, IsUrl, ValidationArguments, ValidatorConstraint, ValidatorConstraintInterface, Validate } from 'class-validator';
 
 export enum PlanType {
   STARTER = 'STARTER',
   PROFESSIONAL = 'PROFESSIONAL', 
   ENTERPRISE = 'ENTERPRISE',
+}
+
+@ValidatorConstraint({ name: 'isUrlOrLocalhost', async: false })
+export class IsUrlOrLocalhostConstraint implements ValidatorConstraintInterface {
+  validate(url: string, args: ValidationArguments) {
+    if (!url) return true; // opcional
+    
+    // Permitir URLs localhost em desenvolvimento
+    if (url.startsWith('http://localhost:') || url.startsWith('https://localhost:')) {
+      return true;
+    }
+    
+    // Validar URLs normais
+    try {
+      new URL(url);
+      return true;
+    } catch {
+      return false;
+    }
+  }
+
+  defaultMessage(args: ValidationArguments) {
+    return 'URL deve ser válida (incluindo http://localhost: para desenvolvimento)';
+  }
 }
 
 export class SignupDto {
@@ -56,7 +80,7 @@ export class SignupDto {
     required: false,
   })
   @IsOptional()
-  @IsUrl()
+  @Validate(IsUrlOrLocalhostConstraint)
   successUrl?: string;
 
   @ApiProperty({
@@ -65,7 +89,7 @@ export class SignupDto {
     required: false,
   })
   @IsOptional()
-  @IsUrl()
+  @Validate(IsUrlOrLocalhostConstraint)
   cancelUrl?: string;
 }
 

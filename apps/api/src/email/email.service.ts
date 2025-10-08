@@ -10,6 +10,7 @@ export interface WelcomeEmailData {
   domain: string;
   plan?: string;
   planName?: string;
+  planFeatures?: string;
   subdomain?: string;
   temporaryPassword?: string;
 }
@@ -212,57 +213,209 @@ export class EmailService {
 
             <div class="plan-info">
                 <h3>📋 Detalhes da sua assinatura</h3>
-                <p><strong>Empresa:</strong> {{companyName}}</p>
-                <p><strong>Plano:</strong> {{plan}}</p>
-                <p><strong>Subdomínio:</strong> <span class="highlight">{{subdomain}}.connecthub.com</span></p>
-                <p><strong>Email do administrador:</strong> {{contactEmail}}</p>
+                <table style="width: 100%; border-collapse: collapse; margin: 15px 0;">
+                    <tr>
+                        <td style="padding: 8px 0; border-bottom: 1px solid #e5e7eb; font-weight: bold; width: 40%;">Empresa:</td>
+                        <td style="padding: 8px 0; border-bottom: 1px solid #e5e7eb;">{{companyName}}</td>
+                    </tr>
+                    <tr>
+                        <td style="padding: 8px 0; border-bottom: 1px solid #e5e7eb; font-weight: bold;">Plano:</td>
+                        <td style="padding: 8px 0; border-bottom: 1px solid #e5e7eb;">
+                            <span class="highlight">{{plan}}</span>
+                            {{#if planFeatures}}
+                            <br><small style="color: #6b7280;">{{planFeatures}}</small>
+                            {{/if}}
+                        </td>
+                    </tr>
+                    <tr>
+                        <td style="padding: 8px 0; border-bottom: 1px solid #e5e7eb; font-weight: bold;">Subdomínio:</td>
+                        <td style="padding: 8px 0; border-bottom: 1px solid #e5e7eb;">
+                            <span class="highlight">{{subdomain}}.connecthub.com</span>
+                        </td>
+                    </tr>
+                    <tr>
+                        <td style="padding: 8px 0; border-bottom: 1px solid #e5e7eb; font-weight: bold;">Email Admin:</td>
+                        <td style="padding: 8px 0; border-bottom: 1px solid #e5e7eb;">{{contactEmail}}</td>
+                    </tr>
+                    <tr>
+                        <td style="padding: 8px 0; font-weight: bold;">Status:</td>
+                        <td style="padding: 8px 0;">
+                            <span style="background: #10b981; color: white; padding: 4px 8px; border-radius: 4px; font-size: 12px; font-weight: bold;">
+                                ✅ ATIVO
+                            </span>
+                        </td>
+                    </tr>
+                </table>
             </div>
 
             {{#if temporaryPassword}}
             <div class="plan-info">
                 <h3>🔐 Suas Credenciais de Acesso</h3>
-                <div style="background: #f0fdf4; border: 1px solid #16a34a; border-radius: 8px; padding: 20px; margin: 20px 0;">
-                    <p><strong>Email:</strong> {{contactEmail}}</p>
-                    <p><strong>Senha Temporária:</strong> <span style="font-family: monospace; background: #ffffff; padding: 6px 12px; border-radius: 4px; border: 1px solid #16a34a; color: #16a34a; font-weight: bold; font-size: 16px;">{{temporaryPassword}}</span></p>
-                    <div style="background: #fffbeb; border: 1px solid #f59e0b; border-radius: 6px; padding: 12px; margin-top: 15px;">
-                        <p style="color: #92400e; font-size: 14px; margin: 0;">
-                            ⚠️ <strong>Política de Senha:</strong> Esta senha contém 1 maiúscula, 1 minúscula, 1 número e 1 símbolo.
-                        </p>
-                        <p style="color: #92400e; font-size: 14px; margin: 8px 0 0 0;">
-                            🔒 <strong>Segurança:</strong> Altere esta senha no primeiro acesso.
-                        </p>
+                <div style="background: #f0fdf4; border: 2px solid #16a34a; border-radius: 8px; padding: 25px; margin: 20px 0;">
+                    <table style="width: 100%; border-collapse: collapse;">
+                        <tr>
+                            <td style="padding: 8px 0; font-weight: bold; width: 30%;">Email:</td>
+                            <td style="padding: 8px 0; font-family: monospace; color: #0369a1;">{{contactEmail}}</td>
+                        </tr>
+                        <tr>
+                            <td style="padding: 8px 0; font-weight: bold;">Senha:</td>
+                            <td style="padding: 8px 0;">
+                                <span style="font-family: 'Courier New', monospace; background: #ffffff; padding: 8px 16px; border-radius: 6px; border: 2px solid #16a34a; color: #16a34a; font-weight: bold; font-size: 18px; letter-spacing: 1px;">{{temporaryPassword}}</span>
+                            </td>
+                        </tr>
+                    </table>
+                    
+                    <div style="background: #fffbeb; border: 1px solid #f59e0b; border-radius: 6px; padding: 15px; margin-top: 20px;">
+                        <div style="display: flex; align-items: flex-start; gap: 10px;">
+                            <span style="font-size: 18px;">🔒</span>
+                            <div>
+                                <p style="color: #92400e; font-size: 14px; margin: 0 0 8px 0; font-weight: bold;">
+                                    Política de Segurança da Senha
+                                </p>
+                                <p style="color: #92400e; font-size: 13px; margin: 0 0 5px 0;">
+                                    ✅ Contém pelo menos 1 letra maiúscula (A-Z)
+                                </p>
+                                <p style="color: #92400e; font-size: 13px; margin: 0 0 5px 0;">
+                                    ✅ Contém pelo menos 1 letra minúscula (a-z)
+                                </p>
+                                <p style="color: #92400e; font-size: 13px; margin: 0 0 5px 0;">
+                                    ✅ Contém pelo menos 1 número (0-9)
+                                </p>
+                                <p style="color: #92400e; font-size: 13px; margin: 0 0 10px 0;">
+                                    ✅ Contém pelo menos 1 símbolo (!@#$%&*)
+                                </p>
+                                <p style="color: #dc2626; font-size: 14px; margin: 0; font-weight: bold;">
+                                    ⚠️ IMPORTANTE: Altere esta senha no primeiro acesso por segurança.
+                                </p>
+                            </div>
+                        </div>
                     </div>
                 </div>
             </div>
             {{/if}}
 
             <div class="next-steps">
-                <h3>🚀 Próximos passos</h3>
-                <ul>
-                    <li><strong>Fazer login:</strong> Use as credenciais acima para acessar sua plataforma</li>
-                    <li><strong>Alterar senha:</strong> Recomendamos alterar a senha temporária no primeiro acesso</li>
-                    <li><strong>Configuração inicial:</strong> Configure sua equipe e parâmetros do sistema</li>
-                    <li><strong>Onboarding:</strong> Nossa equipe pode ajudar com a configuração inicial</li>
-                    <li><strong>Suporte:</strong> Estamos disponíveis para qualquer dúvida</li>
-                </ul>
+                <h3>🚀 Primeiros Passos na Plataforma</h3>
+                <div style="display: grid; gap: 15px;">
+                    <div style="display: flex; align-items: flex-start; gap: 12px;">
+                        <span style="background: #3b82f6; color: white; border-radius: 50%; width: 24px; height: 24px; display: flex; align-items: center; justify-content: center; font-weight: bold; font-size: 12px; flex-shrink: 0;">1</span>
+                        <div>
+                            <strong style="color: #1f2937;">Faça seu primeiro login</strong>
+                            <p style="margin: 5px 0 0 0; color: #4b5563; font-size: 14px;">Use suas credenciais para acessar a plataforma e familiarize-se com a interface</p>
+                        </div>
+                    </div>
+                    
+                    <div style="display: flex; align-items: flex-start; gap: 12px;">
+                        <span style="background: #10b981; color: white; border-radius: 50%; width: 24px; height: 24px; display: flex; align-items: center; justify-content: center; font-weight: bold; font-size: 12px; flex-shrink: 0;">2</span>
+                        <div>
+                            <strong style="color: #1f2937;">Altere sua senha</strong>
+                            <p style="margin: 5px 0 0 0; color: #4b5563; font-size: 14px;">Por segurança, crie uma senha personalizada em Configurações > Perfil</p>
+                        </div>
+                    </div>
+                    
+                    <div style="display: flex; align-items: flex-start; gap: 12px;">
+                        <span style="background: #f59e0b; color: white; border-radius: 50%; width: 24px; height: 24px; display: flex; align-items: center; justify-content: center; font-weight: bold; font-size: 12px; flex-shrink: 0;">3</span>
+                        <div>
+                            <strong style="color: #1f2937;">Configure sua empresa</strong>
+                            <p style="margin: 5px 0 0 0; color: #4b5563; font-size: 14px;">Adicione logotipo, informações da empresa e personalize as configurações</p>
+                        </div>
+                    </div>
+                    
+                    <div style="display: flex; align-items: flex-start; gap: 12px;">
+                        <span style="background: #8b5cf6; color: white; border-radius: 50%; width: 24px; height: 24px; display: flex; align-items: center; justify-content: center; font-weight: bold; font-size: 12px; flex-shrink: 0;">4</span>
+                        <div>
+                            <strong style="color: #1f2937;">Adicione sua equipe</strong>
+                            <p style="margin: 5px 0 0 0; color: #4b5563; font-size: 14px;">Convide usuários e configure permissões em Configurações > Usuários</p>
+                        </div>
+                    </div>
+                    
+                    <div style="display: flex; align-items: flex-start; gap: 12px;">
+                        <span style="background: #ef4444; color: white; border-radius: 50%; width: 24px; height: 24px; display: flex; align-items: center; justify-content: center; font-weight: bold; font-size: 12px; flex-shrink: 0;">5</span>
+                        <div>
+                            <strong style="color: #1f2937;">Importe seus dados</strong>
+                            <p style="margin: 5px 0 0 0; color: #4b5563; font-size: 14px;">Importe contatos, propriedades e dados existentes usando nossas ferramentas</p>
+                        </div>
+                    </div>
+                </div>
+                
+                <div style="background: #e0f2fe; border: 1px solid #0891b2; border-radius: 6px; padding: 15px; margin-top: 20px;">
+                    <p style="color: #0c4a6e; font-size: 14px; margin: 0; text-align: center;">
+                        💡 <strong>Dica:</strong> Precisa de ajuda? Nossa equipe oferece onboarding gratuito para novos clientes!
+                    </p>
+                </div>
             </div>
 
-            <p style="text-align: center;">
-                <a href="http://localhost:3000/login?tenant={{subdomain}}" class="cta-button">
-                    Fazer Login na Plataforma
+            <div style="text-align: center; margin: 30px 0;">
+                <a href="http://localhost:3001/login?tenant={{subdomain}}" class="cta-button" style="background: linear-gradient(135deg, #3b82f6 0%, #1d4ed8 100%); box-shadow: 0 4px 12px rgba(59, 130, 246, 0.3);">
+                    🚀 Acessar Minha Plataforma
                 </a>
-            </p>
+                <p style="color: #6b7280; font-size: 13px; margin-top: 10px;">
+                    Seu link de acesso: <strong>localhost:3001/login?tenant={{subdomain}}</strong>
+                </p>
+            </div>
 
-            <p>Se você tiver alguma dúvida, não hesite em entrar em contato conosco. Estamos aqui para ajudar!</p>
+            <div style="background: #f8fafc; border: 1px solid #e2e8f0; border-radius: 8px; padding: 20px; margin: 25px 0;">
+                <h4 style="color: #1f2937; margin: 0 0 15px 0;">📞 Suporte e Contato</h4>
+                <div style="display: grid; grid-template-columns: 1fr 1fr; gap: 15px; font-size: 14px;">
+                    <div>
+                        <strong style="color: #374151;">📧 Email:</strong><br>
+                        <a href="mailto:suporte@connecthub.com" style="color: #3b82f6;">suporte@connecthub.com</a>
+                    </div>
+                    <div>
+                        <strong style="color: #374151;">📱 Telefone:</strong><br>
+                        <a href="tel:+5511999999999" style="color: #3b82f6;">(11) 99999-9999</a>
+                    </div>
+                    <div>
+                        <strong style="color: #374151;">💬 Chat:</strong><br>
+                        <span style="color: #6b7280;">Disponível na plataforma</span>
+                    </div>
+                    <div>
+                        <strong style="color: #374151;">🕒 Horário:</strong><br>
+                        <span style="color: #6b7280;">Seg-Sex, 8h às 18h</span>
+                    </div>
+                </div>
+            </div>
+
+            <p style="color: #374151; line-height: 1.6;">
+                Se você tiver alguma dúvida ou precisar de assistência, nossa equipe está sempre pronta para ajudar. 
+                Não hesite em entrar em contato conosco através de qualquer um dos canais acima.
+            </p>
             
-            <p>Atenciosamente,<br>
-            <strong>Equipe ConnectHub</strong></p>
+            <p style="margin-top: 30px; color: #374151;">
+                Atenciosamente,<br>
+                <strong style="color: #1f2937;">Equipe ConnectHub</strong><br>
+                <em style="color: #6b7280; font-size: 14px;">Sua plataforma CRM de confiança</em>
+            </p>
         </div>
         
         <div class="footer">
-            <p>Este email foi enviado para {{contactEmail}} como confirmação da sua assinatura.</p>
-            <p>ConnectHub - A melhor plataforma CRM multi-tenant do Brasil</p>
-            <p>📧 suporte@connecthub.com | 📱 (11) 99999-9999</p>
+            <div style="border-top: 2px solid #e5e7eb; padding-top: 20px; margin-top: 20px;">
+                <p style="margin: 0 0 10px 0; font-weight: 600; color: #374151;">
+                    ConnectHub - A plataforma CRM multi-tenant mais avançada do Brasil
+                </p>
+                <p style="margin: 0 0 15px 0; color: #6b7280; font-size: 13px;">
+                    Este email foi enviado para <strong>{{contactEmail}}</strong> como confirmação da sua assinatura do plano <strong>{{plan}}</strong>.
+                </p>
+                
+                <div style="display: flex; justify-content: center; align-items: center; gap: 20px; margin: 15px 0; flex-wrap: wrap;">
+                    <a href="mailto:suporte@connecthub.com" style="color: #3b82f6; text-decoration: none; font-size: 13px;">
+                        📧 suporte@connecthub.com
+                    </a>
+                    <span style="color: #d1d5db;">|</span>
+                    <a href="tel:+5511999999999" style="color: #3b82f6; text-decoration: none; font-size: 13px;">
+                        📱 (11) 99999-9999
+                    </a>
+                    <span style="color: #d1d5db;">|</span>
+                    <a href="https://connecthub.com" style="color: #3b82f6; text-decoration: none; font-size: 13px;">
+                        🌐 connecthub.com
+                    </a>
+                </div>
+                
+                <p style="margin: 15px 0 0 0; color: #9ca3af; font-size: 12px;">
+                    © 2025 ConnectHub. Todos os direitos reservados.<br>
+                    Você está recebendo este email porque se cadastrou em nossa plataforma.
+                </p>
+            </div>
         </div>
     </div>
 </body>
