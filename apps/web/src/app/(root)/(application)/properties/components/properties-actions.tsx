@@ -1,6 +1,7 @@
 "use client";
 
 import { useState } from "react";
+import { useRouter } from "next/navigation";
 import { Button } from "@/components/ui/button";
 import {
   DropdownMenu,
@@ -13,8 +14,6 @@ import { PropertyResponse } from "@/types/properties";
 import { MoreHorizontal, Edit, Trash2, Eye } from "lucide-react";
 import { AlertDialogGeneric } from "@/components/alert-dialog-generic";
 import { useDeleteProperty } from "@/hooks/use-properties";
-import { PropertyFormDialog } from "./property-form-dialog";
-import { PropertyDetailDialog } from "./property-detail-dialog";
 import { useAuth } from "@/hooks/auth";
 import { toast } from "sonner";
 
@@ -27,9 +26,8 @@ export const PropertiesActions = ({
   property,
   onDeleteSuccess,
 }: PropertiesActionsProps) => {
+  const router = useRouter();
   const [isDeleteDialogOpen, setIsDeleteDialogOpen] = useState(false);
-  const [isEditDialogOpen, setIsEditDialogOpen] = useState(false);
-  const [isDetailDialogOpen, setIsDetailDialogOpen] = useState(false);
 
   const deletePropertyMutation = useDeleteProperty();
   const { user: currentUser } = useAuth();
@@ -52,15 +50,11 @@ export const PropertiesActions = ({
       });
       return;
     }
-    setIsEditDialogOpen(true);
+    router.push(`/properties/${property.id}/edit`);
   };
 
   const handleViewDetails = () => {
-    setIsDetailDialogOpen(true);
-  };
-
-  const handleSuccess = () => {
-    onDeleteSuccess?.();
+    router.push(`/properties/${property.id}`);
   };
 
   return (
@@ -92,23 +86,6 @@ export const PropertiesActions = ({
           </DropdownMenuItem>
         </DropdownMenuContent>
       </DropdownMenu>
-
-      <PropertyDetailDialog
-        isOpen={isDetailDialogOpen}
-        onClose={() => setIsDetailDialogOpen(false)}
-        property={property}
-      />
-
-      <PropertyFormDialog
-        isOpen={isEditDialogOpen}
-        onClose={() => setIsEditDialogOpen(false)}
-        mode="edit"
-        property={property}
-        onSuccess={() => {
-          setIsEditDialogOpen(false);
-          handleSuccess();
-        }}
-      />
 
       <AlertDialogGeneric
         open={isDeleteDialogOpen}
