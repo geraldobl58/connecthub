@@ -164,7 +164,8 @@ model Property {
   address  Json?
   features Json?
 
-  media Media[]
+  coverImage    String?
+  galleryImages String[]
 
   ownerId String?
   owner   Owner?  @relation(fields: [ownerId], references: [id], onDelete: SetNull, onUpdate: Cascade)
@@ -185,19 +186,6 @@ model Property {
   @@index([tenantId, createdAt])
   @@index([deletedAt])
   @@index([tenantId, status, type, createdAt]) // <— útil para listagens
-}
-
-// Mídias do imóvel
-model Media {
-  id         String   @id @default(uuid())
-  propertyId String
-  property   Property @relation(fields: [propertyId], references: [id], onDelete: Cascade, onUpdate: Cascade)
-  url        String
-  alt        String?
-  isCover    Boolean  @default(false)
-  order      Int      @default(0)
-
-  @@index([propertyId, isCover, order])
 }
 
 // Proprietários
