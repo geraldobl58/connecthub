@@ -5,6 +5,7 @@ import {
   IsNumber,
   IsUUID,
   IsObject,
+  IsArray,
 } from 'class-validator';
 import { Transform } from 'class-transformer';
 import { ApiProperty, ApiPropertyOptional } from '@nestjs/swagger';
@@ -156,6 +157,26 @@ export class CreatePropertyDto {
   @IsOptional()
   @IsObject()
   features?: Record<string, any>;
+
+  @ApiPropertyOptional({
+    description: 'URL da imagem de capa da propriedade',
+    example: 'https://example.com/images/property-cover.jpg',
+  })
+  @IsOptional()
+  @IsString()
+  coverImage?: string;
+
+  @ApiPropertyOptional({
+    description: 'Array de URLs das imagens da galeria',
+    example: [
+      'https://example.com/images/property-1.jpg',
+      'https://example.com/images/property-2.jpg',
+    ],
+  })
+  @IsOptional()
+  @IsArray()
+  @IsString({ each: true })
+  galleryImages?: string[];
 }
 
 export class UpdatePropertyDto {
@@ -307,6 +328,26 @@ export class UpdatePropertyDto {
   @IsOptional()
   @IsObject()
   features?: Record<string, any>;
+
+  @ApiPropertyOptional({
+    description: 'URL da imagem de capa da propriedade',
+    example: 'https://example.com/images/property-cover.jpg',
+  })
+  @IsOptional()
+  @IsString()
+  coverImage?: string;
+
+  @ApiPropertyOptional({
+    description: 'Array de URLs das imagens da galeria',
+    example: [
+      'https://example.com/images/property-1.jpg',
+      'https://example.com/images/property-2.jpg',
+    ],
+  })
+  @IsOptional()
+  @IsArray()
+  @IsString({ each: true })
+  galleryImages?: string[];
 }
 
 export class PropertyListQueryDto {
