@@ -2,6 +2,7 @@ import {
   Injectable,
   NotFoundException,
   BadRequestException,
+  Logger,
 } from '@nestjs/common';
 import { PrismaService } from '../prisma/prisma.service';
 import { StripeService } from '../stripe/stripe.service';
@@ -17,6 +18,8 @@ import { SubStatus } from '@prisma/client';
 
 @Injectable()
 export class PlansService {
+  private readonly logger = new Logger(PlansService.name);
+
   constructor(
     private prisma: PrismaService,
     private stripeService: StripeService,
@@ -242,7 +245,7 @@ export class PlansService {
   }
 
   private getPlanLevel(planName: string): number {
-    const levels = {
+    const levels: Record<string, number> = {
       STARTER: 1,
       PROFESSIONAL: 2,
       ENTERPRISE: 3,

@@ -9,9 +9,11 @@ import { PermissionsModule } from './permissions/permissions.module';
 import { UsersModule } from './users/users.module';
 import { OwnersModule } from './owners/owners.module';
 import { PropertiesModule } from './properties/properties.module';
+import { LoggerModule } from './logger/logger.module';
 
 @Module({
   imports: [
+    LoggerModule,
     ConfigModule.forRoot({ isGlobal: true }),
     PrismaModule,
     AuthModule,

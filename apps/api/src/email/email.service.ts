@@ -247,6 +247,12 @@ export class EmailService {
                         </td>
                     </tr>
                     <tr>
+                        <td style="padding: 8px 0; border-bottom: 1px solid #e5e7eb; font-weight: bold;">Slug/TenantId:</td>
+                        <td style="padding: 8px 0; border-bottom: 1px solid #e5e7eb;">
+                            <code style="background: #f3f4f6; padding: 2px 6px; border-radius: 3px; font-size: 11px; color: #4b5563;">{{domain}}</code>
+                        </td>
+                    </tr>
+                    <tr>
                         <td style="padding: 8px 0; font-weight: bold;">Status:</td>
                         <td style="padding: 8px 0;">
                             <span style="background: #10b981; color: white; padding: 4px 8px; border-radius: 4px; font-size: 12px; font-weight: bold;">
