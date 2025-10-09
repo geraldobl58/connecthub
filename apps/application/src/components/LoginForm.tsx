@@ -116,6 +116,66 @@ export function LoginForm() {
           Não tem uma conta? Cadastre-se
         </MuiLink>
       </Box>
+
+      <Box
+        sx={{
+          textAlign: "center",
+          mt: 3,
+          p: 2,
+          bgcolor: "grey.50",
+          borderRadius: 1,
+        }}
+      >
+        <Box sx={{ mb: 2 }}>
+          <strong>🧪 Dados para Teste (Seed)</strong>
+        </Box>
+        <Box
+          sx={{
+            fontSize: "0.875rem",
+            color: "text.secondary",
+            textAlign: "left",
+          }}
+        >
+          <Box sx={{ mb: 2 }}>
+            <strong>🏢 Empresa Demo (Plano STARTER)</strong>
+            <Box sx={{ ml: 1, mt: 0.5 }}>
+              • <strong>Admin:</strong> empresa-demo | admin@empresa-demo.com
+              <br />• <strong>Manager:</strong> empresa-demo |
+              manager@empresa-demo.com
+              <br />• <strong>Agent:</strong> empresa-demo |
+              agent@empresa-demo.com
+              <br />• <strong>Viewer:</strong> empresa-demo |
+              viewer@empresa-demo.com
+            </Box>
+          </Box>
+          <Box sx={{ mb: 2 }}>
+            <strong>🏠 Imobiliária ABC (Plano PROFESSIONAL)</strong>
+            <Box sx={{ ml: 1, mt: 0.5 }}>
+              • <strong>Admin:</strong> imobiliaria-abc |
+              admin@imobiliaria-abc.com
+            </Box>
+          </Box>
+          <Box sx={{ mb: 2 }}>
+            <strong>💻 Tech Solutions (Plano ENTERPRISE)</strong>
+            <Box sx={{ ml: 1, mt: 0.5 }}>
+              • <strong>Admin:</strong> tech-solutions |
+              admin@tech-solutions.com
+            </Box>
+          </Box>
+          <Box
+            sx={{
+              textAlign: "center",
+              mt: 2,
+              p: 1,
+              bgcolor: "primary.light",
+              color: "white",
+              borderRadius: 1,
+            }}
+          >
+            <strong>🔑 Senha para todos os usuários: Demo123!</strong>
+          </Box>
+        </Box>
+      </Box>
     </Box>
   );
 }
