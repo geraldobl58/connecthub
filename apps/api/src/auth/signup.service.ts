@@ -1,8 +1,13 @@
-import { Injectable, ConflictException, NotFoundException, Logger } from '@nestjs/common';
+import {
+  Injectable,
+  ConflictException,
+  NotFoundException,
+  Logger,
+} from '@nestjs/common';
 import { PrismaService } from '../prisma/prisma.service';
 import { EmailService } from '../email/email.service';
 import { StripeService } from '../stripe/stripe.service';
-import { SignupDto, PlanType, SignupResponseDto } from './dto/signup.dto';
+import { SignupDto, SignupResponseDto } from './dto/signup.dto';
 import { hash } from 'bcrypt';
 import { Role, SubStatus } from '@prisma/client';
 
@@ -17,11 +22,11 @@ export class SignupService {
   ) {}
 
   async signup(dto: SignupDto): Promise<SignupResponseDto> {
-    this.logger.log('🚀 Starting signup process', { 
-      domain: dto.domain, 
+    this.logger.log('🚀 Starting signup process', {
+      domain: dto.domain,
       plan: dto.plan,
       successUrl: dto.successUrl,
-      cancelUrl: dto.cancelUrl 
+      cancelUrl: dto.cancelUrl,
     });
 
     // Verificar se o domínio já existe
@@ -44,11 +49,11 @@ export class SignupService {
 
     // Buscar o plano escolhido
     const plan = await this.prisma.plan.findFirst({
-      where: { 
+      where: {
         name: {
           equals: dto.plan,
-          mode: 'insensitive'
-        }
+          mode: 'insensitive',
+        },
       },
     });
 
@@ -56,6 +61,15 @@ export class SignupService {
       throw new NotFoundException(`Plano ${dto.plan} não encontrado`);
     }
 
+    // Todos os planos são pagos, sempre criar sessão do Stripe
+    return await this.createStripeCheckoutSession(dto, plan);
+  }
+
+  // Criar empresa diretamente (para planos gratuitos)
+  private async createCompanyDirectly(
+    dto: SignupDto,
+    plan: any,
+  ): Promise<SignupResponseDto> {
     // Criar o tenant
     const tenant = await this.prisma.tenant.create({
       data: {
@@ -95,83 +109,16 @@ export class SignupService {
       },
     });
 
-    let checkoutUrl: string | undefined;
-    let subscriptionStatus: SubStatus = SubStatus.ACTIVE;
-
-    // Se o plano é pago (não é STARTER), criar customer e checkout session
-    if (dto.plan !== PlanType.STARTER) {
-      try {
-        // Criar customer no Stripe
-        const customer = await this.stripeService.createCustomer({
-          email: dto.contactEmail,
-          name: dto.companyName,
-          tenantId: tenant.id,
-        });
-
-        // Criar checkout session
-        const successUrl = dto.successUrl || `https://${dto.domain}.connecthub.com/dashboard?payment=success`;
-        const cancelUrl = dto.cancelUrl || `https://${dto.domain}.connecthub.com/plans?payment=cancelled`;
-        
-        this.logger.log('🏪 Creating Stripe checkout session', {
-          planId: plan.id,
-          stripePriceId: plan.stripePriceId,
-          customerId: customer.id,
-          successUrl,
-          cancelUrl,
-          rawSuccessUrl: dto.successUrl,
-          rawCancelUrl: dto.cancelUrl
-        });
-        
-        checkoutUrl = await this.stripeService.createCheckoutSession(
-          plan.stripePriceId!,
-          customer.id,
-          successUrl,
-          cancelUrl,
-          { tenantId: tenant.id }
-        );
-
-        this.logger.log('✅ Stripe checkout session created', { checkoutUrl });
-
-        // Para planos pagos, iniciar com status PENDING até o pagamento ser confirmado
-        subscriptionStatus = SubStatus.PENDING;
-
-        // Criar a assinatura com customer ID
-        await this.prisma.subscription.create({
-          data: {
-            tenantId: tenant.id,
-            planId: plan.id,
-            status: subscriptionStatus,
-            startedAt: new Date(),
-            expiresAt: new Date(Date.now() + 30 * 24 * 60 * 60 * 1000), // 30 dias
-            stripeCustomerId: customer.id,
-          },
-        });
-
-      } catch (error) {
-        console.error('Erro ao criar checkout Stripe:', error);
-        // Se falhar no Stripe, ainda criar a assinatura como trial
-        await this.prisma.subscription.create({
-          data: {
-            tenantId: tenant.id,
-            planId: plan.id,
-            status: SubStatus.ACTIVE,
-            startedAt: new Date(),
-            expiresAt: new Date(Date.now() + 7 * 24 * 60 * 60 * 1000), // 7 dias de trial
-          },
-        });
-      }
-    } else {
-      // Para plano STARTER, criar assinatura diretamente ativa
-      await this.prisma.subscription.create({
-        data: {
-          tenantId: tenant.id,
-          planId: plan.id,
-          status: SubStatus.ACTIVE,
-          startedAt: new Date(),
-          expiresAt: new Date(Date.now() + 30 * 24 * 60 * 60 * 1000), // 30 dias
-        },
-      });
-    }
+    // Para plano STARTER, criar assinatura diretamente ativa
+    await this.prisma.subscription.create({
+      data: {
+        tenantId: tenant.id,
+        planId: plan.id,
+        status: SubStatus.ACTIVE,
+        startedAt: new Date(),
+        expiresAt: new Date(Date.now() + 30 * 24 * 60 * 60 * 1000), // 30 dias
+      },
+    });
 
     // Definir recursos do plano para o email
     const getPlanFeatures = (planName: string) => {
@@ -196,6 +143,7 @@ export class SignupService {
         temporaryPassword,
         domain: dto.domain,
         subdomain: dto.domain,
+        tenantId: tenant.id,
         plan: plan.name,
         planName: plan.name,
         planFeatures: getPlanFeatures(plan.name),
@@ -207,11 +155,9 @@ export class SignupService {
 
     return {
       success: true,
-      message: checkoutUrl 
-        ? 'Empresa criada com sucesso. Complete o pagamento para ativar sua assinatura.'
-        : 'Empresa criada com sucesso. Verifique seu email para acessar sua conta.',
+      message:
+        'Empresa criada com sucesso. Verifique seu email para acessar sua conta.',
       tenantId: tenant.id,
-      checkoutUrl,
       tenant: {
         id: tenant.id,
         name: tenant.name,
@@ -232,27 +178,92 @@ export class SignupService {
     };
   }
 
+  // Criar sessão do Stripe (para planos pagos)
+  private async createStripeCheckoutSession(
+    dto: SignupDto,
+    plan: any,
+  ): Promise<SignupResponseDto> {
+    try {
+      // Criar customer no Stripe sem tenant ainda
+      const customer = await this.stripeService.createCustomer({
+        email: dto.contactEmail,
+        name: dto.companyName,
+        tenantId: '', // Vazio por enquanto
+      });
+
+      const successUrl = dto.successUrl || `http://localhost:5174/auth/success`;
+      const cancelUrl = dto.cancelUrl || `http://localhost:5174/auth/register`;
+
+      this.logger.log('🏪 Creating Stripe checkout session', {
+        planId: plan.id,
+        stripePriceId: plan.stripePriceId,
+        customerId: customer.id,
+        successUrl,
+        cancelUrl,
+      });
+
+      // Armazenar dados temporários na sessão do Stripe
+      const metadata = {
+        companyName: dto.companyName,
+        contactName: dto.contactName,
+        contactEmail: dto.contactEmail,
+        domain: dto.domain,
+        planId: plan.id,
+        planName: plan.name,
+      };
+
+      const checkoutUrl = await this.stripeService.createCheckoutSession(
+        plan.stripePriceId,
+        customer.id,
+        successUrl,
+        cancelUrl,
+        metadata,
+      );
+
+      this.logger.log('✅ Stripe checkout session created', { checkoutUrl });
+
+      return {
+        success: true,
+        message:
+          'Sessão de pagamento criada. Você será redirecionado para o Stripe.',
+        checkoutUrl,
+        plan: {
+          id: plan.id,
+          name: plan.name,
+          price: plan.price,
+          currency: plan.currency,
+        },
+      };
+    } catch (error) {
+      this.logger.error('Erro ao criar checkout Stripe:', error);
+      throw new Error('Erro ao processar pagamento. Tente novamente.');
+    }
+  }
+
   private generateTemporaryPassword(): string {
     // Definir caracteres por categoria
     const uppercase = 'ABCDEFGHIJKLMNOPQRSTUVWXYZ';
     const lowercase = 'abcdefghijklmnopqrstuvwxyz';
     const numbers = '0123456789';
     const symbols = '!@#$%&*';
-    
+
     // Garantir que pelo menos um caractere de cada categoria seja incluído
     let password = '';
     password += uppercase.charAt(Math.floor(Math.random() * uppercase.length));
     password += lowercase.charAt(Math.floor(Math.random() * lowercase.length));
     password += numbers.charAt(Math.floor(Math.random() * numbers.length));
     password += symbols.charAt(Math.floor(Math.random() * symbols.length));
-    
+
     // Preencher o restante da senha com caracteres aleatórios de todas as categorias
     const allChars = uppercase + lowercase + numbers + symbols;
     for (let i = password.length; i < 10; i++) {
       password += allChars.charAt(Math.floor(Math.random() * allChars.length));
     }
-    
+
     // Embaralhar a senha para que os caracteres obrigatórios não fiquem sempre no início
-    return password.split('').sort(() => Math.random() - 0.5).join('');
+    return password
+      .split('')
+      .sort(() => Math.random() - 0.5)
+      .join('');
   }
 }

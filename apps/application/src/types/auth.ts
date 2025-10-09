@@ -1,9 +1,30 @@
 // Tipos base
+export interface Plan {
+  id: string;
+  name: string;
+  price: number;
+  currency: string;
+  maxUsers?: number;
+  maxProperties?: number;
+  maxContacts?: number;
+  hasAPI: boolean;
+  description?: string;
+}
+
+export interface Subscription {
+  id: string;
+  status: string;
+  startedAt: string;
+  expiresAt?: string;
+  plan: Plan;
+}
+
 export interface Tenant {
   id: string;
   name: string;
   slug: string;
   settings?: Record<string, unknown>;
+  subscription?: Subscription;
 }
 
 export interface User {
@@ -30,6 +51,28 @@ export interface RegisterRequest {
   name: string;
   email: string;
   password: string;
+}
+
+// New signup request for company registration with Stripe
+export interface SignupRequest {
+  companyName: string;
+  contactName: string;
+  contactEmail: string;
+  domain: string;
+  plan: "STARTER" | "PROFESSIONAL" | "ENTERPRISE";
+  successUrl: string;
+  cancelUrl: string;
+}
+
+// Response from signup with Stripe checkout URL
+export interface SignupResponse {
+  success: boolean;
+  message: string;
+  tenantId: string;
+  checkoutUrl: string;
+  tenant: Partial<Tenant>;
+  user: Partial<User>;
+  plan: Partial<Plan>;
 }
 
 // Tipo específico para formulário de registro (inclui confirmPassword)
@@ -77,6 +120,7 @@ export interface AuthContextType {
   isLoading: boolean;
   login: (credentials: AuthRequest) => Promise<void>;
   register: (data: RegisterRequest) => Promise<void>;
+  signup: (data: SignupRequest) => Promise<SignupResponse>;
   logout: () => Promise<void>;
   updateProfile: (data: UpdateProfileRequest) => Promise<void>;
 }

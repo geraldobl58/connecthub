@@ -8,6 +8,7 @@ export interface WelcomeEmailData {
   contactName: string;
   contactEmail: string;
   domain: string;
+  tenantId: string;
   plan?: string;
   planName?: string;
   planFeatures?: string;
@@ -71,17 +72,18 @@ export class EmailService {
       console.log('✅ Email de boas-vindas enviado com sucesso!', {
         messageId: result.messageId,
         destinatario: data.contactEmail,
+        tenantId: data.tenantId,
       });
     } catch (error) {
       console.error('❌ Erro ao enviar email:', {
         error: error.message,
         code: error.code,
         destinatario: data.contactEmail,
+        tenantId: data.tenantId,
       });
 
       // Retry em caso de rate limiting
       if (error.message.includes('Too many failed login attempts')) {
-        console.log('⏰ Aguardando antes de tentar novamente...');
         await new Promise((resolve) => setTimeout(resolve, 60000));
 
         try {
@@ -89,6 +91,7 @@ export class EmailService {
           console.log('✅ Email enviado com sucesso na segunda tentativa!', {
             messageId: retryResult.messageId,
             destinatario: data.contactEmail,
+            tenantId: data.tenantId,
           });
           return;
         } catch (retryError) {
@@ -236,6 +239,12 @@ export class EmailService {
                     <tr>
                         <td style="padding: 8px 0; border-bottom: 1px solid #e5e7eb; font-weight: bold;">Email Admin:</td>
                         <td style="padding: 8px 0; border-bottom: 1px solid #e5e7eb;">{{contactEmail}}</td>
+                    </tr>
+                    <tr>
+                        <td style="padding: 8px 0; border-bottom: 1px solid #e5e7eb; font-weight: bold;">ID da Conta:</td>
+                        <td style="padding: 8px 0; border-bottom: 1px solid #e5e7eb;">
+                            <code style="background: #f3f4f6; padding: 2px 6px; border-radius: 3px; font-size: 11px; color: #4b5563;">{{tenantId}}</code>
+                        </td>
                     </tr>
                     <tr>
                         <td style="padding: 8px 0; font-weight: bold;">Status:</td>

@@ -1,10 +1,15 @@
 import { useNavigate, Link } from "react-router-dom";
-import { TextField, Button, Alert, Box, Link as MuiLink } from "@mui/material";
 import { useForm, Controller } from "react-hook-form";
+
+import { TextField, Button, Alert, Box, Link as MuiLink } from "@mui/material";
 import { zodResolver } from "@hookform/resolvers/zod";
+
 import { loginSchema } from "../schemas/auth";
+
 import { useAuthContext } from "../context/authContext";
-import { mapApiToFormError } from "../utils/formErrors";
+
+import { mapApiToFormError } from "../lib/formErrors";
+
 import type { AuthRequest } from "../types/auth";
 
 export function LoginForm() {
@@ -43,7 +48,6 @@ export function LoginForm() {
           <TextField
             {...field}
             margin="normal"
-            required
             fullWidth
             label="Tenant ID"
             type="text"
@@ -62,7 +66,6 @@ export function LoginForm() {
           <TextField
             {...field}
             margin="normal"
-            required
             fullWidth
             label="Email"
             type="email"
@@ -80,7 +83,6 @@ export function LoginForm() {
           <TextField
             {...field}
             margin="normal"
-            required
             fullWidth
             label="Senha"
             type="password"

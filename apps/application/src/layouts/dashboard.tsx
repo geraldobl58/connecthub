@@ -29,6 +29,7 @@ import {
   AccountCircle,
   Logout,
 } from "@mui/icons-material";
+import { useAuthContext } from "../context/authContext";
 import type { ReactNode } from "react";
 
 const drawerWidth = 280;
@@ -52,7 +53,6 @@ const navigationItems: NavItem[] = [
     text: "Planos",
     icon: <BusinessIcon />,
     path: "/dashboard/plans",
-    badge: "Pro",
   },
   {
     text: "Configurações",
@@ -66,6 +66,7 @@ export function DashboardLayout({ children }: DashboardLayoutProps) {
   const [anchorEl, setAnchorEl] = useState<null | HTMLElement>(null);
   const navigate = useNavigate();
   const location = useLocation();
+  const { user, logout: authLogout } = useAuthContext();
 
   const handleDrawerToggle = () => {
     setMobileOpen(!mobileOpen);
@@ -79,10 +80,40 @@ export function DashboardLayout({ children }: DashboardLayoutProps) {
     setAnchorEl(null);
   };
 
-  const handleLogout = () => {
-    localStorage.removeItem("auth_token");
-    navigate("/auth/login");
+  const handleLogout = async () => {
+    try {
+      await authLogout();
+      navigate("/auth/login");
+    } catch {
+      // Fallback: remove token manually and redirect
+      localStorage.removeItem("auth_token");
+      navigate("/auth/login");
+    }
     handleProfileClose();
+  };
+
+  // Get user initials for avatar
+  const getUserInitials = (name: string) => {
+    return name
+      .split(" ")
+      .map((n) => n[0])
+      .join("")
+      .toUpperCase()
+      .slice(0, 2);
+  };
+
+  // Get current plan name or badge
+  const getPlanBadge = () => {
+    const planName = user?.tenant?.subscription?.plan?.name;
+    if (!planName) return undefined;
+
+    const planMap: Record<string, string> = {
+      STARTER: "Básico",
+      PROFESSIONAL: "Pro",
+      ENTERPRISE: "Enterprise",
+    };
+
+    return planMap[planName] || planName;
   };
 
   const drawer = (
@@ -139,15 +170,26 @@ export function DashboardLayout({ children }: DashboardLayoutProps) {
       <Box sx={{ p: 2, borderTop: "1px solid", borderColor: "divider" }}>
         <Box sx={{ display: "flex", alignItems: "center", gap: 2 }}>
           <Avatar sx={{ width: 32, height: 32, bgcolor: "primary.main" }}>
-            JD
+            {user ? getUserInitials(user.name) : "?"}
           </Avatar>
           <Box sx={{ flex: 1, minWidth: 0 }}>
             <Typography variant="body2" fontWeight="medium" noWrap>
-              João Silva
+              {user?.name || "Carregando..."}
             </Typography>
             <Typography variant="caption" color="text.secondary" noWrap>
-              joao@exemplo.com
+              {user?.email || ""}
             </Typography>
+            {getPlanBadge() && (
+              <Box sx={{ mt: 0.5 }}>
+                <Chip
+                  label={getPlanBadge()}
+                  size="small"
+                  color="primary"
+                  variant="outlined"
+                  sx={{ fontSize: "0.65rem", height: 18 }}
+                />
+              </Box>
+            )}
           </Box>
         </Box>
       </Box>

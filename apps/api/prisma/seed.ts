@@ -13,15 +13,15 @@ async function main() {
     update: {},
     create: {
       name: 'STARTER',
-      price: 149.99,
+      price: 149.99, // 14999 centavos / 100 = 149.99
       currency: 'BRL',
       maxUsers: 5,
       maxProperties: 100,
       maxContacts: 500,
       hasAPI: false,
       description: 'Plano básico para pequenas empresas',
-      stripeProductId: 'prod_starter_example', // Substitua pelos IDs reais do Stripe
-      stripePriceId: 'price_starter_example',
+      stripeProductId: 'prod_TClbVFQhJS1ZOD', // Plano Starter
+      stripePriceId: 'price_1SGM3uAB7ykXDk2oUJravQQK', // Price ID real do Stripe
     },
   });
 
@@ -30,15 +30,15 @@ async function main() {
     update: {},
     create: {
       name: 'PROFESSIONAL',
-      price: 299.99,
+      price: 299.99, // 29999 centavos / 100 = 299.99
       currency: 'BRL',
       maxUsers: 20,
       maxProperties: 500,
       maxContacts: 2000,
       hasAPI: true,
       description: 'Plano profissional com API',
-      stripeProductId: 'prod_professional_example', // Substitua pelos IDs reais do Stripe
-      stripePriceId: 'price_professional_example',
+      stripeProductId: 'prod_TClbELPL9wiScE', // Plano Professional
+      stripePriceId: 'price_1SGM4CAB7ykXDk2ow5PfFVyb', // Price ID real do Stripe
     },
   });
 
@@ -47,15 +47,15 @@ async function main() {
     update: {},
     create: {
       name: 'ENTERPRISE',
-      price: 599.99,
+      price: 599.99, // 59999 centavos / 100 = 599.99
       currency: 'BRL',
       maxUsers: null, // Ilimitado (usando null em vez de -1)
       maxProperties: null, // Ilimitado
       maxContacts: null, // Ilimitado
       hasAPI: true,
       description: 'Plano enterprise com recursos ilimitados',
-      stripeProductId: 'prod_enterprise_example', // Substitua pelos IDs reais do Stripe
-      stripePriceId: 'price_enterprise_example',
+      stripeProductId: 'prod_TClb1eMmA798TY', // Plano Enterprise
+      stripePriceId: 'price_1SGM4TAB7ykXDk2ozLp2ZBgF', // Price ID real do Stripe
     },
   });
 
@@ -538,11 +538,15 @@ async function main() {
   console.log(
     `- ${tenant1.name} (${tenant1.slug}) - Plan: ${starterPlan.name}`,
   );
-  console.log(`- ${tenant2.name} (${tenant2.slug}) - Plan: ${professionalPlan.name}`);
+  console.log(
+    `- ${tenant2.name} (${tenant2.slug}) - Plan: ${professionalPlan.name}`,
+  );
   console.log(
     `- ${tenant3.name} (${tenant3.slug}) - Plan: ${enterprisePlan.name}`,
   );
-  console.log(`- ${tenant4.name} (${tenant4.slug}) - Plan: ${professionalPlan.name}`);
+  console.log(
+    `- ${tenant4.name} (${tenant4.slug}) - Plan: ${professionalPlan.name}`,
+  );
 }
 
 main()

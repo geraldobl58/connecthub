@@ -3,6 +3,7 @@ import { AuthLayout } from "../layouts/auth";
 import { DashboardLayout } from "../layouts/dashboard";
 import { LoginPage } from "../pages/auth/login";
 import { RegisterPage } from "../pages/auth/register";
+import { SuccessPage } from "../pages/auth/success";
 import { DashboardPage } from "../pages/dashboard";
 import { PropertiesPage } from "../pages/dashboard/properties";
 import { UsersPage } from "../pages/dashboard/users";
@@ -60,6 +61,7 @@ export function AppRoutes() {
       >
         <Route path="login" element={<LoginPage />} />
         <Route path="register" element={<RegisterPage />} />
+        <Route path="success" element={<SuccessPage />} />
         <Route index element={<Navigate to="login" replace />} />
       </Route>
 

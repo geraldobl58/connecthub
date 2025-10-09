@@ -1,10 +1,11 @@
-import React, { useMemo } from "react";
+import React, { useMemo, useCallback } from "react";
 import { useQueryClient } from "@tanstack/react-query";
-import { useCallback } from "react";
 import type {
   AuthContextType,
   AuthRequest,
   RegisterRequest,
+  SignupRequest,
+  SignupResponse,
   UpdateProfileRequest,
   User,
 } from "../types/auth";
@@ -16,7 +17,6 @@ import {
 } from "../http/auth";
 import { useProfile } from "../hooks/useAuth";
 import { authKeys } from "../hooks/useAuth";
-
 import { AuthContext } from "../context/authContext";
 
 export const AuthProvider: React.FC<{ children: React.ReactNode }> = ({
@@ -48,12 +48,20 @@ export const AuthProvider: React.FC<{ children: React.ReactNode }> = ({
     [queryClient]
   );
 
+  const signup = useCallback(
+    async (data: SignupRequest): Promise<SignupResponse> => {
+      const resp = await authService.signup(data);
+      // Não faz login automaticamente, apenas retorna a resposta com checkoutUrl
+      return resp;
+    },
+    []
+  );
+
   const logout = useCallback(async () => {
     try {
       await authService.logout();
-    } catch (err) {
+    } catch {
       // ignore server logout errors
-      console.warn("logout error", err);
     } finally {
       removeStoredToken();
       queryClient.clear();
@@ -81,6 +89,7 @@ export const AuthProvider: React.FC<{ children: React.ReactNode }> = ({
       isLoading: profileQuery.isLoading,
       login,
       register,
+      signup,
       logout,
       updateProfile,
     }),
@@ -90,6 +99,7 @@ export const AuthProvider: React.FC<{ children: React.ReactNode }> = ({
       profileQuery.isLoading,
       login,
       register,
+      signup,
       logout,
       updateProfile,
     ]

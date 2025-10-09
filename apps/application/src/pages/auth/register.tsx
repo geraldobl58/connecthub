@@ -1,4 +1,5 @@
-import { Typography, Paper, Box } from "@mui/material";
+import { Typography, Box } from "@mui/material";
+import { SignupForm } from "../../components/SignupForm";
 
 export function RegisterPage() {
   return (
@@ -7,14 +8,10 @@ export function RegisterPage() {
         Criar Conta
       </Typography>
       <Typography variant="body1" color="text.secondary" align="center" mb={3}>
-        Preencha os dados para criar sua conta
+        Crie sua empresa e escolha um plano
       </Typography>
 
-      <Paper sx={{ p: 2, textAlign: "center" }}>
-        <Typography variant="body2">
-          Formulário de cadastro será implementado aqui
-        </Typography>
-      </Paper>
+      <SignupForm />
     </Box>
   );
 }

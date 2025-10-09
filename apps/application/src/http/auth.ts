@@ -1,12 +1,14 @@
 import api from "../config/api";
-import type { 
-  AuthRequest, 
+import type {
+  AuthRequest,
   AuthResponse,
   User,
   RegisterRequest,
+  SignupRequest,
+  SignupResponse,
   ForgotPasswordRequest,
   ResetPasswordRequest,
-  UpdateProfileRequest
+  UpdateProfileRequest,
 } from "../types/auth";
 
 // Serviços de autenticação
@@ -23,19 +25,39 @@ export const authService = {
     return response.data;
   },
 
+  // Check domain availability
+  async checkDomainAvailability(
+    domain: string
+  ): Promise<{ available: boolean }> {
+    const response = await api.get<{ available: boolean }>(
+      `/auth/check-domain/${domain}`
+    );
+    return response.data;
+  },
+
+  // Signup - company registration with Stripe checkout
+  async signup(data: SignupRequest): Promise<SignupResponse> {
+    const response = await api.post<SignupResponse>("/auth/signup", data);
+    return response.data;
+  },
+
   // Logout
   async logout(): Promise<void> {
     await api.post("/auth/logout");
   },
 
   // Recuperar senha
-  async forgotPassword(data: ForgotPasswordRequest): Promise<{ message: string }> {
+  async forgotPassword(
+    data: ForgotPasswordRequest
+  ): Promise<{ message: string }> {
     const response = await api.post("/auth/forgot-password", data);
     return response.data;
   },
 
   // Redefinir senha
-  async resetPassword(data: ResetPasswordRequest): Promise<{ message: string }> {
+  async resetPassword(
+    data: ResetPasswordRequest
+  ): Promise<{ message: string }> {
     const response = await api.post("/auth/reset-password", data);
     return response.data;
   },
@@ -72,26 +94,26 @@ export const authService = {
 // Função helper para configurar o token no axios
 export const setAuthToken = (token: string | null) => {
   if (token) {
-    api.defaults.headers.common['Authorization'] = `Bearer ${token}`;
+    api.defaults.headers.common["Authorization"] = `Bearer ${token}`;
   } else {
-    delete api.defaults.headers.common['Authorization'];
+    delete api.defaults.headers.common["Authorization"];
   }
 };
 
 // Função helper para obter token do localStorage
 export const getStoredToken = (): string | null => {
-  return localStorage.getItem('auth_token');
+  return localStorage.getItem("auth_token");
 };
 
 // Função helper para salvar token no localStorage
 export const setStoredToken = (token: string) => {
-  localStorage.setItem('auth_token', token);
+  localStorage.setItem("auth_token", token);
   setAuthToken(token);
 };
 
 // Função helper para remover token do localStorage
 export const removeStoredToken = () => {
-  localStorage.removeItem('auth_token');
+  localStorage.removeItem("auth_token");
   setAuthToken(null);
 };
 
@@ -116,13 +138,13 @@ api.interceptors.response.use(
       try {
         const { access_token } = await authService.refreshToken();
         setStoredToken(access_token);
-        
+
         // Retry the original request
         return api(originalRequest);
       } catch (refreshError) {
         // Refresh failed, redirect to login
         removeStoredToken();
-        window.location.href = '/auth/login';
+        window.location.href = "/auth/login";
         return Promise.reject(refreshError);
       }
     }

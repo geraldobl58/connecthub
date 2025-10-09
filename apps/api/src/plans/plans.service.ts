@@ -2,7 +2,6 @@ import {
   Injectable,
   NotFoundException,
   BadRequestException,
-  ForbiddenException,
 } from '@nestjs/common';
 import { PrismaService } from '../prisma/prisma.service';
 import { StripeService } from '../stripe/stripe.service';
@@ -173,10 +172,16 @@ export class PlansService {
     // Cancelar no Stripe se existir stripeSubscriptionId
     if (subscription.stripeSubscriptionId) {
       try {
-        await this.stripeService.cancelSubscription(subscription.stripeSubscriptionId);
+        await this.stripeService.cancelSubscription(
+          subscription.stripeSubscriptionId,
+        );
       } catch (error) {
         // Log do erro, mas não falha se o Stripe retornar erro
-        console.error('Erro ao cancelar no Stripe:', error.message);
+        this.logger.error('Erro ao cancelar assinatura no Stripe:', {
+          error: error.message,
+          subscriptionId: subscription.stripeSubscriptionId,
+          tenantId,
+        });
       }
     }
 
@@ -253,7 +258,12 @@ export class PlansService {
     });
   }
 
-  async createCheckoutSession(tenantId: string, priceId: string, successUrl: string, cancelUrl: string) {
+  async createCheckoutSession(
+    tenantId: string,
+    priceId: string,
+    successUrl: string,
+    cancelUrl: string,
+  ) {
     // Buscar o plano pelo priceId
     const plan = await this.prisma.plan.findFirst({
       where: { stripePriceId: priceId },
@@ -270,7 +280,9 @@ export class PlansService {
     });
 
     if (existingSubscription?.status === SubStatus.ACTIVE) {
-      throw new BadRequestException('Já existe uma assinatura ativa para este tenant');
+      throw new BadRequestException(
+        'Já existe uma assinatura ativa para este tenant',
+      );
     }
 
     let customerId: string;
@@ -351,12 +363,16 @@ export class PlansService {
       properties: {
         current: currentUsage.propertiesCount,
         limit: limits.maxProperties,
-        canAdd: !limits.maxProperties || currentUsage.propertiesCount < limits.maxProperties,
+        canAdd:
+          !limits.maxProperties ||
+          currentUsage.propertiesCount < limits.maxProperties,
       },
       contacts: {
         current: currentUsage.contactsCount,
         limit: limits.maxContacts,
-        canAdd: !limits.maxContacts || currentUsage.contactsCount < limits.maxContacts,
+        canAdd:
+          !limits.maxContacts ||
+          currentUsage.contactsCount < limits.maxContacts,
       },
       api: {
         enabled: limits.hasAPI,
@@ -364,7 +380,10 @@ export class PlansService {
     };
   }
 
-  async upgradeSubscription(tenantId: string, newPriceId: string): Promise<PlanUpgradeResponseDto> {
+  async upgradeSubscription(
+    tenantId: string,
+    newPriceId: string,
+  ): Promise<PlanUpgradeResponseDto> {
     const subscription = await this.prisma.subscription.findUnique({
       where: { tenantId },
       include: { plan: true },
@@ -399,7 +418,9 @@ export class PlansService {
           newPriceId,
         );
       } catch (error) {
-        throw new BadRequestException(`Erro ao atualizar assinatura no Stripe: ${error.message}`);
+        throw new BadRequestException(
+          `Erro ao atualizar assinatura no Stripe: ${error.message}`,
+        );
       }
     }
 
@@ -433,12 +454,16 @@ export class PlansService {
     // Verificar se está ativa e não expirada
     const now = new Date();
     const isActive = subscription.status === SubStatus.ACTIVE;
-    const isNotExpired = !subscription.expiresAt || subscription.expiresAt > now;
+    const isNotExpired =
+      !subscription.expiresAt || subscription.expiresAt > now;
 
     return isActive && isNotExpired;
   }
 
-  async createBillingPortalSession(tenantId: string, returnUrl: string): Promise<string> {
+  async createBillingPortalSession(
+    tenantId: string,
+    returnUrl: string,
+  ): Promise<string> {
     const subscription = await this.prisma.subscription.findUnique({
       where: { tenantId },
     });
@@ -448,7 +473,9 @@ export class PlansService {
     }
 
     if (!subscription.stripeCustomerId) {
-      throw new BadRequestException('Customer Stripe não encontrado para este tenant');
+      throw new BadRequestException(
+        'Customer Stripe não encontrado para este tenant',
+      );
     }
 
     return await this.stripeService.createBillingPortalSession(
