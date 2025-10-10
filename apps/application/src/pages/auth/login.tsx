@@ -1,5 +1,5 @@
 import { Typography, Box } from "@mui/material";
-import { LoginForm } from "../../components/login-form";
+import { LoginForm } from "./_components/login-form";
 
 export function LoginPage() {
   return (

@@ -4,13 +4,13 @@ import { useForm, Controller } from "react-hook-form";
 import { TextField, Button, Alert, Box, Link as MuiLink } from "@mui/material";
 import { zodResolver } from "@hookform/resolvers/zod";
 
-import { loginSchema } from "../schemas/auth";
+import { loginSchema } from "../../../schemas/auth";
 
-import { useAuthContext } from "../context/authContext";
+import { useAuthContext } from "../../../context/authContext";
 
-import { mapApiToFormError } from "../lib/formErrors";
+import { mapApiToFormError } from "../../../lib/formErrors";
 
-import type { AuthRequest } from "../types/auth";
+import type { AuthRequest } from "../../../types/auth";
 
 export function LoginForm() {
   const navigate = useNavigate();

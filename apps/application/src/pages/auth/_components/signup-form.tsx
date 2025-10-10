@@ -20,10 +20,10 @@ import {
 } from "@mui/material";
 import { CheckCircle, Cancel } from "@mui/icons-material";
 import { z } from "zod";
-import { useAuthContext } from "../context/authContext";
-import type { SignupRequest } from "../types/auth";
-import { mapApiToFormError } from "../lib/formErrors";
-import { authService } from "../http/auth";
+import { useAuthContext } from "../../../context/authContext";
+import type { SignupRequest } from "../../../types/auth";
+import { mapApiToFormError } from "../../../lib/formErrors";
+import { authService } from "../../../http/auth";
 
 // Signup schema for company registration with plan selection
 const signupSchema = z.object({
