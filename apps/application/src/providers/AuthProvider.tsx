@@ -65,6 +65,8 @@ export const AuthProvider: React.FC<{ children: React.ReactNode }> = ({
     } finally {
       removeStoredToken();
       queryClient.clear();
+      // Redirecionar automaticamente para a página de login
+      window.location.href = "/auth/login";
     }
   }, [queryClient]);
 
