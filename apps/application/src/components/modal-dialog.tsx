@@ -5,13 +5,12 @@ import {
   DialogContent,
   DialogActions,
   Typography,
+  IconButton,
+  Box,
 } from "@mui/material";
-
-import IconButton from "@mui/material/IconButton";
 import CloseIcon from "@mui/icons-material/Close";
-
 import { styled } from "@mui/material/styles";
-import { useState } from "react";
+import type { ReactNode } from "react";
 
 const BootstrapDialog = styled(Dialog)(({ theme }) => ({
   "& .MuiDialogContent-root": {
@@ -22,73 +21,191 @@ const BootstrapDialog = styled(Dialog)(({ theme }) => ({
   },
 }));
 
-interface DialogTitleProps {
-  id: string;
-  children?: React.ReactNode;
+interface ModalDialogProps {
+  // Estado do modal
+  open: boolean;
   onClose: () => void;
-  handleClickOpen: () => void;
+
+  // Conteúdo
+  title?: string;
+  children: ReactNode;
+
+  // Configurações
+  maxWidth?: "xs" | "sm" | "md" | "lg" | "xl" | false;
+  fullWidth?: boolean;
+  dividers?: boolean;
+  disableEscapeKeyDown?: boolean;
+  disableBackdropClick?: boolean;
+
+  // Botões da action bar
+  actions?: ReactNode;
+
+  // Botões padrão de confirmação/cancelamento
+  showCancelButton?: boolean;
+  showConfirmButton?: boolean;
+  cancelText?: string;
+  confirmText?: string;
+  onCancel?: () => void;
+  onConfirm?: () => void;
+  confirmDisabled?: boolean;
+
+  // Variantes do botão de confirmação
+  confirmVariant?: "text" | "outlined" | "contained";
+  confirmColor?:
+    | "inherit"
+    | "primary"
+    | "secondary"
+    | "success"
+    | "error"
+    | "info"
+    | "warning";
+
+  // Customização visual
+  hideCloseButton?: boolean;
+
+  // IDs para acessibilidade
+  id?: string;
+  "aria-labelledby"?: string;
+  "aria-describedby"?: string;
 }
 
 export default function ModalDialog({
-  id,
-  children,
+  open,
   onClose,
-  handleClickOpen,
-}: DialogTitleProps) {
-  const [open, setOpen] = useState(false);
-
-  const handleClickOpen = () => {
-    setOpen(true);
-  };
+  title,
+  children,
+  maxWidth = "sm",
+  fullWidth = true,
+  dividers = true,
+  disableEscapeKeyDown = false,
+  disableBackdropClick = false,
+  actions,
+  showCancelButton = false,
+  showConfirmButton = false,
+  cancelText = "Cancelar",
+  confirmText = "Confirmar",
+  onCancel,
+  onConfirm,
+  confirmDisabled = false,
+  confirmVariant = "contained",
+  confirmColor = "primary",
+  hideCloseButton = false,
+  id = "modal-dialog",
+  "aria-labelledby": ariaLabelledBy = `${id}-title`,
+  "aria-describedby": ariaDescribedBy = `${id}-content`,
+}: ModalDialogProps) {
   const handleClose = () => {
-    setOpen(false);
+    if (!disableBackdropClick) {
+      onClose();
+    }
   };
+
+  const handleCancel = () => {
+    if (onCancel) {
+      onCancel();
+    } else {
+      onClose();
+    }
+  };
+
+  const handleConfirm = () => {
+    if (onConfirm) {
+      onConfirm();
+    }
+  };
+
+  const hasDefaultActions = showCancelButton || showConfirmButton;
 
   return (
-    <>
-      <BootstrapDialog
-        onClose={handleClose}
-        aria-labelledby="customized-dialog-title"
-        open={open}
-      >
-        <DialogTitle sx={{ m: 0, p: 2 }} id="customized-dialog-title">
-          Modal title
+    <BootstrapDialog
+      onClose={handleClose}
+      aria-labelledby={ariaLabelledBy}
+      aria-describedby={ariaDescribedBy}
+      open={open}
+      maxWidth={maxWidth}
+      fullWidth={fullWidth}
+      disableEscapeKeyDown={disableEscapeKeyDown}
+    >
+      {/* Header com título e botão de fechar */}
+      {title && (
+        <DialogTitle sx={{ m: 0, p: 2 }} id={ariaLabelledBy}>
+          <Box
+            sx={{
+              display: "flex",
+              alignItems: "center",
+              justifyContent: "space-between",
+            }}
+          >
+            <Typography variant="h6" component="span">
+              {title}
+            </Typography>
+            {!hideCloseButton && (
+              <IconButton
+                aria-label="close"
+                onClick={onClose}
+                sx={(theme) => ({
+                  color: theme.palette.grey[500],
+                })}
+              >
+                <CloseIcon />
+              </IconButton>
+            )}
+          </Box>
         </DialogTitle>
+      )}
+
+      {/* Botão de fechar quando não há título */}
+      {!title && !hideCloseButton && (
         <IconButton
           aria-label="close"
-          onClick={handleClose}
+          onClick={onClose}
           sx={(theme) => ({
             position: "absolute",
             right: 8,
             top: 8,
             color: theme.palette.grey[500],
+            zIndex: 1,
           })}
         >
           <CloseIcon />
         </IconButton>
-        <DialogContent dividers>
-          <Typography gutterBottom>
-            Cras mattis consectetur purus sit amet fermentum. Cras justo odio,
-            dapibus ac facilisis in, egestas eget quam. Morbi leo risus, porta
-            ac consectetur ac, vestibulum at eros.
-          </Typography>
-          <Typography gutterBottom>
-            Praesent commodo cursus magna, vel scelerisque nisl consectetur et.
-            Vivamus sagittis lacus vel augue laoreet rutrum faucibus dolor
-            auctor.
-          </Typography>
-          <Typography gutterBottom>
-            Aenean lacinia bibendum nulla sed consectetur. Praesent commodo
-            cursus magna, vel scelerisque nisl consectetur et. Donec sed odio
-            dui. Donec ullamcorper nulla non metus auctor fringilla.
-          </Typography>
-        </DialogContent>
-        <DialogActions>
-          <Button autoFocus onClick={handleClose}>
-            Save changes
-          </Button>
+      )}
+
+      {/* Conteúdo */}
+      <DialogContent dividers={dividers} id={ariaDescribedBy}>
+        {children}
+      </DialogContent>
+
+      {/* Actions personalizadas ou padrão */}
+      {(actions || hasDefaultActions) && (
+        <DialogActions sx={{ p: 2 }}>
+          {actions ? (
+            actions
+          ) : (
+            <Box sx={{ display: "flex", gap: 1 }}>
+              {showCancelButton && (
+                <Button
+                  onClick={handleCancel}
+                  variant="outlined"
+                  color="inherit"
+                >
+                  {cancelText}
+                </Button>
+              )}
+              {showConfirmButton && (
+                <Button
+                  onClick={handleConfirm}
+                  variant={confirmVariant}
+                  color={confirmColor}
+                  disabled={confirmDisabled}
+                >
+                  {confirmText}
+                </Button>
+              )}
+            </Box>
+          )}
         </DialogActions>
-      </BootstrapDialog>
-    </>
+      )}
+    </BootstrapDialog>
   );
 }
