@@ -201,138 +201,174 @@ async function main() {
   console.log('👥 Creating users...');
   const passwordHash = await hash('Demo123!', 10);
 
-  // Tenant 1: Empresa Demo - Usuários completos para demonstração
-  const admin1 = await prisma.user.upsert({
-    where: {
-      tenantId_email: {
-        tenantId: tenant1.id,
-        email: 'admin@empresa-demo.com',
-      },
-    },
-    update: {},
-    create: {
-      tenantId: tenant1.id,
-      name: 'Carlos Admin',
-      email: 'admin@empresa-demo.com',
-      password: passwordHash,
-      role: 'ADMIN',
-      isActive: true,
-    },
-  });
+  // Lista de nomes e sobrenomes para gerar usuários realistas
+  const firstNames = [
+    'Ana',
+    'Carlos',
+    'Maria',
+    'João',
+    'Luisa',
+    'Pedro',
+    'Julia',
+    'Roberto',
+    'Fernanda',
+    'Ricardo',
+    'Camila',
+    'Gabriel',
+    'Beatriz',
+    'Rafael',
+    'Amanda',
+    'Thiago',
+    'Larissa',
+    'Diego',
+    'Mariana',
+    'Lucas',
+    'Patrícia',
+    'Bruno',
+    'Letícia',
+    'André',
+    'Vanessa',
+    'Felipe',
+    'Priscila',
+    'Rodrigo',
+    'Cristina',
+    'Marcelo',
+    'Daniela',
+    'Gustavo',
+    'Renata',
+    'Vinícius',
+    'Adriana',
+    'Leonardo',
+    'Juliana',
+    'Maurício',
+    'Fabiana',
+    'Alexandre',
+    'Sabrina',
+    'Eduardo',
+    'Tatiana',
+    'Henrique',
+    'Michelle',
+    'Fábio',
+    'Viviane',
+    'Caio',
+    'Bruna',
+    'Daniel',
+  ];
 
-  const manager1 = await prisma.user.upsert({
-    where: {
-      tenantId_email: {
-        tenantId: tenant1.id,
-        email: 'manager@empresa-demo.com',
-      },
-    },
-    update: {},
-    create: {
-      tenantId: tenant1.id,
-      name: 'Ana Manager',
-      email: 'manager@empresa-demo.com',
-      password: passwordHash,
-      role: 'MANAGER',
-      isActive: true,
-    },
-  });
+  const lastNames = [
+    'Silva',
+    'Santos',
+    'Oliveira',
+    'Souza',
+    'Rodrigues',
+    'Ferreira',
+    'Alves',
+    'Pereira',
+    'Lima',
+    'Gomes',
+    'Costa',
+    'Ribeiro',
+    'Martins',
+    'Carvalho',
+    'Almeida',
+    'Lopes',
+    'Soares',
+    'Fernandes',
+    'Vieira',
+    'Barbosa',
+    'Rocha',
+    'Dias',
+    'Monteiro',
+    'Mendes',
+    'Ramos',
+    'Moreira',
+    'Azevedo',
+    'Araújo',
+    'Nunes',
+    'Cardoso',
+    'Campos',
+    'Reis',
+    'Nascimento',
+    'Castro',
+    'Pinto',
+    'Moura',
+    'Freitas',
+    'Teixeira',
+    'Miranda',
+    'Correia',
+    'Melo',
+    'Andrade',
+    'Machado',
+    'Borges',
+    'Tavares',
+    'Cunha',
+    'Farias',
+    'Cavalcante',
+    'Franco',
+    'Barros',
+  ];
 
-  const agent1 = await prisma.user.upsert({
-    where: {
-      tenantId_email: {
-        tenantId: tenant1.id,
-        email: 'agent@empresa-demo.com',
-      },
-    },
-    update: {},
-    create: {
-      tenantId: tenant1.id,
-      name: 'Roberto Agent',
-      email: 'agent@empresa-demo.com',
-      password: passwordHash,
-      role: 'AGENT',
-      isActive: true,
-    },
-  });
+  const companies = [
+    'empresa-demo.com',
+    'imobiliaria-abc.com',
+    'techsolutions.com',
+    'inovacorp.com',
+  ];
 
-  const viewer1 = await prisma.user.upsert({
-    where: {
-      tenantId_email: {
-        tenantId: tenant1.id,
-        email: 'viewer@empresa-demo.com',
-      },
-    },
-    update: {},
-    create: {
-      tenantId: tenant1.id,
-      name: 'Julia Viewer',
-      email: 'viewer@empresa-demo.com',
-      password: passwordHash,
-      role: 'VIEWER',
-      isActive: true,
-    },
-  });
+  // Criar 50 usuários distribuídos entre os tenants
+  const users: any[] = [];
+  const tenantIds = [tenant1.id, tenant2.id, tenant3.id, tenant4.id];
 
-  // Tenant 2: Imobiliária ABC
-  const admin2 = await prisma.user.upsert({
-    where: {
-      tenantId_email: {
-        tenantId: tenant2.id,
-        email: 'admin@imobiliaria-abc.com',
-      },
-    },
-    update: {},
-    create: {
-      tenantId: tenant2.id,
-      name: 'João Silva',
-      email: 'admin@imobiliaria-abc.com',
-      password: passwordHash,
-      role: 'ADMIN',
-      isActive: true,
-    },
-  });
+  for (let i = 0; i < 50; i++) {
+    const firstName = firstNames[Math.floor(Math.random() * firstNames.length)];
+    const lastName = lastNames[Math.floor(Math.random() * lastNames.length)];
+    const fullName = `${firstName} ${lastName}`;
+    const tenantIndex = i % 4; // Distribuir entre os 4 tenants
+    const tenantId = tenantIds[tenantIndex];
+    const company = companies[tenantIndex];
 
-  // Tenant 3: Tech Solutions
-  const adminTech = await prisma.user.upsert({
-    where: {
-      tenantId_email: {
-        tenantId: tenant3.id,
-        email: 'admin@tech-solutions.com',
-      },
-    },
-    update: {},
-    create: {
-      tenantId: tenant3.id,
-      name: 'Roberto CTO',
-      email: 'admin@tech-solutions.com',
-      password: passwordHash,
-      role: 'ADMIN',
-      isActive: true,
-    },
-  });
+    // Primeiro nome em lowercase + número para email único
+    const emailPrefix = firstName
+      .toLowerCase()
+      .normalize('NFD')
+      .replace(/[\u0300-\u036f]/g, '');
+    const email = `${emailPrefix}${i + 1}@${company}`;
 
-  // Tenant 4: G3 Developer
-  const adminG3 = await prisma.user.upsert({
-    where: {
-      tenantId_email: {
-        tenantId: tenant4.id,
-        email: 'admin@g3developer.com',
+    // Distribuir roles: 60% VIEWER, 25% AGENT, 10% MANAGER, 5% ADMIN
+    let role;
+    if (i < 3)
+      role = 'ADMIN'; // Primeiros 3 são ADMIN
+    else if (i < 8)
+      role = 'MANAGER'; // Próximos 5 são MANAGER
+    else if (i < 20)
+      role = 'AGENT'; // Próximos 12 são AGENT
+    else role = 'VIEWER'; // Resto são VIEWER
+
+    const isActive = Math.random() > 0.1; // 90% ativos, 10% inativos
+
+    const user = await prisma.user.upsert({
+      where: {
+        tenantId_email: {
+          tenantId,
+          email,
+        },
       },
-    },
-    update: {},
-    create: {
-      tenantId: tenant4.id,
-      name: 'G3 Administrator',
-      email: 'admin@g3developer.com',
-      password: passwordHash,
-      role: 'ADMIN',
-      isActive: true,
-    },
-  });
+      update: {},
+      create: {
+        tenantId,
+        name: fullName,
+        email,
+        password: passwordHash,
+        role,
+        isActive,
+      },
+    });
+
+    users.push(user);
+  }
 
   console.log(
-    `✅ Created users: ${admin1.name}, ${manager1.name}, ${agent1.name}, ${viewer1.name}, ${admin2.name}, ${adminTech.name}, ${adminG3.name}`,
+    `✅ Created ${users.length} users with different roles distributed across tenants`,
   );
 
   // Criar Owners
