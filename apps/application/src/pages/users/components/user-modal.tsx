@@ -2,7 +2,7 @@ import { useState } from "react";
 import { Button, CircularProgress } from "@mui/material";
 
 import ModalDialog from "../../../components/modal-dialog";
-import { UserForm } from "./UserForm";
+import { UserForm } from "./user-form";
 import { useCreateUser, useUpdateUser } from "../../../hooks/useUsers";
 import type { CreateUserData, UpdateUserData } from "../../../schemas/user";
 import type { UserResponse } from "../../../types/users";
