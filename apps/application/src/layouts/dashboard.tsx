@@ -83,11 +83,10 @@ export function DashboardLayout({ children }: DashboardLayoutProps) {
   const handleLogout = async () => {
     try {
       await authLogout();
-      navigate("/auth/login");
     } catch {
       // Fallback: remove token manually and redirect
       localStorage.removeItem("auth_token");
-      navigate("/auth/login");
+      window.location.href = "/auth/login";
     }
     handleProfileClose();
   };
