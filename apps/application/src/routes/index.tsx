@@ -6,9 +6,11 @@ import { RegisterPage } from "../pages/auth/register";
 import { SuccessPage } from "../pages/auth/success";
 import { DashboardPage } from "../pages/dashboard";
 import { PropertiesPage } from "../pages/dashboard/properties";
-import { UsersPage } from "../pages/dashboard/users";
 import { PlansPage } from "../pages/dashboard/plans";
 import { SettingsPage } from "../pages/dashboard/settings";
+
+import { UsersPage } from "../pages/users/users";
+
 import { useAuthContext } from "../context/authContext";
 
 // Hook para verificar se o usuário está autenticado

@@ -24,7 +24,7 @@ import {
   AccessTime,
 } from "@mui/icons-material";
 import { useDashboardData } from "../../hooks/usePlans";
-import { RealTimeCountdown } from "../../components/RealTimeCountdown";
+import { RealTimeCountdown } from "../../components/real-time-countdown";
 
 export function PlansPage() {
   const { plan, user, company, isLoading, isError, error } = useDashboardData();
