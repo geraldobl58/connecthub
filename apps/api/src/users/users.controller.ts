@@ -140,6 +140,26 @@ export class UsersController {
     return this.usersService.findAll(query, user.tenantId);
   }
 
+  @Get('me')
+  @ApiOperation({
+    summary: 'Buscar perfil do usuário atual',
+    description: 'Retorna as informações do usuário autenticado',
+  })
+  @ApiResponse({
+    status: 200,
+    description: 'Perfil do usuário retornado com sucesso',
+    type: UserResponseDto,
+  })
+  @ApiResponse({
+    status: 401,
+    description: 'Usuário não autenticado',
+  })
+  async getProfile(
+    @GetCurrentUser() user: CurrentUser,
+  ): Promise<UserResponseDto> {
+    return await this.usersService.findOne(user.userId, user.tenantId);
+  }
+
   @Get(':id')
   @RequireUserRead()
   @ApiOperation({

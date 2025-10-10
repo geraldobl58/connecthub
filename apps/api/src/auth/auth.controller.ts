@@ -37,7 +37,8 @@ export class AuthController {
   @HttpCode(HttpStatus.CREATED)
   @ApiOperation({
     summary: 'Company signup with plan selection',
-    description: 'Creates a new tenant (company) with admin user, plan subscription, and optional Stripe integration for paid plans',
+    description:
+      'Creates a new tenant (company) with admin user, plan subscription, and optional Stripe integration for paid plans',
   })
   @ApiBody({ type: SignupDto })
   @ApiResponse({
@@ -74,6 +75,32 @@ export class AuthController {
   })
   login(@Body() dto: LoginDto) {
     return this.service.login(dto.email, dto.password, dto.tenantId);
+  }
+
+  @Post('logout')
+  @UseGuards(JwtAuthGuard)
+  @ApiBearerAuth()
+  @HttpCode(HttpStatus.OK)
+  @ApiOperation({
+    summary: 'Logout user',
+    description: 'Logs out the authenticated user',
+  })
+  @ApiResponse({
+    status: 200,
+    description: 'User logged out successfully',
+  })
+  @ApiResponse({
+    status: 401,
+    description: 'Unauthorized - Invalid or missing token',
+  })
+  logout() {
+    // In a JWT implementation, we typically don't need to do anything server-side
+    // since JWT tokens are stateless. The client will remove the token.
+    // However, you could implement token blacklisting here if needed.
+    return {
+      message: 'Logout successful',
+      success: true,
+    };
   }
 
   @Get('profile')

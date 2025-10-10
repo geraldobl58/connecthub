@@ -486,4 +486,64 @@ export class PlansService {
       returnUrl,
     );
   }
+
+  async getCurrentCompany(tenantId: string) {
+    const tenant = await this.prisma.tenant.findUnique({
+      where: { id: tenantId },
+      select: {
+        id: true,
+        name: true,
+        slug: true,
+        createdAt: true,
+        updatedAt: true,
+      },
+    });
+
+    if (!tenant) {
+      throw new NotFoundException('Empresa não encontrada');
+    }
+
+    return {
+      id: tenant.id,
+      name: tenant.name,
+      tenantId: tenant.slug,
+      domain: `${tenant.slug}.connecthub.com`,
+      createdAt: tenant.createdAt.toISOString(),
+      updatedAt: tenant.updatedAt.toISOString(),
+    };
+  }
+
+  async getPlanUsage(tenantId: string) {
+    // Buscar estatísticas atuais do tenant
+    const [userCount, propertyCount, ownerCount] = await Promise.all([
+      this.prisma.user.count({
+        where: { tenantId, deletedAt: null, isActive: true },
+      }),
+      this.prisma.property.count({
+        where: { tenantId, deletedAt: null },
+      }),
+      this.prisma.owner.count({
+        where: { tenantId },
+      }),
+    ]);
+
+    // Buscar limites do plano atual
+    const subscription = await this.prisma.subscription.findUnique({
+      where: { tenantId },
+      include: { plan: true },
+    });
+
+    if (!subscription) {
+      throw new NotFoundException('Plano não encontrado');
+    }
+
+    return {
+      currentUsers: userCount,
+      currentProperties: propertyCount,
+      currentContacts: ownerCount,
+      maxUsers: subscription.plan.maxUsers || 0,
+      maxProperties: subscription.plan.maxProperties || 0,
+      maxContacts: subscription.plan.maxContacts || 0,
+    };
+  }
 }

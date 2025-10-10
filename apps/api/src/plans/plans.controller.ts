@@ -79,6 +79,41 @@ export class PlansController {
     return this.plansService.getCurrentPlan(user.tenantId);
   }
 
+  @Get('company')
+  @ApiOperation({
+    summary: 'Get current company information',
+    description:
+      'Returns the current company/tenant information for the authenticated user',
+  })
+  @ApiResponse({
+    status: 200,
+    description: 'Company information retrieved successfully',
+  })
+  @ApiResponse({
+    status: 401,
+    description: 'Unauthorized - Invalid or missing token',
+  })
+  async getCurrentCompany(@GetCurrentUser() user: CurrentUser) {
+    return await this.plansService.getCurrentCompany(user.tenantId);
+  }
+
+  @Get('usage')
+  @ApiOperation({
+    summary: 'Get current plan usage statistics',
+    description: 'Returns current usage vs limits for the authenticated tenant',
+  })
+  @ApiResponse({
+    status: 200,
+    description: 'Usage statistics retrieved successfully',
+  })
+  @ApiResponse({
+    status: 401,
+    description: 'Unauthorized - Invalid or missing token',
+  })
+  async getPlanUsage(@GetCurrentUser() user: CurrentUser) {
+    return await this.plansService.getPlanUsage(user.tenantId);
+  }
+
   @Post('upgrade')
   @HttpCode(HttpStatus.OK)
   @ApiOperation({
@@ -218,7 +253,6 @@ export class PlansController {
     description: 'Available plans retrieved successfully',
   })
   // Método removido - duplicado
-
   @Post('checkout-session')
   @ApiOperation({
     summary: 'Create checkout session',
@@ -255,13 +289,17 @@ export class PlansController {
   @Post('billing-portal')
   @ApiOperation({
     summary: 'Create billing portal session',
-    description: 'Creates a Stripe billing portal session for subscription management',
+    description:
+      'Creates a Stripe billing portal session for subscription management',
   })
   @ApiBody({
     schema: {
       type: 'object',
       properties: {
-        returnUrl: { type: 'string', description: 'Return URL after billing management' },
+        returnUrl: {
+          type: 'string',
+          description: 'Return URL after billing management',
+        },
       },
       required: ['returnUrl'],
     },
