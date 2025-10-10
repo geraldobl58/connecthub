@@ -13,20 +13,16 @@ import { UsersPage } from "../pages/users/users";
 
 import { useAuthContext } from "../context/authContext";
 
-// Hook para verificar se o usuário está autenticado
-function useAuth() {
-  try {
-    const ctx = useAuthContext();
-    return ctx.isAuthenticated;
-  } catch {
-    // If not inside provider, fallback to localStorage
-    const token = localStorage.getItem("auth_token");
-    return !!token;
-  }
-}
 // Componente para proteger rotas autenticadas
 function ProtectedRoute({ children }: { children: React.ReactNode }) {
-  const isAuthenticated = useAuth();
+  // Use context directly and wait for profile to load to avoid
+  // prematurely redirecting during initial auth fetch on page refresh.
+  const { isAuthenticated, isLoading } = useAuthContext();
+
+  if (isLoading) {
+    // while loading auth, render nothing (keeps current URL)
+    return null;
+  }
 
   if (!isAuthenticated) {
     return <Navigate to="/auth/login" replace />;
@@ -37,7 +33,11 @@ function ProtectedRoute({ children }: { children: React.ReactNode }) {
 
 // Componente para redirecionar usuários autenticados
 function PublicRoute({ children }: { children: React.ReactNode }) {
-  const isAuthenticated = useAuth();
+  const { isAuthenticated, isLoading } = useAuthContext();
+
+  if (isLoading) {
+    return null;
+  }
 
   if (isAuthenticated) {
     return <Navigate to="/dashboard" replace />;
