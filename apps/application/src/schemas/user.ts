@@ -30,19 +30,13 @@ const roleSchema = z.enum(
 );
 
 // Schema para criar usuário
-export const createUserSchema = z
-  .object({
-    name: nameSchema,
-    email: emailSchema,
-    password: passwordSchema,
-    confirmPassword: z.string().min(1, "Confirmação de senha é obrigatória"),
-    role: roleSchema,
-    isActive: z.boolean(),
-  })
-  .refine((data) => data.password === data.confirmPassword, {
-    message: "As senhas não coincidem",
-    path: ["confirmPassword"],
-  });
+export const createUserSchema = z.object({
+  name: nameSchema,
+  email: emailSchema,
+  password: passwordSchema,
+  role: roleSchema,
+  isActive: z.boolean(),
+});
 
 // Schema para atualizar usuário
 export const updateUserSchema = z

@@ -1,4 +1,4 @@
-import { useEffect } from "react";
+import { useEffect, useState } from "react";
 import { useForm, Controller } from "react-hook-form";
 import { zodResolver } from "@hookform/resolvers/zod";
 import {
@@ -16,7 +16,6 @@ import {
   IconButton,
 } from "@mui/material";
 import { Visibility, VisibilityOff } from "@mui/icons-material";
-import { useState } from "react";
 
 import { createUserSchema, updateUserSchema } from "../../../schemas/user";
 import type { CreateUserData, UpdateUserData } from "../../../schemas/user";
@@ -37,7 +36,6 @@ const CreateUserForm = ({
   error,
 }: Pick<UserFormProps, "onSubmit" | "isLoading" | "error">) => {
   const [showPassword, setShowPassword] = useState(false);
-  const [showConfirmPassword, setShowConfirmPassword] = useState(false);
 
   const {
     control,
@@ -49,7 +47,6 @@ const CreateUserForm = ({
       name: "",
       email: "",
       password: "",
-      confirmPassword: "",
       role: UserRole.VIEWER,
       isActive: true,
     },
@@ -120,38 +117,6 @@ const CreateUserForm = ({
                       disabled={isLoading}
                     >
                       {showPassword ? <VisibilityOff /> : <Visibility />}
-                    </IconButton>
-                  </InputAdornment>
-                ),
-              }}
-            />
-          )}
-        />
-
-        <Controller
-          name="confirmPassword"
-          control={control}
-          render={({ field }) => (
-            <TextField
-              {...field}
-              label="Confirmar senha"
-              type={showConfirmPassword ? "text" : "password"}
-              fullWidth
-              error={!!errors.confirmPassword}
-              helperText={errors.confirmPassword?.message}
-              disabled={isLoading}
-              required
-              InputProps={{
-                endAdornment: (
-                  <InputAdornment position="end">
-                    <IconButton
-                      onClick={() =>
-                        setShowConfirmPassword(!showConfirmPassword)
-                      }
-                      edge="end"
-                      disabled={isLoading}
-                    >
-                      {showConfirmPassword ? <VisibilityOff /> : <Visibility />}
                     </IconButton>
                   </InputAdornment>
                 ),

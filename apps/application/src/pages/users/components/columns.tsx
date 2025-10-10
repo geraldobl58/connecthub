@@ -1,5 +1,5 @@
 import type { GridColDef } from "@mui/x-data-grid";
-import { Chip, IconButton, Tooltip, Box, Menu, MenuItem } from "@mui/material";
+import { Chip, IconButton, Box, Menu, MenuItem } from "@mui/material";
 import { Edit, Delete, PersonOff, Person, MoreVert } from "@mui/icons-material";
 import { useState } from "react";
 import type { UserResponse } from "../../../types/users";
@@ -15,18 +15,6 @@ export const createColumns = ({
   onToggleStatus,
   onDelete,
 }: ColumnsProps): GridColDef<UserResponse>[] => [
-  {
-    field: "id",
-    headerName: "ID",
-    width: 100,
-    renderCell: (params) => (
-      <Tooltip title={params.value}>
-        <span style={{ fontSize: "0.75rem", fontFamily: "monospace" }}>
-          {params.value.substring(0, 8)}...
-        </span>
-      </Tooltip>
-    ),
-  },
   {
     field: "name",
     headerName: "Nome",

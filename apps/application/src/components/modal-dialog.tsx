@@ -186,7 +186,7 @@ export default function ModalDialog({
               {showCancelButton && (
                 <Button
                   onClick={handleCancel}
-                  variant="outlined"
+                  variant="contained"
                   color="inherit"
                 >
                   {cancelText}
