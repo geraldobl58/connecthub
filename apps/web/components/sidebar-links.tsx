@@ -59,7 +59,7 @@ export const SidebarLinks = () => {
   const settingItems: NavItem[] = [
     {
       title: "Configurações",
-      url: "/settings",
+      url: "/settings/system",
       icon: Settings,
     },
     {
