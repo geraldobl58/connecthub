@@ -41,17 +41,17 @@ export const SidebarLinks = () => {
     },
     {
       title: "Métricas",
-      url: "/analytics",
+      url: "/dashboard/analytics",
       icon: ChartBar,
     },
     {
       title: "Contratos",
-      url: "/contracts",
+      url: "/dashboard/contracts",
       icon: NotebookTabs,
     },
     {
       title: "Clientes",
-      url: "/clients",
+      url: "/dashboard/clients",
       icon: ShieldUser,
     },
   ];
@@ -64,7 +64,7 @@ export const SidebarLinks = () => {
     },
     {
       title: "Usuários",
-      url: "/users",
+      url: "/settings/users",
       icon: Users,
     },
   ];

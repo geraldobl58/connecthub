@@ -146,7 +146,7 @@ export const Profile = () => {
             variant="ghost"
             className="w-full flex items-start justify-stretch"
           >
-            <Link href="/profile">
+            <Link href="/settings/profile">
               <Users className="w-4 h-4 mr-2 text-gray-600 inline" />
               Meu Perfil
             </Link>
@@ -159,7 +159,7 @@ export const Profile = () => {
             variant="ghost"
             className="w-full flex items-start justify-stretch"
           >
-            <Link href="/my-plan">
+            <Link href="/settings/my-plan">
               <Wallet className="w-4 h-4 mr-2 text-gray-600 inline" />
               Meu Plano
             </Link>
