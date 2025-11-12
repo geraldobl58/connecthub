@@ -29,8 +29,14 @@ async function main() {
   await prisma.passwordReset.deleteMany();
   console.log('Cleared existing password resets');
 
+  await prisma.contract.deleteMany();
+  console.log('Cleared existing contracts');
+
   await prisma.user.deleteMany();
   console.log('Cleared existing users');
+
+  await prisma.client.deleteMany();
+  console.log('Cleared existing clients');
 
   await prisma.subscription.deleteMany();
   console.log('Cleared existing subscriptions');
@@ -348,6 +354,115 @@ async function main() {
     },
   });
   console.log('✅ Created expired password reset token');
+
+  // ============================
+  // Create Clients (Associated with Tenants)
+  // ============================
+  const client1 = await prisma.client.create({
+    data: {
+      tenantId: tenant1.id,
+      name: 'Acme Corporation',
+      email: 'contato@acme.com.br',
+      address: 'Avenida Paulista',
+      number: '1000',
+      complement: 'Sala 1200',
+      neighborhood: 'Bela Vista',
+      zipCode: '01311-100',
+      phone: '(11) 3178-8000',
+    },
+  });
+  console.log('✅ Created Client 1 (Acme Corporation):', client1.id);
+
+  const client2 = await prisma.client.create({
+    data: {
+      tenantId: tenant2.id,
+      name: 'Tech Solutions LTDA',
+      email: 'vendas@techsolutions.com.br',
+      address: 'Rua Funchal',
+      number: '500',
+      neighborhood: 'Vila Olímpia',
+      zipCode: '04551-060',
+      phone: '(11) 4002-8922',
+    },
+  });
+  console.log('✅ Created Client 2 (Tech Solutions):', client2.id);
+
+  const client3 = await prisma.client.create({
+    data: {
+      tenantId: tenant3.id,
+      name: 'Global Consulting Group',
+      email: 'info@globalconsulting.com.br',
+      address: 'Rua Oscar Freire',
+      number: '200',
+      neighborhood: 'Cerqueira César',
+      zipCode: '01426-100',
+    },
+  });
+  console.log('✅ Created Client 3 (Global Consulting):', client3.id);
+
+  // ============================
+  // Create Contracts (Associated with Tenants and Clients)
+  // ============================
+  const startDate = new Date('2025-01-01');
+  const endDate = new Date('2026-01-01');
+
+  const contract1 = await prisma.contract.create({
+    data: {
+      tenantId: tenant1.id,
+      title: 'Contrato de Prestação de Serviços de Consultoria',
+      identifier: 'CTR-2025-001-ACME',
+      content:
+        'Contrato para prestação de serviços de consultoria tecnológica...',
+      initialEffectiveDate: startDate,
+      finalEffectiveDate: endDate,
+      clientId: client1.id,
+      signedAt: new Date('2025-01-05'),
+    },
+  });
+  console.log('✅ Created Contract 1:', contract1.id);
+
+  const contract2 = await prisma.contract.create({
+    data: {
+      tenantId: tenant2.id,
+      title: 'Contrato de Manutenção e Suporte',
+      identifier: 'CTR-2025-002-TECH',
+      content: 'Contrato para manutenção e suporte técnico de sistemas...',
+      initialEffectiveDate: startDate,
+      finalEffectiveDate: endDate,
+      clientId: client2.id,
+      signedAt: new Date('2025-01-10'),
+    },
+  });
+  console.log('✅ Created Contract 2:', contract2.id);
+
+  const contract3 = await prisma.contract.create({
+    data: {
+      tenantId: tenant3.id,
+      title: 'Acordo de Desenvolvimento de Software',
+      identifier: 'CTR-2025-003-GLOBAL',
+      content: 'Acordo para desenvolvimento de plataforma customizada...',
+      initialEffectiveDate: startDate,
+      finalEffectiveDate: endDate,
+      clientId: client3.id,
+    },
+  });
+  console.log('✅ Created Contract 3:', contract3.id);
+
+  const contract4 = await prisma.contract.create({
+    data: {
+      tenantId: tenant4.id,
+      title: 'Contrato de Licença de Software',
+      identifier: 'CTR-2025-004-OPEN',
+      content: 'Contrato de licença de uso do software...',
+      initialEffectiveDate: startDate,
+      finalEffectiveDate: endDate,
+    },
+  });
+  console.log('✅ Created Contract 4 (No Client):', contract4.id);
+
+  console.log(
+    '✅ Created 3 clients and 4 contracts (all associated with tenants)',
+  );
 
   console.log('\n🌱 Seed completed successfully!');
   console.log('\n📋 Test Credentials:');

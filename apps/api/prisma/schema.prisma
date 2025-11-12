@@ -34,6 +34,8 @@ model Tenant {
 
   users        User[]
   subscription Subscription?
+  clients      Client[]
+  contracts    Contract[]
 
   @@index([deletedAt])
 }
@@ -220,4 +222,54 @@ model StripeCheckoutSession {
   @@index([stripeCustomerId])
   @@index([successToken])
   @@index([createdAt])
+}
+
+// ============================
+// Contracts
+// ============================
+model Contract {
+  id         String  @id @default(uuid())
+  tenantId   String
+  tenant     Tenant  @relation(fields: [tenantId], references: [id], onDelete: Cascade, onUpdate: Cascade)
+  title      String
+  identifier String  @unique
+  content    String?
+
+  initialEffectiveDate DateTime
+  finalEffectiveDate   DateTime
+
+  clients  Client? @relation(fields: [clientId], references: [id])
+  clientId String?
+
+  signedAt  DateTime?
+  createdAt DateTime  @default(now())
+  updatedAt DateTime  @updatedAt
+
+  @@unique([tenantId, identifier])
+  @@index([tenantId])
+}
+
+// ============================
+// Clients
+// ============================
+model Client {
+  id           String  @id @default(uuid())
+  tenantId     String
+  tenant       Tenant  @relation(fields: [tenantId], references: [id], onDelete: Cascade, onUpdate: Cascade)
+  name         String
+  email        String
+  address      String
+  number       String
+  complement   String?
+  neighborhood String
+  zipCode      String
+
+  phone     String?
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
+
+  contracts Contract[]
+
+  @@unique([tenantId, email])
+  @@index([tenantId])
 }
