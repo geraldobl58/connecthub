@@ -11,6 +11,8 @@ import { StripeModule } from './stripe/stripe.module';
 import { LoggerModule } from './logger/logger.module';
 import { EmailModule } from './email/email.module';
 import { TwoFactorModule } from './two-factor/two-factor.module';
+import { ClientsModule } from './clients/clients.module';
+import { ContractsModule } from './contracts/contracts.module';
 
 @Module({
   imports: [
@@ -29,6 +31,8 @@ import { TwoFactorModule } from './two-factor/two-factor.module';
     StripeModule,
     EmailModule,
     TwoFactorModule,
+    ClientsModule,
+    ContractsModule,
   ],
   controllers: [],
   providers: [
