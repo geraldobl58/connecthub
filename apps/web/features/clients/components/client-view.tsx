@@ -38,7 +38,7 @@ export const ClientView = ({ clientId }: ClientViewProps) => {
             </div>
             <div className="flex-1">
               <h3 className="font-semibold text-red-900 mb-1">
-                Erro ao carregar perfil
+                Erro ao carregar cliente
               </h3>
               <p className="text-red-800 text-sm">{error.message}</p>
             </div>

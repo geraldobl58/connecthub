@@ -3,7 +3,7 @@
 import { useRouter } from "next/navigation";
 import { toast } from "sonner";
 
-import { MoreVertical, Pencil, Trash2 } from "lucide-react";
+import { Eye, MoreVertical, Pencil, Trash2 } from "lucide-react";
 
 import {
   DropdownMenu,
@@ -28,6 +28,10 @@ export const ContractsActions = ({ contract }: ContractsActionsProps) => {
 
   const handleEdit = () => {
     router.push(`/dashboard/contracts/${contract.id}`);
+  };
+
+  const handleView = () => {
+    router.push(`/dashboard/contracts/${contract.id}/view`);
   };
 
   const handleDelete = () => {
@@ -60,6 +64,10 @@ export const ContractsActions = ({ contract }: ContractsActionsProps) => {
       <DropdownMenuContent align="end">
         <DropdownMenuLabel>Ações</DropdownMenuLabel>
         <DropdownMenuSeparator />
+        <DropdownMenuItem onClick={handleView}>
+          <Eye className="mr-2 h-4 w-4" />
+          Ver
+        </DropdownMenuItem>
         <DropdownMenuItem onClick={handleEdit}>
           <Pencil className="mr-2 h-4 w-4" />
           Editar
