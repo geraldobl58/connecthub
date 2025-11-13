@@ -15,36 +15,7 @@ import {
   DropdownMenuTrigger,
 } from "@/components/ui/dropdown-menu";
 import { useProfile } from "@/hooks/useProfile";
-import Image from "next/image";
-
-/**
- * Avatar display component that shows image if available, otherwise shows initials
- */
-const AvatarDisplay = ({
-  avatar,
-  initials,
-}: {
-  avatar?: string | null;
-  initials: string;
-}) => {
-  if (avatar) {
-    return (
-      <Image
-        src={avatar}
-        alt="User avatar"
-        width={56}
-        height={56}
-        className="w-14 h-14 rounded-full object-cover border-2 border-blue-300 cursor-pointer hover:opacity-80 transition-opacity"
-      />
-    );
-  }
-
-  return (
-    <div className="w-14 h-14 rounded-full bg-linear-to-br from-blue-500 to-purple-600 flex items-center justify-center text-white font-semibold cursor-pointer hover:opacity-80 transition-opacity">
-      {initials}
-    </div>
-  );
-};
+import { AvatarDisplay } from "./profile-avatar-display";
 
 export const ProfileHeader = () => {
   const { profileData } = useProfile();

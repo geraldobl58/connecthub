@@ -29,6 +29,6 @@
     ".next/types/**/*.ts",
     ".next/dev/types/**/*.ts",
     "**/*.mts"
-, "features/my-plan/components/plan-billing-portal-dialog.tsx.old", "features/my-plan/components/plan-checkout-dialog.tsx.old"  ],
+, "features/my-plan/components/plan-billing-portal-dialog.tsx.old", "features/my-plan/components/plan-checkout-dialog.tsx.old", "components/data-table-pagination.tsx.old", "components/data-table.tsx.old"  ],
   "exclude": ["node_modules"]
 }

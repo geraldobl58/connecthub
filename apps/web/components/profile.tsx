@@ -1,6 +1,6 @@
 "use client";
 
-import { useRouter } from "next/navigation";
+import Link from "next/link";
 import {
   DropdownMenu,
   DropdownMenuContent,
@@ -15,64 +15,18 @@ import {
   Bell,
   ChevronsUpDown,
   Users,
-  Stars,
-  Lamp,
   Droplet,
 } from "lucide-react";
 import { Button } from "./ui/button";
-import Link from "next/link";
 import { useProfile } from "@/hooks/useProfile";
-import Image from "next/image";
-
-/**
- * Avatar display component that shows image if available, otherwise shows initials
- */
-const AvatarDisplay = ({
-  avatar,
-  initials,
-  size = "sm",
-}: {
-  avatar?: string | null;
-  initials: string;
-  size?: "sm" | "md";
-}) => {
-  const sizeClasses = {
-    sm: "w-10 h-10 text-sm",
-    md: "w-12 h-12 text-base",
-  };
-
-  if (avatar) {
-    return (
-      <Image
-        src={avatar}
-        alt="User avatar"
-        width={96}
-        height={96}
-        className={`${sizeClasses[size]} rounded-full object-cover border-2 border-blue-300`}
-      />
-    );
-  }
-
-  return (
-    <div
-      className={`${sizeClasses[size]} rounded-full bg-gradient-to-br from-blue-500 to-purple-600 flex items-center justify-center text-white font-semibold`}
-    >
-      {initials}
-    </div>
-  );
-};
+import { AvatarDisplay } from "./profile-avatar-display";
 
 export const Profile = () => {
-  const router = useRouter();
   const { logout, isLoading: isLoggingOut } = useLogout();
   const { profileData, isLoading } = useProfile();
 
   const handleLogout = async () => {
     await logout();
-  };
-
-  const handleNavigate = (path: string) => {
-    router.push(path);
   };
 
   // Mostrar skeleton enquanto carrega
@@ -102,7 +56,6 @@ export const Profile = () => {
   return (
     <DropdownMenu>
       <DropdownMenuTrigger className="flex items-center gap-3 rounded-lg p-2 hover:bg-gray-100 transition-colors cursor-pointer bg-transparent border-none">
-        {/* Avatar */}
         <AvatarDisplay
           avatar={profileData.avatar}
           initials={initials}
