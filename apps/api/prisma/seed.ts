@@ -19,6 +19,122 @@ function generateBackupCodes(count: number = 8): string[] {
   return codes;
 }
 
+// Helper to generate random names
+const firstNames = [
+  'João',
+  'Maria',
+  'Carlos',
+  'Ana',
+  'Pedro',
+  'Julia',
+  'Lucas',
+  'Fernanda',
+  'Diego',
+  'Patricia',
+];
+const lastNames = [
+  'Silva',
+  'Santos',
+  'Oliveira',
+  'Costa',
+  'Ferreira',
+  'Mendes',
+  'Gomes',
+  'Sousa',
+  'Duarte',
+  'Cardoso',
+];
+const companies = [
+  'Tech',
+  'Digital',
+  'Global',
+  'Nexus',
+  'Prime',
+  'Elite',
+  'Quantum',
+  'Apex',
+  'Summit',
+  'Ventures',
+];
+
+function getRandomCompanyName(): string {
+  const company = companies[Math.floor(Math.random() * companies.length)];
+  const suffix = ['LTDA', 'S.A.', 'Consultoria', 'Solutions', 'Serviços'][
+    Math.floor(Math.random() * 5)
+  ];
+  return `${company} ${suffix}`;
+}
+
+// Helper to generate unique emails
+function generateUniqueEmails(count: number): Set<string> {
+  const emails = new Set<string>();
+  const domains = [
+    'tech.com',
+    'digital.com',
+    'global.com',
+    'solutions.com',
+    'services.com',
+  ];
+
+  while (emails.size < count) {
+    const firstName = firstNames[Math.floor(Math.random() * firstNames.length)];
+    const lastName = lastNames[Math.floor(Math.random() * lastNames.length)];
+    const domain = domains[Math.floor(Math.random() * domains.length)];
+    const randomNum = Math.floor(Math.random() * 100000);
+
+    const email = `${firstName.toLowerCase()}.${lastName.toLowerCase()}${randomNum}@${domain}`;
+    emails.add(email);
+  }
+
+  return emails;
+}
+
+function getRandomPhone(): string {
+  return `(${String(Math.floor(Math.random() * 90) + 10).padStart(2, '0')}) ${String(Math.floor(Math.random() * 99999) + 10000).padStart(5, '0')}-${String(Math.floor(Math.random() * 9999)).padStart(4, '0')}`;
+}
+
+function getRandomAddress(): {
+  street: string;
+  neighborhood: string;
+  zipCode: string;
+} {
+  const streets = [
+    'Avenida Paulista',
+    'Rua Funchal',
+    'Rua Oscar Freire',
+    'Av. Brasil',
+    'Rua das Flores',
+    'Av. Paulista',
+    'Rua Augusta',
+    'Av. Rebouças',
+  ];
+  const neighborhoods = [
+    'Vila Olímpia',
+    'Bela Vista',
+    'Cerqueira César',
+    'Pinheiros',
+    'Itaim Bibi',
+    'Consolação',
+    'Santa Cecília',
+  ];
+  const zipCodes = [
+    '01311-100',
+    '04551-060',
+    '01426-100',
+    '05454-010',
+    '01407-100',
+    '01211-020',
+    '01330-900',
+  ];
+
+  return {
+    street: streets[Math.floor(Math.random() * streets.length)],
+    neighborhood:
+      neighborhoods[Math.floor(Math.random() * neighborhoods.length)],
+    zipCode: zipCodes[Math.floor(Math.random() * zipCodes.length)],
+  };
+}
+
 async function main() {
   console.log('🌱 Starting database seed...');
 
@@ -459,6 +575,108 @@ async function main() {
     },
   });
   console.log('✅ Created Contract 4 (No Client):', contract4.id);
+
+  // ============================
+  // Create 200+ Random Clients for Testing Pagination
+  // ============================
+  console.log('\n📊 Generating 220 random clients for pagination testing...');
+
+  // Generate unique emails first
+  const uniqueEmails = Array.from(generateUniqueEmails(220));
+  let emailIndex = 0;
+
+  const clientsToCreate: Array<{
+    tenantId: string;
+    name: string;
+    email: string;
+    address: string;
+    number: string;
+    complement?: string;
+    neighborhood: string;
+    zipCode: string;
+    phone: string;
+  }> = [];
+  for (let i = 0; i < 220; i++) {
+    const address = getRandomAddress();
+    clientsToCreate.push({
+      tenantId: tenant1.id,
+      name: getRandomCompanyName(),
+      email: uniqueEmails[emailIndex++],
+      address: address.street,
+      number: String(Math.floor(Math.random() * 9999) + 1),
+      complement:
+        Math.random() > 0.5
+          ? `Apto ${Math.floor(Math.random() * 999)}`
+          : undefined,
+      neighborhood: address.neighborhood,
+      zipCode: address.zipCode,
+      phone: getRandomPhone(),
+    });
+  }
+  await prisma.client.createMany({ data: clientsToCreate });
+  console.log(`✅ Created 220 random clients for tenant1`);
+
+  // ============================
+  // Create 200+ Random Contracts for Testing Pagination
+  // ============================
+  console.log('📊 Generating 220 random contracts for pagination testing...');
+
+  // Get all clients for tenant1 to associate with contracts
+  const allClients = await prisma.client.findMany({
+    where: { tenantId: tenant1.id },
+  });
+
+  const contractsToCreate: Array<{
+    tenantId: string;
+    title: string;
+    identifier: string;
+    content: string;
+    initialEffectiveDate: Date;
+    finalEffectiveDate: Date;
+    clientId: string;
+    signedAt?: Date;
+  }> = [];
+  const contractTitles = [
+    'Contrato de Prestação de Serviços',
+    'Contrato de Consultoria Técnica',
+    'Contrato de Desenvolvimento de Software',
+    'Contrato de Manutenção e Suporte',
+    'Contrato de Licença de Software',
+    'Acordo de Parceria Comercial',
+    'Contrato de Serviços de TI',
+    'Contrato de Outsourcing',
+    'Contrato de Desenvolvimento Web',
+    'Contrato de Integração de Sistemas',
+  ];
+
+  for (let i = 0; i < 220; i++) {
+    const randomClient =
+      allClients[Math.floor(Math.random() * allClients.length)];
+    const randomTitle =
+      contractTitles[Math.floor(Math.random() * contractTitles.length)];
+    const startDate = new Date(
+      2024,
+      Math.floor(Math.random() * 12),
+      Math.floor(Math.random() * 28) + 1,
+    );
+    const endDate = new Date(startDate);
+    endDate.setFullYear(
+      endDate.getFullYear() + Math.floor(Math.random() * 3) + 1,
+    );
+
+    contractsToCreate.push({
+      tenantId: tenant1.id,
+      title: `${randomTitle} #${String(i + 1).padStart(4, '0')}`,
+      identifier: `CTR-${Date.now()}-${String(i).padStart(4, '0')}`,
+      content: `Contrato gerado automaticamente para testes de paginação - ID: ${i + 1}`,
+      initialEffectiveDate: startDate,
+      finalEffectiveDate: endDate,
+      clientId: randomClient.id,
+      signedAt: Math.random() > 0.3 ? startDate : undefined,
+    });
+  }
+  await prisma.contract.createMany({ data: contractsToCreate });
+  console.log(`✅ Created 220 random contracts for tenant1`);
 
   console.log(
     '✅ Created 3 clients and 4 contracts (all associated with tenants)',
