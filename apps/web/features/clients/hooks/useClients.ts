@@ -58,6 +58,7 @@ export function useClients(initialParams?: ClientsQueryParams) {
     handlePageChange,
     handleLimitChange,
     handleSearch,
+    queryParams, // Expor os parâmetros de busca atuais
   };
 }
 
