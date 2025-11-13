@@ -58,6 +58,7 @@ export function useContracts(params?: ContractsQueryParams) {
     handlePageChange,
     handleLimitChange,
     handleSearch,
+    queryParams,
   };
 }
 
