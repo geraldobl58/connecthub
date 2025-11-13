@@ -2,11 +2,16 @@
 
 import { useEffect } from "react";
 import { useRouter, useSearchParams } from "next/navigation";
-import { DynamicDataTable } from "@/components/dynamic-data-table";
+import Link from "next/link";
+import { Plus } from "lucide-react";
+
 import { useClients } from "@/features/clients";
+
+import { DynamicDataTable } from "@/components/dynamic-data-table";
+import { Button } from "@/components/ui/button";
+
 import { clientsColumns } from "./columns";
 import { ClientsFilter } from "./clients-filter";
-import { ClientFormModal } from "./client-form-modal";
 
 export function ClientsList() {
   const searchParams = useSearchParams();
@@ -76,7 +81,15 @@ export function ClientsList() {
     <div className="space-y-4">
       <div className="flex gap-2 justify-between items-center">
         <ClientsFilter onSearch={handleSearch} isLoading={isLoading} />
-        <ClientFormModal />
+        <Button variant="link">
+          <Link
+            href="/dashboard/clients/new"
+            className="flex  items-center gap-2"
+          >
+            <Plus className="size-4" />
+            Novo Cliente
+          </Link>
+        </Button>
       </div>
 
       <DynamicDataTable
