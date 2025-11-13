@@ -3,6 +3,7 @@ import { useQuery, useMutation, useQueryClient } from "@tanstack/react-query";
 import { ClientsQueryParams, UpdateClient } from "../types/client";
 import {
   getClientsAction,
+  getAllClientsAction,
   getClientByIdAction,
   createClientAction,
   updateClientAction,
@@ -59,6 +60,30 @@ export function useClients(initialParams?: ClientsQueryParams) {
     handleLimitChange,
     handleSearch,
     queryParams, // Expor os parâmetros de busca atuais
+  };
+}
+
+/**
+ * Hook para listar TODOS os clientes (sem paginação) - útil para selects
+ */
+export function useAllClients() {
+  const { data, isLoading, isError, error, refetch } = useQuery({
+    queryKey: [...CLIENTS_QUERY_KEY, "all"],
+    queryFn: async () => {
+      const result = await getAllClientsAction();
+      if (!result.success) throw new Error(result.message);
+      return result.data;
+    },
+    staleTime: 0, // Sem cache - sempre buscar dados frescos
+    refetchOnMount: true, // Sempre refetch ao montar
+  });
+
+  return {
+    clients: data || [],
+    isLoading,
+    isError,
+    error: error as Error | null,
+    refetch,
   };
 }
 
