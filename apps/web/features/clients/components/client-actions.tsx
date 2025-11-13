@@ -1,6 +1,8 @@
 "use client";
 
-import { Trash2, MoreVertical } from "lucide-react";
+import { useRouter } from "next/navigation";
+import { toast } from "sonner";
+import { Trash2, MoreVertical, Pencil } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import {
   DropdownMenu,
@@ -10,7 +12,6 @@ import {
   DropdownMenuSeparator,
   DropdownMenuTrigger,
 } from "@/components/ui/dropdown-menu";
-import { ClientFormModal } from "./client-form-modal";
 import { useDeleteClient } from "@/features/clients/hooks/useClients";
 import { ClientResponse } from "../schemas/client";
 
@@ -19,11 +20,27 @@ interface ClientActionsProps {
 }
 
 export function ClientActions({ client }: ClientActionsProps) {
+  const router = useRouter();
   const { mutate: deleteClient, isPending } = useDeleteClient();
+
+  const handleEdit = () => {
+    router.push(`/dashboard/clients/${client.id}`);
+  };
 
   const handleDelete = () => {
     if (confirm(`Tem certeza que deseja deletar ${client.name}?`)) {
-      deleteClient(client.id);
+      deleteClient(client.id, {
+        onSuccess: (response) => {
+          if (response.success) {
+            toast.success("Cliente deletado com sucesso!");
+          } else {
+            toast.error(response.message || "Erro ao deletar cliente");
+          }
+        },
+        onError: () => {
+          toast.error("Erro ao deletar cliente");
+        },
+      });
     }
   };
 
@@ -38,8 +55,9 @@ export function ClientActions({ client }: ClientActionsProps) {
       <DropdownMenuContent align="end">
         <DropdownMenuLabel>Ações</DropdownMenuLabel>
         <DropdownMenuSeparator />
-        <DropdownMenuItem asChild>
-          <ClientFormModal client={client} trigger="icon" />
+        <DropdownMenuItem onClick={handleEdit}>
+          <Pencil className="mr-2 h-4 w-4" />
+          Editar
         </DropdownMenuItem>
         <DropdownMenuItem
           onClick={handleDelete}
