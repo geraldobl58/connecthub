@@ -6,6 +6,7 @@ import { ProtectedLayout } from "@/components/protected-layout";
 import { SidebarProvider } from "@/components/ui/sidebar";
 import { QueryClientProvider } from "@tanstack/react-query";
 import { queryClientProvider } from "@/providers/query-provider";
+import { Toaster } from "sonner";
 
 export default async function DashboardLayout({
   children,
@@ -20,6 +21,7 @@ export default async function DashboardLayout({
       <QueryClientProvider client={queryClientProvider}>
         <SidebarProvider defaultOpen={defaultOpen}>
           <AppSidebar />
+          <Toaster />
           <div className="flex-1 min-h-screen">
             <main>{children}</main>
           </div>
