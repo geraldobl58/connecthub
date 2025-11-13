@@ -21,6 +21,7 @@ import {
   useUpdateClient,
   useClient,
 } from "@/features/clients";
+import { Loading } from "@/components/loading";
 
 const ClientFormPage = () => {
   const params = useParams();
@@ -146,6 +147,17 @@ const ClientFormPage = () => {
           <Loader2 className="h-8 w-8 animate-spin text-muted-foreground" />
         </div>
       </>
+    );
+  }
+
+  if (isLoading) {
+    return (
+      <Loading
+        fullscreen
+        color="blue"
+        title="Carregando formulário..."
+        message="Aguarde enquanto buscamos suas informações."
+      />
     );
   }
 

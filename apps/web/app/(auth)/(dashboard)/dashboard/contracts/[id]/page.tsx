@@ -36,6 +36,7 @@ import {
   SelectTrigger,
   SelectValue,
 } from "@/components/ui/select";
+import { Loading } from "@/components/loading";
 
 const ContractFormPage = () => {
   const params = useParams();
@@ -182,6 +183,17 @@ const ContractFormPage = () => {
           <Spinner />
         </div>
       </>
+    );
+  }
+
+  if (isLoading) {
+    return (
+      <Loading
+        fullscreen
+        color="blue"
+        title="Carregando formuário..."
+        message="Aguarde enquanto buscamos suas informações."
+      />
     );
   }
 
@@ -393,7 +405,9 @@ const ContractFormPage = () => {
                 </Select>
               ) : (
                 <div className="flex h-10 w-full items-center rounded-md border border-input bg-background px-3 py-2 text-sm text-muted-foreground">
-                  {isLoadingClients ? "Carregando..." : "Nenhum cliente cadastrado"}
+                  {isLoadingClients
+                    ? "Carregando..."
+                    : "Nenhum cliente cadastrado"}
                 </div>
               )}
               {errors?.clientId && (

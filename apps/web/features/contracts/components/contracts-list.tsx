@@ -11,6 +11,7 @@ import { Button } from "@/components/ui/button";
 import { contractsColumns } from "./columns";
 import { useContracts } from "../hooks/useContracts";
 import { ContractsFilter } from "./contracts-filter";
+import { Loading } from "@/components/loading";
 
 export function ContractsList() {
   const searchParams = useSearchParams();
@@ -70,6 +71,17 @@ export function ContractsList() {
   const handleLimitChangeWithScroll = (newLimit: number) => {
     handleLimitChange(newLimit);
   };
+
+  if (isLoading) {
+    return (
+      <Loading
+        fullscreen
+        color="blue"
+        title="Carregando tabela de contratos..."
+        message="Aguarde enquanto buscamos suas informações."
+      />
+    );
+  }
 
   return (
     <div className="space-y-4">

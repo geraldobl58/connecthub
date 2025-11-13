@@ -12,6 +12,7 @@ import { Button } from "@/components/ui/button";
 
 import { clientsColumns } from "./columns";
 import { ClientsFilter } from "./clients-filter";
+import { Loading } from "@/components/loading";
 
 export function ClientsList() {
   const searchParams = useSearchParams();
@@ -76,6 +77,17 @@ export function ClientsList() {
   const handleLimitChangeWithScroll = (newLimit: number) => {
     handleLimitChange(newLimit);
   };
+
+  if (isLoading) {
+    return (
+      <Loading
+        fullscreen
+        color="blue"
+        title="Carregando tabela de clientes..."
+        message="Aguarde enquanto buscamos suas informações."
+      />
+    );
+  }
 
   return (
     <div className="space-y-4">
