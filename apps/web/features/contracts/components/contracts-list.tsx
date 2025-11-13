@@ -1,88 +1,30 @@
 "use client";
 
-import { ColumnDef } from "@tanstack/react-table";
-import { DynamicDataTable } from "@/components/dynamic-data-table";
-import {
-  ContractResponse,
-  ContractsQueryParams,
-  useContracts,
-} from "@/features/contracts";
-import { Button } from "@/components/ui/button";
-import { Input } from "@/components/ui/input";
-import { Search, X } from "lucide-react";
-import { useForm } from "react-hook-form";
-import { CreateContractModal } from "./create-contract-modal";
+import { useEffect } from "react";
+import Link from "next/link";
+import { useRouter, useSearchParams } from "next/navigation";
 
-export const contractsColumns: ColumnDef<ContractResponse>[] = [
-  {
-    accessorKey: "title",
-    header: "Título",
-    cell: ({ row }) => <div className="font-medium">{row.original.title}</div>,
-  },
-  {
-    accessorKey: "identifier",
-    header: "Identificador",
-    cell: ({ row }) => <div>{row.original.identifier}</div>,
-  },
-  {
-    accessorKey: "clients.name",
-    header: "Cliente",
-    cell: ({ row }) => <div>{row.original.clients?.name || "-"}</div>,
-  },
-  {
-    accessorKey: "initialEffectiveDate",
-    header: "Data Inicial",
-    cell: ({ row }) => (
-      <div>
-        {new Date(row.original.initialEffectiveDate).toLocaleDateString(
-          "pt-BR"
-        )}
-      </div>
-    ),
-  },
-  {
-    accessorKey: "finalEffectiveDate",
-    header: "Data Final",
-    cell: ({ row }) => (
-      <div>
-        {new Date(row.original.finalEffectiveDate).toLocaleDateString("pt-BR")}
-      </div>
-    ),
-  },
-  {
-    accessorKey: "createdAt",
-    header: "Criado em",
-    cell: ({ row }) => (
-      <div>{new Date(row.original.createdAt).toLocaleDateString("pt-BR")}</div>
-    ),
-  },
-  {
-    id: "actions",
-    header: "Ações",
-    cell: () => (
-      <div className="flex gap-2">
-        <Button variant="outline" size="sm">
-          Editar
-        </Button>
-        <Button variant="destructive" size="sm">
-          Deletar
-        </Button>
-      </div>
-    ),
-  },
-];
+import { Plus } from "lucide-react";
+
+import { DynamicDataTable } from "@/components/dynamic-data-table";
+import { Button } from "@/components/ui/button";
+import { contractsColumns } from "./columns";
+import { useContracts } from "../hooks/useContracts";
+import { ContractsFilter } from "./contracts-filter";
 
 export function ContractsList() {
-  const { register, handleSubmit, reset } = useForm<ContractsQueryParams>({
-    defaultValues: {
-      search: "",
-    },
-  });
+  const searchParams = useSearchParams();
+  const router = useRouter();
+
+  const page = Number(searchParams.get("page")) || 1;
+  const limit = Number(searchParams.get("limit")) || 10;
+  const search = searchParams.get("search") || undefined;
+
   const {
     contracts,
     total,
-    page,
-    limit,
+    page: currentPage,
+    limit: currentLimit,
     pageSize,
     hasNextPage,
     hasPrevPage,
@@ -90,58 +32,72 @@ export function ContractsList() {
     handlePageChange,
     handleLimitChange,
     handleSearch,
-  } = useContracts();
+    queryParams,
+  } = useContracts({ page, limit, search });
 
-  const onSubmit = (data: ContractsQueryParams) => {
-    if (data.search) {
-      handleSearch(data.search);
+  useEffect(() => {
+    const params = new URLSearchParams();
+
+    if (queryParams.page && queryParams.page > 1) {
+      params.append("page", String(queryParams.page));
     }
+
+    if (queryParams.limit && queryParams.limit !== 10) {
+      params.append("limit", String(queryParams.limit));
+    }
+
+    if (queryParams.search && queryParams.search.trim()) {
+      params.append("search", queryParams.search);
+    }
+
+    const queryString = params.toString();
+
+    const newUrl = queryString
+      ? `/dashboard/contracts?${queryString}`
+      : "/dashboard/contracts";
+
+    const currentUrl = window.location.pathname + window.location.search;
+
+    if (newUrl !== currentUrl) {
+      router.push(newUrl, { scroll: false });
+    }
+  }, [queryParams, router]);
+
+  const handlePageChangeWithScroll = (newPage: number) => {
+    handlePageChange(newPage);
   };
 
-  const resetForm = () => {
-    reset();
-    handleSearch("");
+  const handleLimitChangeWithScroll = (newLimit: number) => {
+    handleLimitChange(newLimit);
   };
 
   return (
     <div className="space-y-4">
       <div className="flex gap-2 justify-between items-center">
-        <form onSubmit={handleSubmit(onSubmit)} className="flex gap-2 flex-1">
-          <Input
-            placeholder="Buscar contrato por título, identificador ou cliente..."
-            disabled={isLoading}
-            className="max-w-md"
-            {...register("search")}
-          />
-
-          <Button type="submit" disabled={isLoading}>
-            <Search className="w-4 h-4 mr-2" /> Buscar
-          </Button>
-          <Button
-            type="button"
-            variant="outline"
-            disabled={isLoading}
-            onClick={resetForm}
+        <ContractsFilter onSearch={handleSearch} isLoading={isLoading} />
+        <Button variant="link">
+          <Link
+            href="/dashboard/contracts/new"
+            className="flex  items-center gap-2"
           >
-            <X className="w-4 h-4 mr-2" /> Limpar
-          </Button>
-        </form>
-
-        <CreateContractModal />
+            <Plus className="size-4" />
+            Novo Contrato
+          </Link>
+        </Button>
       </div>
 
       <DynamicDataTable
         columns={contractsColumns}
         data={contracts}
         total={total}
-        page={page}
+        page={currentPage}
         pageSize={pageSize}
         hasNextPage={hasNextPage}
         hasPrevPage={hasPrevPage}
-        limit={limit}
+        limit={currentLimit}
         isLoading={isLoading}
-        onPageChange={handlePageChange}
-        onLimitChange={handleLimitChange}
+        onPageChange={handlePageChangeWithScroll}
+        onLimitChange={handleLimitChangeWithScroll}
       />
     </div>
   );
