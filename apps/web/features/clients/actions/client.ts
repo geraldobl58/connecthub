@@ -11,6 +11,7 @@ import {
 } from "../types/client";
 import {
   getClients,
+  getAllClients,
   getClientById,
   createClient as createClientHttp,
   updateClient as updateClientHttp,
@@ -33,6 +34,49 @@ export async function getClientsAction(
     };
   } catch (error) {
     console.error("[Clients Action Error]", error);
+
+    if (error instanceof HTTPError) {
+      try {
+        const errorData = (await error.response.json()) as {
+          message?: string;
+        };
+        return {
+          success: false,
+          message: errorData.message || "Erro ao conectar com a API",
+        };
+      } catch {
+        return {
+          success: false,
+          message: "Erro ao processar resposta do servidor",
+        };
+      }
+    }
+
+    return {
+      success: false,
+      message: "Erro inesperado ao recuperar clientes",
+    };
+  }
+}
+
+/**
+ * Listar TODOS os clientes (sem paginação) - para selects
+ */
+export async function getAllClientsAction(): Promise<{
+  success: boolean;
+  message?: string;
+  data?: any[];
+}> {
+  try {
+    const response = await getAllClients();
+
+    return {
+      success: true,
+      message: "Clientes recuperados com sucesso",
+      data: response,
+    };
+  } catch (error) {
+    console.error("[Get All Clients Action Error]", error);
 
     if (error instanceof HTTPError) {
       try {
