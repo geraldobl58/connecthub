@@ -52,7 +52,8 @@ export class ClientsService {
   ): Promise<PaginatedClientResponseDto> {
     // Validação de paginação
     if (page < 1) page = 1;
-    if (limit < 1 || limit > 100) limit = 10;
+    if (limit < 1) limit = 10;
+    if (limit > 10000) limit = 10000; // Máximo de 10.000 registros
 
     const skip = (page - 1) * limit;
 
@@ -96,6 +97,33 @@ export class ClientsService {
       hasNextPage,
       hasPrevPage,
     };
+  }
+
+  async findAllWithoutPagination(
+    tenantId: string,
+  ): Promise<ClientResponseDto[]> {
+    const clients = await this.prisma.client.findMany({
+      where: {
+        tenantId,
+      },
+      orderBy: { name: 'asc' },
+      distinct: ['id'], // Garante que cada ID apareça apenas uma vez
+      select: {
+        id: true,
+        name: true,
+        email: true,
+        address: true,
+        number: true,
+        complement: true,
+        neighborhood: true,
+        zipCode: true,
+        phone: true,
+        createdAt: true,
+        updatedAt: true,
+      },
+    });
+
+    return clients.map((client) => this.mapToResponseDto(client));
   }
 
   async findOne(tenantId: string, id: string): Promise<ClientResponseDto> {
