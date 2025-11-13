@@ -516,6 +516,20 @@ async function main() {
   });
   console.log('✅ Created Client 3 (Global Consulting):', client3.id);
 
+  const client4 = await prisma.client.create({
+    data: {
+      tenantId: tenant4.id,
+      name: 'OpenSource Solutions',
+      email: 'contact@opensource.io',
+      address: 'Rua dos Desenvolvedores',
+      number: '42',
+      neighborhood: 'Vila Madalena',
+      zipCode: '05435-040',
+      phone: '(11) 9999-8888',
+    },
+  });
+  console.log('✅ Created Client 4 (OpenSource Solutions):', client4.id);
+
   // ============================
   // Create Contracts (Associated with Tenants and Clients)
   // ============================
@@ -572,9 +586,10 @@ async function main() {
       content: 'Contrato de licença de uso do software...',
       initialEffectiveDate: startDate,
       finalEffectiveDate: endDate,
+      clientId: client4.id,
     },
   });
-  console.log('✅ Created Contract 4 (No Client):', contract4.id);
+  console.log('✅ Created Contract 4:', contract4.id);
 
   // ============================
   // Create 200+ Random Clients for Testing Pagination

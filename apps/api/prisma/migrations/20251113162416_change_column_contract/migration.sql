@@ -139,12 +139,13 @@ CREATE TABLE "public"."StripeCheckoutSession" (
 -- CreateTable
 CREATE TABLE "public"."Contract" (
     "id" TEXT NOT NULL,
+    "tenantId" TEXT NOT NULL,
     "title" TEXT NOT NULL,
     "identifier" TEXT NOT NULL,
     "content" TEXT,
     "initialEffectiveDate" TIMESTAMP(3) NOT NULL,
     "finalEffectiveDate" TIMESTAMP(3) NOT NULL,
-    "clientId" TEXT,
+    "clientId" TEXT NOT NULL,
     "signedAt" TIMESTAMP(3),
     "createdAt" TIMESTAMP(3) NOT NULL DEFAULT CURRENT_TIMESTAMP,
     "updatedAt" TIMESTAMP(3) NOT NULL,
@@ -155,6 +156,7 @@ CREATE TABLE "public"."Contract" (
 -- CreateTable
 CREATE TABLE "public"."Client" (
     "id" TEXT NOT NULL,
+    "tenantId" TEXT NOT NULL,
     "name" TEXT NOT NULL,
     "email" TEXT NOT NULL,
     "address" TEXT NOT NULL,
@@ -257,7 +259,16 @@ CREATE UNIQUE INDEX "StripeCheckoutSession_domain_key" ON "public"."StripeChecko
 CREATE UNIQUE INDEX "Contract_identifier_key" ON "public"."Contract"("identifier");
 
 -- CreateIndex
-CREATE UNIQUE INDEX "Client_email_key" ON "public"."Client"("email");
+CREATE INDEX "Contract_tenantId_idx" ON "public"."Contract"("tenantId");
+
+-- CreateIndex
+CREATE UNIQUE INDEX "Contract_tenantId_identifier_key" ON "public"."Contract"("tenantId", "identifier");
+
+-- CreateIndex
+CREATE INDEX "Client_tenantId_idx" ON "public"."Client"("tenantId");
+
+-- CreateIndex
+CREATE UNIQUE INDEX "Client_tenantId_email_key" ON "public"."Client"("tenantId", "email");
 
 -- AddForeignKey
 ALTER TABLE "public"."User" ADD CONSTRAINT "User_tenantId_fkey" FOREIGN KEY ("tenantId") REFERENCES "public"."Tenant"("id") ON DELETE CASCADE ON UPDATE CASCADE;
@@ -275,4 +286,10 @@ ALTER TABLE "public"."Subscription" ADD CONSTRAINT "Subscription_planId_fkey" FO
 ALTER TABLE "public"."SubscriptionHistory" ADD CONSTRAINT "SubscriptionHistory_subscriptionId_fkey" FOREIGN KEY ("subscriptionId") REFERENCES "public"."Subscription"("id") ON DELETE CASCADE ON UPDATE CASCADE;
 
 -- AddForeignKey
-ALTER TABLE "public"."Contract" ADD CONSTRAINT "Contract_clientId_fkey" FOREIGN KEY ("clientId") REFERENCES "public"."Client"("id") ON DELETE SET NULL ON UPDATE CASCADE;
+ALTER TABLE "public"."Contract" ADD CONSTRAINT "Contract_tenantId_fkey" FOREIGN KEY ("tenantId") REFERENCES "public"."Tenant"("id") ON DELETE CASCADE ON UPDATE CASCADE;
+
+-- AddForeignKey
+ALTER TABLE "public"."Contract" ADD CONSTRAINT "Contract_clientId_fkey" FOREIGN KEY ("clientId") REFERENCES "public"."Client"("id") ON DELETE RESTRICT ON UPDATE CASCADE;
+
+-- AddForeignKey
+ALTER TABLE "public"."Client" ADD CONSTRAINT "Client_tenantId_fkey" FOREIGN KEY ("tenantId") REFERENCES "public"."Tenant"("id") ON DELETE CASCADE ON UPDATE CASCADE;

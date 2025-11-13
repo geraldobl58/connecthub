@@ -238,8 +238,8 @@ model Contract {
   initialEffectiveDate DateTime
   finalEffectiveDate   DateTime
 
-  clients  Client? @relation(fields: [clientId], references: [id])
-  clientId String?
+  clients  Client @relation(fields: [clientId], references: [id])
+  clientId String
 
   signedAt  DateTime?
   createdAt DateTime  @default(now())
