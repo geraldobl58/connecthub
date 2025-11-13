@@ -2,7 +2,7 @@
 
 import { useRouter } from "next/navigation";
 import { toast } from "sonner";
-import { Trash2, MoreVertical, Pencil } from "lucide-react";
+import { Trash2, MoreVertical, Pencil, Eye } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import {
   DropdownMenu,
@@ -25,6 +25,10 @@ export function ClientActions({ client }: ClientActionsProps) {
 
   const handleEdit = () => {
     router.push(`/dashboard/clients/${client.id}`);
+  };
+
+  const handleView = () => {
+    router.push(`/dashboard/clients/${client.id}/view`);
   };
 
   const handleDelete = () => {
@@ -55,6 +59,10 @@ export function ClientActions({ client }: ClientActionsProps) {
       <DropdownMenuContent align="end">
         <DropdownMenuLabel>Ações</DropdownMenuLabel>
         <DropdownMenuSeparator />
+        <DropdownMenuItem onClick={handleView}>
+          <Eye className="mr-2 h-4 w-4" />
+          Ver
+        </DropdownMenuItem>
         <DropdownMenuItem onClick={handleEdit}>
           <Pencil className="mr-2 h-4 w-4" />
           Editar
