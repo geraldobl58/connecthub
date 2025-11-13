@@ -15,7 +15,7 @@ interface ClientsFilterProps {
 }
 
 export const ClientsFilter = ({ onSearch, isLoading }: ClientsFilterProps) => {
-  const searchParams = new URLSearchParams();
+  const searchParams = useSearchParams();
   const { register, handleSubmit, reset, setValue } =
     useForm<ClientsQueryParams>({
       defaultValues: {
@@ -25,10 +25,8 @@ export const ClientsFilter = ({ onSearch, isLoading }: ClientsFilterProps) => {
 
   // Atualizar campo quando URL mudar
   useEffect(() => {
-    const searchFromUrl = searchParams.get("search");
-    if (searchFromUrl) {
-      setValue("search", searchFromUrl);
-    }
+    const searchFromUrl = searchParams.get("search") || "";
+    setValue("search", searchFromUrl);
   }, [searchParams, setValue]);
 
   const onSubmit = (data: ClientsQueryParams) => {
