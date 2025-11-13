@@ -10,7 +10,7 @@ export const ContractResponseSchema = z.object({
   finalEffectiveDate: z.string().datetime(),
   clientId: z.string().uuid().nullable(),
   clients: ClientResponseSchema.nullable(),
-  signedAt: z.string().datetime().nullable(),
+  signedAt: z.string().datetime(),
   createdAt: z.string().datetime(),
   updatedAt: z.string().datetime(),
 });
@@ -35,7 +35,7 @@ export const CreateContractSchema = z.object({
   content: z.string().optional(),
   initialEffectiveDate: z.string().datetime(),
   finalEffectiveDate: z.string().datetime(),
-  clientId: z.string().uuid().optional().nullable(),
+  clientId: z.string().uuid().min(1, "Cliente é obrigatório"),
   signedAt: z.string().datetime().optional().nullable(),
 });
 
