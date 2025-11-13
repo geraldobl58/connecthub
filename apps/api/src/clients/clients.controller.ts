@@ -61,7 +61,7 @@ export class ClientsController {
     name: 'limit',
     required: false,
     type: Number,
-    description: 'Limite de registros por página (padrão: 10, máximo: 100)',
+    description: 'Limite de registros por página (padrão: 10, máximo: 10000)',
     example: 10,
   })
   @ApiQuery({
@@ -88,6 +88,17 @@ export class ClientsController {
       limit ? parseInt(limit, 10) : 10,
       search,
     );
+  }
+
+  @Get('list/all')
+  @ApiOperation({ summary: 'Listar TODOS os clientes (sem paginação) - para selects' })
+  @ApiResponse({
+    status: 200,
+    description: 'Lista completa de clientes do tenant',
+    type: [ClientResponseDto],
+  })
+  findAllWithoutPagination(@Request() req: any) {
+    return this.clientsService.findAllWithoutPagination(req.user.tenantId);
   }
 
   @Get(':id')
