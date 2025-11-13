@@ -25,6 +25,14 @@ export const getClients = async (
 };
 
 /**
+ * Listar TODOS os clientes (sem paginação) - para selects
+ */
+export const getAllClients = async (): Promise<ClientResponse[]> => {
+  const response = await api.get<ClientResponse[]>("clients/list/all");
+  return response.json();
+};
+
+/**
  * Buscar cliente por ID
  */
 export const getClientById = async (id: string): Promise<ClientResponse> => {
