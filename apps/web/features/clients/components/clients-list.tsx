@@ -1,7 +1,7 @@
 "use client";
 
 import { useEffect } from "react";
-import { useRouter } from "next/navigation";
+import { useRouter, useSearchParams } from "next/navigation";
 import { DynamicDataTable } from "@/components/dynamic-data-table";
 import { useClients } from "@/features/clients";
 import { clientsColumns } from "./columns";
@@ -9,7 +9,7 @@ import { ClientsFilter } from "./clients-filter";
 import { ClientFormModal } from "./client-form-modal";
 
 export function ClientsList() {
-  const searchParams = new URLSearchParams();
+  const searchParams = useSearchParams();
   const router = useRouter();
 
   // Ler parâmetros da URL
@@ -29,6 +29,7 @@ export function ClientsList() {
     handlePageChange,
     handleLimitChange,
     handleSearch,
+    queryParams,
   } = useClients({ page, limit, search });
 
   // Sincronizar mudanças de parâmetros com URL
@@ -36,22 +37,21 @@ export function ClientsList() {
     const params = new URLSearchParams();
 
     // Sempre incluir page se > 1
-    if (currentPage > 1) {
-      params.append("page", String(currentPage));
+    if (queryParams.page && queryParams.page > 1) {
+      params.append("page", String(queryParams.page));
     }
 
     // Sempre incluir limit se diferente do padrão (10)
-    if (currentLimit !== 10) {
-      params.append("limit", String(currentLimit));
+    if (queryParams.limit && queryParams.limit !== 10) {
+      params.append("limit", String(queryParams.limit));
     }
 
     // Incluir search se existir
-    if (search && search.trim()) {
-      params.append("search", search);
+    if (queryParams.search && queryParams.search.trim()) {
+      params.append("search", queryParams.search);
     }
 
     const queryString = params.toString();
-    console.log(queryString);
 
     const newUrl = queryString
       ? `/dashboard/clients?${queryString}`
@@ -62,7 +62,7 @@ export function ClientsList() {
     if (newUrl !== currentUrl) {
       router.push(newUrl, { scroll: false });
     }
-  }, [currentPage, currentLimit, search, router]);
+  }, [queryParams, router]);
 
   const handlePageChangeWithScroll = (newPage: number) => {
     handlePageChange(newPage);
