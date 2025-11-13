@@ -84,7 +84,7 @@ export function ClientsList() {
         <Button variant="link">
           <Link
             href="/dashboard/clients/new"
-            className="flex  items-center gap-2"
+            className="flex items-center gap-2"
           >
             <Plus className="size-4" />
             Novo Cliente
