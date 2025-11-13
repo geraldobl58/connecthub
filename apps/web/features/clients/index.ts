@@ -10,6 +10,7 @@ export * from "./http/client";
 // Actions
 export {
   getClientsAction,
+  getAllClientsAction,
   getClientByIdAction,
   createClientAction,
   updateClientAction,
@@ -19,6 +20,7 @@ export {
 // Hooks
 export {
   useClients,
+  useAllClients,
   useClient,
   useCreateClient,
   useUpdateClient,
