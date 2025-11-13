@@ -1,8 +1,11 @@
 import { cookies } from "next/headers";
+import { ReactQueryDevtools } from "@tanstack/react-query-devtools";
 
 import { AppSidebar } from "@/components/app-sidebar";
 import { ProtectedLayout } from "@/components/protected-layout";
 import { SidebarProvider } from "@/components/ui/sidebar";
+import { QueryClientProvider } from "@tanstack/react-query";
+import { queryClientProvider } from "@/providers/query-provider";
 
 export default async function DashboardLayout({
   children,
@@ -14,12 +17,15 @@ export default async function DashboardLayout({
 
   return (
     <ProtectedLayout>
-      <SidebarProvider defaultOpen={defaultOpen}>
-        <AppSidebar />
-        <div className="flex-1 min-h-screen">
-          <main>{children}</main>
-        </div>
-      </SidebarProvider>
+      <QueryClientProvider client={queryClientProvider}>
+        <SidebarProvider defaultOpen={defaultOpen}>
+          <AppSidebar />
+          <div className="flex-1 min-h-screen">
+            <main>{children}</main>
+          </div>
+        </SidebarProvider>
+        <ReactQueryDevtools />
+      </QueryClientProvider>
     </ProtectedLayout>
   );
 }
