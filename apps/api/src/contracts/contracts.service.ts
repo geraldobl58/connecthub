@@ -34,19 +34,17 @@ export class ContractsService {
     }
 
     // Verificar se cliente existe e pertence ao mesmo tenant
-    if (createContractDto.clientId) {
-      const client = await this.prisma.client.findFirst({
-        where: {
-          id: createContractDto.clientId,
-          tenantId,
-        },
-      });
+    const client = await this.prisma.client.findFirst({
+      where: {
+        id: createContractDto.clientId,
+        tenantId,
+      },
+    });
 
-      if (!client) {
-        throw new NotFoundException(
-          `Cliente com ID ${createContractDto.clientId} não encontrado neste tenant`,
-        );
-      }
+    if (!client) {
+      throw new NotFoundException(
+        `Cliente com ID ${createContractDto.clientId} não encontrado neste tenant`,
+      );
     }
 
     const contract = await this.prisma.contract.create({
